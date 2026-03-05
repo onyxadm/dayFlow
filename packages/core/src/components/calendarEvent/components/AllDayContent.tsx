@@ -1,3 +1,5 @@
+import { ComponentChildren } from 'preact';
+
 import { CalendarDays } from '@/components/common/Icons';
 import { MultiDayEventSegment } from '@/components/monthView/WeekComponent';
 import {
@@ -16,6 +18,8 @@ interface AllDayContentProps {
   isMultiDay?: boolean;
   segment?: MultiDayEventSegment;
   isSlidingView?: boolean;
+  /** Optional slot renderer — receives the default inner content and wraps it in a ContentSlot */
+  renderSlot?: (defaultContent: ComponentChildren) => ComponentChildren;
 }
 
 const AllDayContent = ({
@@ -25,6 +29,7 @@ const AllDayContent = ({
   isMultiDay,
   segment,
   isSlidingView,
+  renderSlot,
 }: AllDayContentProps) => {
   const showIcon = event.icon !== false;
   const customIcon = typeof event.icon === 'boolean' ? null : event.icon;
@@ -55,27 +60,8 @@ const AllDayContent = ({
     return {};
   })();
 
-  return (
-    <div
-      className={`absolute inset-0 flex items-center overflow-hidden pl-3 ${px1} group py-0`}
-      style={titleOffsetStyle}
-    >
-      {/* Left resize handle - only shown for single-day all-day events with onResizeStart */}
-      {onResizeStart && isEditable && (
-        <div
-          className={resizeHandleLeft}
-          onMouseDown={e => {
-            e.preventDefault();
-            e.stopPropagation();
-            onResizeStart(e, event, 'left');
-          }}
-          onClick={e => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        />
-      )}
-
+  const innerContent = (
+    <div className='flex h-full flex-1 items-center overflow-hidden'>
       {showIcon &&
         (customIcon ? (
           <div className='mr-1 shrink-0'>{customIcon}</div>
@@ -85,21 +71,44 @@ const AllDayContent = ({
       <div className={`${eventTitleSmall} pr-1`} style={{ lineHeight: '1.2' }}>
         {event.title}
       </div>
+    </div>
+  );
 
-      {/* Right resize handle - only shown for single-day all-day events with onResizeStart */}
+  return (
+    <div
+      className={`absolute inset-0 flex items-center overflow-hidden pl-3 ${px1} group py-0`}
+      style={titleOffsetStyle}
+    >
+      {renderSlot ? renderSlot(innerContent) : innerContent}
+
+      {/* Left/Right resize handles — absolute positioned, always rendered outside the slot */}
       {onResizeStart && isEditable && (
-        <div
-          className={resizeHandleRight}
-          onMouseDown={e => {
-            e.preventDefault();
-            e.stopPropagation();
-            onResizeStart(e, event, 'right');
-          }}
-          onClick={e => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        />
+        <>
+          <div
+            className={resizeHandleLeft}
+            onMouseDown={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              onResizeStart(e, event, 'left');
+            }}
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          />
+          <div
+            className={resizeHandleRight}
+            onMouseDown={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              onResizeStart(e, event, 'right');
+            }}
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          />
+        </>
       )}
     </div>
   );

@@ -1,3 +1,5 @@
+import { ComponentChildren } from 'preact';
+
 import {
   eventColorBar,
   eventTitleSmall,
@@ -34,6 +36,8 @@ interface RegularEventContentProps {
     direction: string
   ) => void;
   timeFormat?: '12h' | '24h';
+  /** Optional slot renderer — receives the default visual content and wraps it in a ContentSlot */
+  renderSlot?: (defaultContent: ComponentChildren) => ComponentChildren;
 }
 
 const RegularEventContent = ({
@@ -45,6 +49,7 @@ const RegularEventContent = ({
   isEventSelected,
   onResizeStart,
   timeFormat = '24h',
+  renderSlot,
 }: RegularEventContentProps) => {
   const startHour = multiDaySegmentInfo
     ? multiDaySegmentInfo.startHour
@@ -64,7 +69,7 @@ const RegularEventContent = ({
     return d <= 0.25 ? 'px-1 py-0' : 'p-1';
   };
 
-  return (
+  const visualContent = (
     <>
       <div
         className={eventColorBar}
@@ -94,6 +99,12 @@ const RegularEventContent = ({
           </div>
         )}
       </div>
+    </>
+  );
+
+  return (
+    <>
+      {renderSlot ? renderSlot(visualContent) : visualContent}
 
       {onResizeStart && isEditable && (
         <>

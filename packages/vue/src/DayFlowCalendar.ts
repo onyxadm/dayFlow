@@ -53,7 +53,7 @@ export const DayFlowCalendar = defineComponent({
       storeUnsubscribe?.();
       renderer.value?.unmount();
 
-      const r = new CalendarRenderer(appInstance);
+      const r = new CalendarRenderer(appInstance, Object.keys(slots));
       renderer.value = r;
       r.setProps({ collapsedSafeAreaLeft: props.collapsedSafeAreaLeft });
       r.mount(container.value);
@@ -61,9 +61,6 @@ export const DayFlowCalendar = defineComponent({
       storeUnsubscribe = r.getCustomRenderingStore().subscribe(renderings => {
         customRenderings.value = [...renderings.values()];
       });
-
-      // Synchronize slot overrides
-      r.getCustomRenderingStore().setOverrides(Object.keys(slots));
     }
 
     watch(

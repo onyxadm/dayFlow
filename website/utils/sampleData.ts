@@ -29,6 +29,83 @@ const titles = [
   'Content Planning',
 ];
 
+const locations = [
+  'Conference Room A',
+  'Meeting Room 302',
+  'Zoom Meeting',
+  'Main Office, 4th Floor',
+  'Starbucks Coffee',
+  'Community Center',
+  'Innovation Hub',
+  'Building 5, Lab 2',
+];
+
+const eventDetails: Record<string, { description: string; location?: string }> =
+  {
+    'Product Sync': {
+      description: 'Sync up on the latest product roadmap and milestones.',
+      location: 'Room 101',
+    },
+    'Design Review': {
+      description:
+        'Review the new UI/UX designs for the upcoming mobile app release.',
+      location: 'Design Studio',
+    },
+    'Customer Call': {
+      description:
+        'Discussion with key clients regarding feature requests and feedback.',
+      location: 'Virtual',
+    },
+    'Weekly Planning': {
+      description: 'Plan tasks and priorities for the upcoming week.',
+      location: 'Main Hall',
+    },
+    'Deep Work': {
+      description: 'Focus time for intense development and problem solving.',
+      location: 'Quiet Zone',
+    },
+    'Code Review': {
+      description: 'Review pull requests and ensure code quality standards.',
+      location: 'Dev Corner',
+    },
+    Brainstorm: {
+      description: 'Ideation session for the next big feature.',
+      location: 'Whiteboard Room',
+    },
+    'Usability Test': {
+      description: 'Observe users interacting with the latest prototype.',
+      location: 'User Lab',
+    },
+    'Team Retro': {
+      description: 'Reflect on the past sprint and discuss improvements.',
+      location: 'Common Area',
+    },
+    'Partner Demo': {
+      description: 'Demonstrate our latest capabilities to potential partners.',
+      location: 'Executive Suite',
+    },
+    'Lunch & Learn': {
+      description: 'Educational session over lunch about new technologies.',
+      location: 'Cafeteria',
+    },
+    'Yoga Break': {
+      description: 'Stretch and relax with a quick yoga session.',
+      location: 'Wellness Room',
+    },
+    'Travel Block': {
+      description: 'Time allocated for travel and logistics.',
+      location: 'Airport Terminal',
+    },
+    'Hiring Interview': {
+      description: 'Interviewing candidates for the Senior Engineer position.',
+      location: 'HR Office',
+    },
+    'Content Planning': {
+      description: 'Plan the editorial calendar and upcoming blog posts.',
+      location: 'Marketing Hub',
+    },
+  };
+
 // Simple deterministic random number generator
 const createRandom = (seed: number) => {
   let s = seed;
@@ -48,6 +125,12 @@ const createTimedEvent = (
   index: number,
   randomInt: (min: number, max: number) => number
 ): Event => {
+  const title = titles[index % titles.length];
+  const details = eventDetails[title] || {
+    description: 'General event details.',
+    location: locations[index % locations.length],
+  };
+
   const startHour = randomInt(8, 18);
   const duration = Math.max(1, randomInt(1, 3));
 
@@ -69,10 +152,14 @@ const createTimedEvent = (
 
   return {
     id: `event-${index}`,
-    title: titles[index % titles.length],
+    title: title,
+    description: details.description,
     start,
     end,
     calendarId: calendarIds[index % calendarIds.length],
+    meta: {
+      location: details.location || locations[index % locations.length],
+    },
   };
 };
 
@@ -82,15 +169,25 @@ const createAllDayEvent = (
   index: number,
   calendarId: string,
   title: string
-): Event => ({
-  id: `all-day-${index}`,
-  title,
-  start,
-  end: start.add({ days: span }),
-  allDay: true,
-  calendarId,
-  icon: true,
-});
+): Event => {
+  const details = eventDetails[title] || {
+    description: 'All day event details.',
+    location: 'Various',
+  };
+  return {
+    id: `all-day-${index}`,
+    title,
+    description: details.description,
+    start,
+    end: start.add({ days: span }),
+    allDay: true,
+    calendarId,
+    icon: true,
+    meta: {
+      location: details.location || 'Multiple Locations',
+    },
+  };
+};
 
 const baseAllDayDefinitions: Array<{
   offset: number;
@@ -365,6 +462,36 @@ export const generateSampleEvents = (): Event[] => {
       // Ignore invalid dates (e.g. leap years edge cases in simple config)
     }
   });
+
+  return events;
+};
+
+export const generateMinimalSampleEvents = (): Event[] => {
+  const today = Temporal.Now.plainDateISO();
+  const windowStart = today.subtract({ days: 3 });
+  const events: Event[] = [];
+
+  const random = createRandom(54321);
+  const randomInt = createRandomInt(random);
+
+  for (let offset = 0; offset < 7; offset += 1) {
+    const date = windowStart.add({ days: offset });
+    const dayEvents = randomInt(1, 2);
+    for (let i = 0; i < dayEvents; i += 1) {
+      events.push(createTimedEvent(date, offset * 10 + i, randomInt));
+    }
+  }
+
+  // Add just a couple of all-day events
+  events.push(
+    createAllDayEvent(
+      today.subtract({ days: 1 }),
+      2,
+      999,
+      'team',
+      'Minimal Team Event'
+    )
+  );
 
   return events;
 };

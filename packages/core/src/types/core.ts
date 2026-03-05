@@ -8,6 +8,7 @@ import { Locale } from '@/locale/types';
 
 import { CalendarType, ThemeConfig, ThemeMode } from './calendarTypes';
 import { Event } from './event';
+import { EventLayout } from './layout';
 
 /** Generic type for framework-specific components */
 export type TComponent = AnyComponent<any, any>;
@@ -94,10 +95,29 @@ export interface CalendarCallbacks {
   onDismissUI?: () => void | Promise<void>;
 }
 
+export interface TitleBarSlotProps {
+  isCollapsed: boolean;
+  toggleCollapsed: () => void;
+}
+
+export interface CreateCalendarDialogColorPickerProps {
+  color: string;
+  onChange: (color: { hex: string }) => void;
+  onAccept?: () => void;
+  onCancel?: () => void;
+  styles?: any;
+}
+
+export interface ColorPickerProps {
+  color: string;
+  onChange: (color: { hex: string }) => void;
+  onChangeComplete?: (color: { hex: string }) => void;
+}
+
 export interface CreateCalendarDialogProps {
   onClose: () => void;
   onCreate: (calendar: CalendarType) => void;
-  colorPickerMode?: 'default' | 'custom';
+  app: ICalendarApp;
 }
 
 export interface CalendarHeaderProps {
@@ -116,6 +136,17 @@ export interface CalendarHeaderProps {
   isEditable?: boolean;
   /** Left safe area padding (px) to avoid overlapping with traffic light buttons in macMode */
   safeAreaLeft?: number;
+}
+
+/** Args passed to all eventContent* slot renderers. */
+export interface EventContentSlotArgs {
+  event: Event;
+  viewType: ViewType;
+  isAllDay: boolean;
+  isMobile: boolean;
+  isSelected: boolean;
+  isDragging: boolean;
+  layout?: EventLayout;
 }
 
 /**
@@ -164,6 +195,7 @@ export interface CalendarAppState {
   highlightedEventId?: string | null;
   selectedEventId?: string | null;
   readOnly: boolean | ReadOnlyConfig;
+  overrides: string[];
 }
 
 /**
@@ -264,6 +296,9 @@ export interface ICalendarApp {
 
   // Update configuration dynamically
   updateConfig: (config: Partial<CalendarAppConfig>) => void;
+
+  // Overrides management
+  setOverrides: (overrides: string[]) => void;
 
   // Theme management
   setTheme: (mode: ThemeMode) => void;

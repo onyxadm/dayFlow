@@ -977,7 +977,13 @@ export const useDragHandlers = (
       if ((drag.mode === 'resize' || drag.mode === 'create') && !isEditable)
         return;
 
-      document.body.style.cursor = 'default';
+      document.body.style.cursor = '';
+      document.body.classList.remove(
+        'df-drag-active',
+        'df-cursor-ns-resize',
+        'df-cursor-ew-resize',
+        'df-cursor-grabbing'
+      );
 
       // If dragging but threshold not met (indicator not visible), treat as click/cancel
       if (

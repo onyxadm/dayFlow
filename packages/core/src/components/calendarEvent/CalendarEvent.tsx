@@ -306,13 +306,24 @@ const CalendarEvent = ({
   const eventContentSlotArgs = useMemo(
     () => ({
       event,
+      viewType,
       isAllDay,
       isMobile,
-      isMonthView: viewType === ViewType.MONTH,
+      isSelected: isEventSelected,
+      isDragging: isBeingDragged,
       segment,
       layout,
     }),
-    [event, isAllDay, isMobile, viewType, segment, layout]
+    [
+      event,
+      viewType,
+      isAllDay,
+      isMobile,
+      isEventSelected,
+      isBeingDragged,
+      segment,
+      layout,
+    ]
   );
 
   // Stable contentRenderer for EventDetailPanelWithContent
@@ -392,9 +403,9 @@ const CalendarEvent = ({
             ? '#fff'
             : getEventTextColor(calendarId, calendarRegistry),
         }}
-        onClick={isTouchEnabled ? undefined : handleClick}
-        onContextMenu={isTouchEnabled ? undefined : handleContextMenu}
-        onDblClick={isTouchEnabled ? undefined : handleDoubleClick}
+        onClick={handleClick}
+        onContextMenu={handleContextMenu}
+        onDblClick={handleDoubleClick}
         onMouseDown={e => {
           if (!isTouchEnabled) setIsPressed(true);
           if (onMoveStart) {
@@ -429,6 +440,7 @@ const CalendarEvent = ({
         <EventContent
           event={event}
           viewType={viewType}
+          isAllDay={isAllDay}
           isMultiDay={isMultiDay}
           segment={segment}
           yearSegment={yearSegment}

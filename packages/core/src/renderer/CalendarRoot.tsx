@@ -27,6 +27,7 @@ import {
   ICalendarApp,
   TNode,
   Event as CalendarEvent,
+  TitleBarSlotProps,
 } from '@/types';
 import { ThemeMode } from '@/types/calendarTypes';
 import { CalendarSearchProps } from '@/types/search';
@@ -46,12 +47,7 @@ interface CalendarRootProps {
   meta?: Record<string, unknown>;
   customMessages?: LocaleMessages;
   search?: CalendarSearchProps;
-  titleBarSlot?:
-    | TNode
-    | ((context: {
-        isCollapsed: boolean;
-        toggleCollapsed: () => void;
-      }) => TNode);
+  titleBarSlot?: TNode | ((context: TitleBarSlotProps) => TNode);
   collapsedSafeAreaLeft?: number;
 }
 
@@ -374,6 +370,7 @@ export const CalendarRoot = ({
           {sidebar.extraContent}
           {quickCreate.isCreateCalendarOpen && (
             <CreateCalendarDialog
+              app={app}
               onClose={() => quickCreate.setIsCreateCalendarOpen(false)}
               onCreate={calendar => {
                 app.createCalendar(calendar);

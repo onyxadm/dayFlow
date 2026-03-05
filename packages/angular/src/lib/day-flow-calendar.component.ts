@@ -16,6 +16,13 @@ import type {
   CalendarAppConfig,
   UseCalendarAppReturn,
   CustomRendering,
+  EventDetailContentProps,
+  EventDetailDialogProps,
+  CreateCalendarDialogProps,
+  TitleBarSlotProps,
+  EventContentSlotArgs,
+  ColorPickerProps,
+  CreateCalendarDialogColorPickerProps,
 } from '@dayflow/core';
 import { CalendarRenderer, CalendarApp } from '@dayflow/core';
 
@@ -49,14 +56,21 @@ export class DayFlowCalendarComponent
   @Input() calendar!: ICalendarApp | UseCalendarAppReturn | CalendarAppConfig;
 
   // Templates for custom content injection
-  @Input() eventContent?: TemplateRef<unknown>;
-  @Input() eventDetailContent?: TemplateRef<unknown>;
-  @Input() eventDetailDialog?: TemplateRef<unknown>;
-  @Input() headerContent?: TemplateRef<unknown>;
-  @Input() createCalendarDialog?: TemplateRef<unknown>;
-  @Input() titleBarSlot?: TemplateRef<unknown>;
-  @Input() colorPicker?: TemplateRef<unknown>;
-  @Input() colorPickerWrapper?: TemplateRef<unknown>;
+  @Input() eventContentDay?: TemplateRef<EventContentSlotArgs>;
+  @Input() eventContentWeek?: TemplateRef<EventContentSlotArgs>;
+  @Input() eventContentMonth?: TemplateRef<EventContentSlotArgs>;
+  @Input() eventContentYear?: TemplateRef<EventContentSlotArgs>;
+  @Input() eventContentAllDayDay?: TemplateRef<EventContentSlotArgs>;
+  @Input() eventContentAllDayWeek?: TemplateRef<EventContentSlotArgs>;
+  @Input() eventContentAllDayMonth?: TemplateRef<EventContentSlotArgs>;
+  @Input() eventContentAllDayYear?: TemplateRef<EventContentSlotArgs>;
+  @Input() eventDetailContent?: TemplateRef<EventDetailContentProps>;
+  @Input() eventDetailDialog?: TemplateRef<EventDetailDialogProps>;
+  @Input() createCalendarDialog?: TemplateRef<CreateCalendarDialogProps>;
+  @Input() titleBarSlot?: TemplateRef<TitleBarSlotProps>;
+  @Input() colorPicker?: TemplateRef<ColorPickerProps>;
+  @Input()
+  createCalendarDialogColorPicker?: TemplateRef<CreateCalendarDialogColorPickerProps>;
   @Input() collapsedSafeAreaLeft?: number;
 
   @ViewChild('container') container!: ElementRef<HTMLElement>;
@@ -102,10 +116,33 @@ export class DayFlowCalendarComponent
       this.internalApp = undefined;
       this.destroyCalendar();
       this.initCalendar();
-    } else if (changes['collapsedSafeAreaLeft'] && this.renderer) {
-      this.renderer.setProps({
-        collapsedSafeAreaLeft: this.collapsedSafeAreaLeft,
-      });
+    } else if (this.renderer) {
+      if (changes['collapsedSafeAreaLeft']) {
+        this.renderer.setProps({
+          collapsedSafeAreaLeft: this.collapsedSafeAreaLeft,
+        });
+      }
+      const slotKeys = [
+        'eventContentDay',
+        'eventContentWeek',
+        'eventContentMonth',
+        'eventContentYear',
+        'eventContentAllDayDay',
+        'eventContentAllDayWeek',
+        'eventContentAllDayMonth',
+        'eventContentAllDayYear',
+        'eventDetailContent',
+        'eventDetailDialog',
+        'createCalendarDialog',
+        'titleBarSlot',
+        'colorPicker',
+        'createCalendarDialogColorPicker',
+      ];
+      if (slotKeys.some(key => changes[key])) {
+        const activeOverrides = this.getActiveOverrides();
+        this.renderer.getCustomRenderingStore().setOverrides(activeOverrides);
+        this.app.setOverrides(activeOverrides);
+      }
     }
   }
 
@@ -118,7 +155,7 @@ export class DayFlowCalendarComponent
       return;
     }
 
-    this.renderer = new CalendarRenderer(this.app);
+    this.renderer = new CalendarRenderer(this.app, this.getActiveOverrides());
     this.renderer.setProps({
       collapsedSafeAreaLeft: this.collapsedSafeAreaLeft,
     });
@@ -130,6 +167,28 @@ export class DayFlowCalendarComponent
         this.customRenderings = [...renderings.values()];
         this.cdr.markForCheck();
       });
+  }
+
+  private getActiveOverrides(): string[] {
+    const templateInputs: Record<string, TemplateRef<unknown> | undefined> = {
+      eventContentDay: this.eventContentDay,
+      eventContentWeek: this.eventContentWeek,
+      eventContentMonth: this.eventContentMonth,
+      eventContentYear: this.eventContentYear,
+      eventContentAllDayDay: this.eventContentAllDayDay,
+      eventContentAllDayWeek: this.eventContentAllDayWeek,
+      eventContentAllDayMonth: this.eventContentAllDayMonth,
+      eventContentAllDayYear: this.eventContentAllDayYear,
+      eventDetailContent: this.eventDetailContent,
+      eventDetailDialog: this.eventDetailDialog,
+      createCalendarDialog: this.createCalendarDialog,
+      titleBarSlot: this.titleBarSlot,
+      colorPicker: this.colorPicker,
+      createCalendarDialogColorPicker: this.createCalendarDialogColorPicker,
+    };
+    return Object.keys(templateInputs).filter(
+      key => templateInputs[key] !== null && templateInputs[key] !== undefined
+    );
   }
 
   private destroyCalendar() {
@@ -146,17 +205,35 @@ export class DayFlowCalendarComponent
   getTemplate(name: string): TemplateRef<unknown> | null {
     // Switch avoids allocating a new Record on every change-detection cycle.
     switch (name) {
-      case 'eventContent': {
-        return this.eventContent ?? null;
+      case 'eventContentDay': {
+        return this.eventContentDay ?? null;
+      }
+      case 'eventContentWeek': {
+        return this.eventContentWeek ?? null;
+      }
+      case 'eventContentMonth': {
+        return this.eventContentMonth ?? null;
+      }
+      case 'eventContentYear': {
+        return this.eventContentYear ?? null;
+      }
+      case 'eventContentAllDayDay': {
+        return this.eventContentAllDayDay ?? null;
+      }
+      case 'eventContentAllDayWeek': {
+        return this.eventContentAllDayWeek ?? null;
+      }
+      case 'eventContentAllDayMonth': {
+        return this.eventContentAllDayMonth ?? null;
+      }
+      case 'eventContentAllDayYear': {
+        return this.eventContentAllDayYear ?? null;
       }
       case 'eventDetailContent': {
         return this.eventDetailContent ?? null;
       }
       case 'eventDetailDialog': {
         return this.eventDetailDialog ?? null;
-      }
-      case 'headerContent': {
-        return this.headerContent ?? null;
       }
       case 'createCalendarDialog': {
         return this.createCalendarDialog ?? null;
@@ -167,8 +244,8 @@ export class DayFlowCalendarComponent
       case 'colorPicker': {
         return this.colorPicker ?? null;
       }
-      case 'colorPickerWrapper': {
-        return this.colorPickerWrapper ?? null;
+      case 'createCalendarDialogColorPicker': {
+        return this.createCalendarDialogColorPicker ?? null;
       }
       default: {
         return null;

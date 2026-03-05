@@ -30,13 +30,18 @@ const PICKER_DEFAULT_COLORS = [
 export const CreateCalendarDialog = ({
   onClose,
   onCreate,
-  colorPickerMode = 'default',
+  app,
 }: CreateCalendarDialogProps) => {
   const { t } = useLocale();
   const { effectiveTheme } = useTheme();
   const [name, setName] = useState('');
 
-  // State for default mode (react-color)
+  // Detect if custom color picker slot is provided
+  const hasCustomPicker = app.state.overrides.includes(
+    'createCalendarDialogColorPicker'
+  );
+
+  // State for custom mode
   const [customSelectedColor, setCustomSelectedColor] = useState(
     PICKER_DEFAULT_COLORS[
       Math.floor(Math.random() * PICKER_DEFAULT_COLORS.length)
@@ -80,7 +85,9 @@ export const CreateCalendarDialog = ({
     if (!name.trim()) return;
 
     let hex: string;
-    if (colorPickerMode === 'default') {
+    if (hasCustomPicker) {
+      hex = customSelectedColor;
+    } else {
       hex =
         blossomSelectedColor?.hex ??
         hslToHex(
@@ -88,8 +95,6 @@ export const CreateCalendarDialog = ({
           initialColorData.saturation,
           initialColorData.lightness
         );
-    } else {
-      hex = customSelectedColor;
     }
 
     const { colors, darkColors } = getCalendarColorsForHex(hex);
@@ -170,14 +175,113 @@ export const CreateCalendarDialog = ({
         onClick={e => e.stopPropagation()}
       >
         <h2
-          className={`text-lg font-semibold text-gray-900 dark:text-white ${colorPickerMode === 'default' ? 'mb-6' : 'mb-4'}`}
+          className={`text-lg font-semibold text-gray-900 dark:text-white ${hasCustomPicker ? 'mb-4' : 'mb-6'}`}
         >
           {t('createCalendar')}
         </h2>
 
         <form onSubmit={handleSubmit}>
-          {colorPickerMode === 'default' ? (
-            // Blossom mode UI
+          {hasCustomPicker ? (
+            // 3-line layout (Automatically triggered when createCalendarDialogColorPicker slot is provided)
+            <>
+              <div className='mb-4'>
+                <div className='flex items-center gap-3'>
+                  <div
+                    className='h-9 w-9 rounded-md border border-gray-200 shadow-sm dark:border-gray-600'
+                    style={{ backgroundColor: customSelectedColor }}
+                  />
+                  <input
+                    id='custom-calendar-name'
+                    name='calendar-name'
+                    type='text'
+                    value={name}
+                    onChange={e =>
+                      setName((e.target as HTMLInputElement).value)
+                    }
+                    className='w-full flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-gray-900 shadow-sm transition focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100'
+                    placeholder={t('calendarNamePlaceholder')}
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <div className='mb-6'>
+                <div className='mb-4 grid grid-cols-7 gap-4'>
+                  {PICKER_DEFAULT_COLORS.map(color => (
+                    <button
+                      key={color}
+                      type='button'
+                      className={`h-7 w-7 rounded-full border border-gray-200 transition-transform hover:scale-110 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:focus:ring-offset-slate-800 ${
+                        customSelectedColor === color
+                          ? 'scale-110 ring-2 ring-primary ring-offset-2 dark:ring-offset-slate-800'
+                          : ''
+                      }`}
+                      style={{ backgroundColor: color }}
+                      onClick={() => setCustomSelectedColor(color)}
+                    />
+                  ))}
+                </div>
+
+                <div className='relative'>
+                  <button
+                    type='button'
+                    onClick={handleOpenPicker}
+                    className='flex w-full items-center gap-2 rounded-md border border-slate-200 px-2 py-1 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800'
+                  >
+                    {t('customColor')}
+                  </button>
+
+                  {showPicker && (
+                    <div
+                      className='fixed inset-0 z-10001 flex items-center justify-center bg-black/40 backdrop-blur-sm'
+                      onClick={handleCancel}
+                    >
+                      <div
+                        className='animate-in fade-in zoom-in-95 relative'
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <ContentSlot
+                          generatorName='createCalendarDialogColorPicker'
+                          generatorArgs={{
+                            color: customSelectedColor,
+                            onChange: handleColorChange,
+                            onAccept: handleAccept,
+                            onCancel: handleCancel,
+                            styles: pickerStyles,
+                          }}
+                          defaultContent={
+                            <div className='rounded-lg border border-slate-200 bg-white p-4 shadow-2xl dark:border-slate-700 dark:bg-slate-900'>
+                              <DefaultColorPicker
+                                color={customSelectedColor}
+                                onChange={handleColorChange}
+                              />
+                              <div className='mt-4 flex justify-end gap-2 border-t pt-3 dark:border-slate-700'>
+                                <button
+                                  type='button'
+                                  onClick={handleCancel}
+                                  className='rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-gray-100 dark:border-gray-600 dark:text-slate-300 dark:hover:bg-gray-800'
+                                >
+                                  {t('cancel')}
+                                </button>
+                                <button
+                                  type='button'
+                                  onClick={handleAccept}
+                                  className='rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-sm hover:opacity-90'
+                                >
+                                  OK
+                                </button>
+                              </div>
+                            </div>
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            // Blossom mode UI (Default when no slot provided)
             <div className='mb-8 flex items-center gap-4'>
               <div className='flex-1'>
                 <input
@@ -206,98 +310,6 @@ export const CreateCalendarDialog = ({
                 </div>
               </div>
             </div>
-          ) : (
-            // Custom mode UI (react-color)
-            <>
-              <div className='mb-4'>
-                <div className='flex items-center gap-3'>
-                  <div
-                    className='h-9 w-9 rounded-md border border-gray-200 shadow-sm dark:border-gray-600'
-                    style={{ backgroundColor: customSelectedColor }}
-                  />
-                  <input
-                    id='custom-calendar-name'
-                    name='calendar-name'
-                    type='text'
-                    value={name}
-                    onChange={e =>
-                      setName((e.target as HTMLInputElement).value)
-                    }
-                    className='w-full flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-gray-900 shadow-sm transition focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100'
-                    placeholder={t('calendarNamePlaceholder')}
-                    autoFocus
-                  />
-                </div>
-              </div>
-
-              <div className='mb-6'>
-                <div className='grid grid-cols-7 gap-6'>
-                  {PICKER_DEFAULT_COLORS.map(color => (
-                    <button
-                      key={color}
-                      type='button'
-                      className={`h-6 w-6 rounded-full border border-gray-200 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:focus:ring-offset-slate-800 ${
-                        customSelectedColor === color
-                          ? 'ring-2 ring-primary ring-offset-2 dark:ring-offset-slate-800'
-                          : ''
-                      }`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => setCustomSelectedColor(color)}
-                    />
-                  ))}
-                </div>
-
-                <div className='relative mt-2'>
-                  <button
-                    type='button'
-                    onClick={handleOpenPicker}
-                    className='flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm text-slate-700 transition-colors hover:bg-slate-100 focus:bg-slate-100 focus:outline-none dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:bg-slate-800'
-                  >
-                    {t('customColor')}
-                  </button>
-
-                  {showPicker && (
-                    <div className='absolute top-full left-0 z-10001 mt-2'>
-                      <ContentSlot
-                        generatorName='colorPickerWrapper'
-                        generatorArgs={{
-                          variant: 'photoshop',
-                          color: customSelectedColor,
-                          onChange: handleColorChange,
-                          onAccept: handleAccept,
-                          onCancel: handleCancel,
-                          styles: pickerStyles,
-                        }}
-                        defaultContent={
-                          <div>
-                            <DefaultColorPicker
-                              color={customSelectedColor}
-                              onChange={handleColorChange}
-                            />
-                            {/* <div className="mt-2 flex justify-end gap-2">
-                              <button
-                                type="button"
-                                onClick={handleCancel}
-                                className="px-2 py-1 text-xs border border-gray-200 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-                              >
-                                {t('cancel')}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={handleAccept}
-                                className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded hover:opacity-90"
-                              >
-                                OK
-                              </button>
-                            </div> */}
-                          </div>
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
           )}
 
           <div className='flex justify-end space-x-2'>

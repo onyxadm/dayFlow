@@ -144,7 +144,7 @@ export const getWebsiteCalendars = (): CalendarType[] =>
       eventColor: `${item.color}30`,
       eventSelectedColor: `${item.color}`,
       lineColor: item.color,
-      textColor: item.color,
+      textColor: item.colors.textColor,
     },
     isVisible: true,
   }));

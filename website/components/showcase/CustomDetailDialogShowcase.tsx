@@ -2,10 +2,7 @@
 
 import {
   Event,
-  EventDetailContentRenderer,
-  EventDetailDialogRenderer,
   CalendarType,
-  EventDetailContentProps,
   EventDetailDialogProps,
   createYearView,
 } from '@dayflow/core';
@@ -32,25 +29,9 @@ import React, { useMemo, useCallback } from 'react';
 import { Temporal } from 'temporal-polyfill';
 
 import { CALENDAR_SIDE_PANEL, getWebsiteCalendars } from '@/utils/palette';
-import { generateSampleEvents } from '@/utils/sampleData';
+import { generateMinimalSampleEvents } from '@/utils/sampleData';
 
 import '@dayflow/core/dist/styles.css';
-
-type SwitcherMode = 'buttons' | 'select';
-
-interface DemoCalendarProps {
-  switcherMode?: SwitcherMode;
-  customDetailPanelContent?: EventDetailContentRenderer;
-  customEventDetailDialog?: EventDetailDialogRenderer;
-  useEventDetailDialog?: boolean;
-  className?: string;
-}
-
-interface FeatureCardProps {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}
 
 const cloneCalendarTypes = (): CalendarType[] => getWebsiteCalendars();
 
@@ -115,49 +96,17 @@ const enrichEventsWithMeta = (sourceEvents: Event[]): Event[] =>
     };
   });
 
-const formatTemporal = (value: Event['start']) => {
-  try {
-    return value.toString();
-  } catch {
-    return String(value);
-  }
-};
-
-const FeatureCard: React.FC<FeatureCardProps> = ({
-  title,
-  description,
-  children,
-}) => (
-  <div className='overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900'>
-    <div className='border-b border-slate-100 bg-slate-50 px-6 py-5 dark:border-slate-800 dark:bg-slate-800/60'>
-      <h3 className='text-xl font-semibold text-slate-900 dark:text-slate-100'>
-        {title}
-      </h3>
-      <p className='mt-2 text-sm text-slate-600 dark:text-slate-400'>
-        {description}
-      </p>
-    </div>
-    <div className='bg-white p-6 dark:bg-slate-900'>{children}</div>
-  </div>
-);
-
 const useDemoCalendar = ({
-  switcherMode,
-  events,
   useEventDetailDialog = false,
 }: {
-  switcherMode?: SwitcherMode;
-  events?: Event[];
   useEventDetailDialog?: boolean;
 }) => {
   const { resolvedTheme } = useTheme();
 
-  const memoizedEvents = useMemo(() => {
-    if (events) {
-      return events;
-    }
-    return enrichEventsWithMeta(generateSampleEvents());
-  }, [events]);
+  const memoizedEvents = useMemo(
+    () => enrichEventsWithMeta(generateMinimalSampleEvents()),
+    []
+  );
 
   const views = useMemo(
     () => [
@@ -192,143 +141,16 @@ const useDemoCalendar = ({
     calendars,
     defaultView: ViewType.MONTH,
     initialDate: new Date(),
-    switcherMode: switcherMode ?? 'buttons',
+    switcherMode: 'buttons',
     theme: { mode: themeMode },
     useEventDetailDialog,
   });
 };
 
-const DemoCalendar: React.FC<DemoCalendarProps> = ({
-  switcherMode,
-  // customDetailPanelContent,
-  // customEventDetailDialog,
-  useEventDetailDialog = false,
-}) => {
-  const calendar = useDemoCalendar({ switcherMode, useEventDetailDialog });
-
-  return (
-    <div className='rounded-xl bg-white dark:border-slate-700 dark:bg-slate-900'>
-      <DayFlowCalendar
-        calendar={calendar}
-        // eventDetailContent={customDetailPanelContent}
-        // eventDetailDialog={customEventDetailDialog}
-      />
-    </div>
-  );
-};
-
-export const SwitcherModeShowcase: React.FC = () => (
-  <div className='flex flex-col gap-10'>
-    <div>
-      <DemoCalendar switcherMode='buttons' className='h-120' />
-    </div>
-    <div>
-      <DemoCalendar switcherMode='select' className='h-120' />
-    </div>
-  </div>
-);
-
-export const CustomDetailPanelShowcase: React.FC = () => {
-  const detailPanel: EventDetailContentRenderer = useCallback(
-    ({
-      event,
-      onEventDelete,
-      onEventUpdate,
-      onClose,
-    }: EventDetailContentProps) => {
-      const meta = event.meta ?? {};
-      const isFavorite = Boolean(meta.favorite);
-
-      const handleToggleFavorite = () => {
-        const updatedEvent: Event = {
-          ...event,
-          meta: {
-            ...meta,
-            favorite: !isFavorite,
-          },
-        };
-        onEventUpdate(updatedEvent);
-      };
-
-      const handleDelete = () => {
-        onEventDelete(event.id);
-        onClose?.();
-      };
-
-      return (
-        <div className='space-y-3'>
-          <div className='flex items-start justify-between'>
-            <div>
-              <h5 className='text-base font-semibold text-slate-900 dark:text-slate-100'>
-                {event.title}
-              </h5>
-              <p className='mt-0.5 text-xs text-slate-500 dark:text-slate-400'>
-                {formatTemporal(event.start)} → {formatTemporal(event.end)}
-              </p>
-            </div>
-            {isFavorite && (
-              <span className='text-sm font-semibold text-amber-500'>
-                ★ Favorite
-              </span>
-            )}
-          </div>
-
-          {event.description && (
-            <p className='text-sm leading-relaxed text-slate-600 dark:text-slate-300'>
-              {event.description}
-            </p>
-          )}
-
-          <div className='grid grid-cols-2 gap-3 text-xs text-slate-500 dark:text-slate-400'>
-            <div>
-              <span className='font-medium text-slate-700 dark:text-slate-200'>
-                Owner:
-              </span>
-              <span>{`${meta.owner ?? 'Unassigned'}`}</span>
-            </div>
-            <div>
-              <span className='font-medium text-slate-700 dark:text-slate-200'>
-                Location:
-              </span>
-              <span>{`${meta.location ?? 'TBD'}`}</span>
-            </div>
-          </div>
-
-          <div className='flex justify-end gap-2 pt-2'>
-            <button
-              type='button'
-              onClick={handleToggleFavorite}
-              className='rounded-md border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-600 transition-colors hover:bg-amber-50 dark:border-amber-600 dark:bg-amber-900/30 dark:text-amber-200'
-            >
-              {isFavorite ? 'Remove favorite' : 'Add to favorites'}
-            </button>
-            <button
-              type='button'
-              onClick={handleDelete}
-              className='rounded-md border border-red-300 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:bg-red-900/30 dark:text-red-200'
-            >
-              Delete event
-            </button>
-          </div>
-        </div>
-      );
-    },
-    []
-  );
-
-  return (
-    <div>
-      <DemoCalendar customDetailPanelContent={detailPanel} className='h-130' />
-    </div>
-  );
-};
-
-export const EventDialogShowcase: React.FC = () => (
-  <DemoCalendar className='h-130' useEventDetailDialog={true} />
-);
-
 export const CustomDetailDialogShowcase: React.FC = () => {
-  const customDialog: EventDetailDialogRenderer = useCallback(
+  const calendar = useDemoCalendar({ useEventDetailDialog: true });
+
+  const customDialog = useCallback(
     ({
       event,
       isOpen,
@@ -774,39 +596,10 @@ export const CustomDetailDialogShowcase: React.FC = () => {
   );
 
   return (
-    <div className='mt-2'>
-      <DemoCalendar
-        customEventDetailDialog={customDialog}
-        useEventDetailDialog={true}
-        className='h-130'
-      />
+    <div className='rounded-xl bg-white dark:border-slate-700 dark:bg-slate-900'>
+      <DayFlowCalendar calendar={calendar} eventDetailDialog={customDialog} />
     </div>
   );
 };
 
-export const FeatureShowcase: React.FC = () => (
-  <div className='space-y-10'>
-    <FeatureCard
-      title='View Switcher Modes'
-      description='Switch between button and select based headers with the switcherMode prop.'
-    >
-      <SwitcherModeShowcase />
-    </FeatureCard>
-
-    <FeatureCard
-      title='Custom Event Detail Content'
-      description='Replace the default detail panel body with bespoke business information and actions.'
-    >
-      <CustomDetailPanelShowcase />
-    </FeatureCard>
-
-    <FeatureCard
-      title='Custom Event Detail Dialog'
-      description='Open a fully custom dialog when an event is selected, keeping parity with your modal system.'
-    >
-      <CustomDetailDialogShowcase />
-    </FeatureCard>
-  </div>
-);
-
-export default FeatureShowcase;
+export default CustomDetailDialogShowcase;

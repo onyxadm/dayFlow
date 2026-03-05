@@ -58,6 +58,7 @@ export class CalendarApp implements ICalendarApp {
       highlightedEventId: null,
       selectedEventId: null,
       readOnly: config.readOnly || false,
+      overrides: [],
     };
 
     this.callbacks = config.callbacks || {};
@@ -802,6 +803,12 @@ export class CalendarApp implements ICalendarApp {
       this.triggerRender();
       this.notify();
     }
+  };
+
+  setOverrides = (overrides: string[]): void => {
+    this.state.overrides = overrides;
+    this.triggerRender();
+    this.notify();
   };
 
   // Theme management

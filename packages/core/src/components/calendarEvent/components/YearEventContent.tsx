@@ -1,3 +1,5 @@
+import { ComponentChildren } from 'preact';
+
 import { getEventIcon } from '@/components/monthView/util';
 import { YearMultiDaySegment } from '@/components/yearView/utils';
 import { Event } from '@/types';
@@ -13,6 +15,8 @@ interface YearEventContentProps {
     event: Event,
     direction: string
   ) => void;
+  /** Optional slot renderer — receives the default visual content and wraps it in a ContentSlot */
+  renderSlot?: (defaultContent: ComponentChildren) => ComponentChildren;
 }
 
 const YearEventContent = ({
@@ -21,6 +25,7 @@ const YearEventContent = ({
   isEditable,
   onMoveStart,
   onResizeStart,
+  renderSlot,
 }: YearEventContentProps) => {
   const isAllDay = !!event.allDay;
   const calendarId = event.calendarId || 'blue';
@@ -90,7 +95,7 @@ const YearEventContent = ({
 
           <div className='min-w-0 flex-1'>
             <div
-              className='df-year-event-title overflow-hidden text-[12px] leading-none whitespace-nowrap'
+              className='df-year-event-title overflow-hidden text-[12px] leading-[16px] whitespace-nowrap'
               style={{
                 maskImage:
                   'linear-gradient(to right, black 70%, transparent 100%)',
@@ -137,7 +142,7 @@ const YearEventContent = ({
           </div>
         )}
         <span
-          className='df-year-event-title block w-full overflow-hidden text-[12px] leading-none font-medium whitespace-nowrap'
+          className='df-year-event-title block w-full overflow-hidden text-[12px] leading-[16px] font-medium whitespace-nowrap'
           style={{
             maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
             WebkitMaskImage:
@@ -153,7 +158,7 @@ const YearEventContent = ({
   return (
     <>
       {renderResizeHandle('left')}
-      {renderContent()}
+      {renderSlot ? renderSlot(renderContent()) : renderContent()}
       {renderResizeHandle('right')}
     </>
   );

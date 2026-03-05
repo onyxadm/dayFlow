@@ -5,7 +5,7 @@ import { CustomRenderingContext } from './CustomRenderingContext';
 import { CustomRenderingStore } from './CustomRenderingStore';
 
 interface ContentSlotProps {
-  generatorName: string; // e.g. 'eventContent'
+  generatorName: string | null; // e.g. 'eventContent'
   generatorArgs?: unknown; // e.g. { event, view }
   defaultContent?: ComponentChildren; // Preact vnode as fallback
   store?: CustomRenderingStore | null;
@@ -39,7 +39,7 @@ export function ContentSlot({
 
   // Register/Unregister the container once
   useEffect(() => {
-    if (!containerRef.current || !store) return;
+    if (!containerRef.current || !store || !generatorName) return;
 
     const id = idRef.current!;
     store.register({
@@ -58,11 +58,11 @@ export function ContentSlot({
       store.unregister(id);
       unsubscribe();
     };
-  }, [store]); // Only re-run if store changes
+  }, [store, generatorName]); // Re-run if store or generatorName changes
 
   // Update args when they change, without unregistering
   useEffect(() => {
-    if (!store || !idRef.current) return;
+    if (!store || !idRef.current || !generatorName) return;
 
     // Check if actually different to avoid redundant notifications
     const id = idRef.current;
@@ -74,9 +74,11 @@ export function ContentSlot({
     });
   }, [generatorName, generatorArgs]);
 
-  const isEventSlot = generatorName === 'eventContent';
+  const isEventSlot = generatorName?.startsWith('eventContent');
   const isSidebarSlot = generatorName === 'sidebar';
-  const isOverridden = store?.isOverridden(generatorName);
+  const isOverridden = generatorName
+    ? store?.isOverridden(generatorName)
+    : false;
 
   return (
     <div

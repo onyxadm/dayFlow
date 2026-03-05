@@ -236,7 +236,7 @@ export const allDayCell =
  * Base event style
  */
 export const baseEvent =
-  'df-event calendar-event select-none pointer-events-auto px-0.5';
+  'df-event calendar-event select-none pointer-events-auto';
 
 /**
  * Event shadow
@@ -278,7 +278,7 @@ export const monthAllDayContent =
  * MonthView regular event content
  */
 export const monthRegularContent =
-  'text-xs cursor-pointer flex items-center justify-between';
+  'text-xs cursor-pointer flex items-center justify-between px-0.5';
 
 /**
  * Event title (small)

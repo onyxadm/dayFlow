@@ -45,9 +45,11 @@ const DefaultCalendarSidebar = ({
   editingCalendarId: propEditingCalendarId,
   setEditingCalendarId: propSetEditingCalendarId,
   onCreateCalendar,
-  colorPickerMode = 'default',
 }: CalendarSidebarRenderProps) => {
   const { t } = useLocale();
+
+  // Detect if custom color picker slot is provided
+  const hasCustomPicker = app.state.overrides.includes('colorPicker');
 
   const [localEditingCalendarId, setLocalEditingCalendarId] = useState<
     string | null
@@ -585,45 +587,19 @@ const DefaultCalendarSidebar = ({
             }}
           >
             <div
-              className='absolute flex items-center justify-center'
+              className='absolute'
               style={{
                 top: customColorPicker.y,
                 left: customColorPicker.x,
-                transform: 'translate(280%, -50%)',
+                zIndex: 10002,
+                transform: 'translate(40px, -50%)', // Move it to the right of the checkbox/dot
               }}
               onMouseDown={e => e.stopPropagation()}
             >
-              {colorPickerMode === 'custom' ? (
-                <BlossomColorPicker
-                  defaultValue={customColorPicker.initialColor}
-                  coreSize={28}
-                  petalSize={28}
-                  initialExpanded={true}
-                  adaptivePositioning={true}
-                  openOnHover={false}
-                  onChange={color => {
-                    const { colors, darkColors } = getCalendarColorsForHex(
-                      color.hex
-                    );
-                    app.updateCalendar(
-                      customColorPicker.calendarId,
-                      {
-                        colors,
-                        darkColors,
-                      },
-                      true
-                    );
-                  }}
-                  onCollapse={() => {
-                    app.updateCalendar(customColorPicker.calendarId, {});
-                    setCustomColorPicker(null);
-                  }}
-                />
-              ) : (
+              {hasCustomPicker ? (
                 <ContentSlot
                   generatorName='colorPicker'
                   generatorArgs={{
-                    variant: 'sketch', // Pending: change name
                     color: customColorPicker.currentColor,
                     onChange: (color: { hex: string }) => {
                       setCustomColorPicker(prev =>
@@ -652,30 +628,57 @@ const DefaultCalendarSidebar = ({
                     },
                   }}
                   defaultContent={
-                    <DefaultColorPicker
-                      color={customColorPicker.currentColor}
-                      onChange={(color, isPending) => {
-                        setCustomColorPicker(prev =>
-                          prev ? { ...prev, currentColor: color.hex } : null
-                        );
-                        const { colors, darkColors } = getCalendarColorsForHex(
-                          color.hex
-                        );
-                        app.updateCalendar(
-                          customColorPicker.calendarId,
-                          {
-                            colors,
-                            darkColors,
-                          },
-                          isPending
-                        );
-                      }}
-                      onClose={() => {
-                        app.updateCalendar(customColorPicker.calendarId, {});
-                        setCustomColorPicker(null);
-                      }}
-                    />
+                    <div className='rounded-lg border border-gray-200 bg-white p-3 shadow-xl dark:border-gray-700 dark:bg-slate-900'>
+                      <DefaultColorPicker
+                        color={customColorPicker.currentColor}
+                        onChange={(color, isPending) => {
+                          setCustomColorPicker(prev =>
+                            prev ? { ...prev, currentColor: color.hex } : null
+                          );
+                          const { colors, darkColors } =
+                            getCalendarColorsForHex(color.hex);
+                          app.updateCalendar(
+                            customColorPicker.calendarId,
+                            {
+                              colors,
+                              darkColors,
+                            },
+                            isPending
+                          );
+                        }}
+                        onClose={() => {
+                          app.updateCalendar(customColorPicker.calendarId, {});
+                          setCustomColorPicker(null);
+                        }}
+                      />
+                    </div>
                   }
+                />
+              ) : (
+                <BlossomColorPicker
+                  defaultValue={customColorPicker.initialColor}
+                  coreSize={28}
+                  petalSize={28}
+                  initialExpanded={true}
+                  adaptivePositioning={true}
+                  openOnHover={false}
+                  onChange={color => {
+                    const { colors, darkColors } = getCalendarColorsForHex(
+                      color.hex
+                    );
+                    app.updateCalendar(
+                      customColorPicker.calendarId,
+                      {
+                        colors,
+                        darkColors,
+                      },
+                      true
+                    );
+                  }}
+                  onCollapse={() => {
+                    app.updateCalendar(customColorPicker.calendarId, {});
+                    setCustomColorPicker(null);
+                  }}
                 />
               )}
             </div>

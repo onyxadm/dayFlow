@@ -19,6 +19,9 @@ export class CalendarRenderer {
     initialOverrides?: string[]
   ) {
     this.customRenderingStore = new CustomRenderingStore(initialOverrides);
+    if (initialOverrides) {
+      this.app.setOverrides(initialOverrides);
+    }
     // Subscribe to app state changes to trigger Preact re-renders
     this.unsubscribe = app.subscribe(() => this.requestRender());
   }

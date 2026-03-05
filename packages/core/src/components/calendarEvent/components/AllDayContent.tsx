@@ -57,7 +57,7 @@ const AllDayContent = ({
 
   return (
     <div
-      className={`flex h-full items-center overflow-hidden pl-3 ${px1} group relative py-0`}
+      className={`absolute inset-0 flex items-center overflow-hidden pl-3 ${px1} group py-0`}
       style={titleOffsetStyle}
     >
       {/* Left resize handle - only shown for single-day all-day events with onResizeStart */}

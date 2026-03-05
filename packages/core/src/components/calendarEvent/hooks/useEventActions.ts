@@ -137,9 +137,9 @@ export const useEventActions = ({
 
   const handleDoubleClick = useCallback(
     (e: MouseEvent) => {
-      if (!canOpenDetail) return;
       e.preventDefault();
       e.stopPropagation();
+      if (!canOpenDetail) return;
 
       let targetElement = e.currentTarget as HTMLDivElement;
       if (isMultiDay) {

@@ -46,7 +46,6 @@ export interface CalendarSidebarRenderProps {
   editingCalendarId?: string | null;
   setEditingCalendarId?: (id: string | null) => void;
   onCreateCalendar?: () => void;
-  colorPickerMode?: 'default' | 'custom';
 }
 
 export interface SidebarPluginConfig {
@@ -54,7 +53,6 @@ export interface SidebarPluginConfig {
   miniWidth?: string;
   initialCollapsed?: boolean;
   createCalendarMode?: 'inline' | 'modal';
-  colorPickerMode?: 'default' | 'custom';
   render?: (props: CalendarSidebarRenderProps) => TNode;
   renderCalendarContextMenu?: (
     calendar: CalendarType,
@@ -163,7 +161,6 @@ export function createSidebarPlugin(
               editingCalendarId,
               setEditingCalendarId,
               onCreateCalendar: handleCreateCalendar,
-              colorPickerMode: config.colorPickerMode,
             }),
             [
               app,
@@ -186,8 +183,6 @@ export function createSidebarPlugin(
             }
             return h(DefaultCalendarSidebar, {
               ...sidebarProps,
-              colorPickerMode:
-                config.colorPickerMode ?? sidebarProps.colorPickerMode,
             });
           };
 
@@ -204,7 +199,7 @@ export function createSidebarPlugin(
             const generatorArgs = {
               onClose,
               onCreate,
-              colorPickerMode: config.colorPickerMode,
+              app,
             };
 
             return h(ContentSlot, {
@@ -213,7 +208,7 @@ export function createSidebarPlugin(
               defaultContent: h(CreateCalendarDialog, {
                 onClose,
                 onCreate,
-                colorPickerMode: config.colorPickerMode,
+                app,
               }),
             });
           };

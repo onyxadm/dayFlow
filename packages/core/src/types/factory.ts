@@ -109,6 +109,7 @@ export interface MonthViewConfig extends ViewFactoryConfig {
   showWeekNumbers?: boolean;
   showMonthIndicator?: boolean;
   startOfWeek?: number;
+  snapToMonth?: boolean;
 }
 
 /**

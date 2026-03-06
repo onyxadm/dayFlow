@@ -331,6 +331,7 @@ const MonthView = ({
     locale: locale,
     startOfWeek: startOfWeek,
     isEnabled: isWeekHeightInitialized,
+    snapToMonth: config.snapToMonth,
   });
 
   const previousStartIndexRef = useRef(0);

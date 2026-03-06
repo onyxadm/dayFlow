@@ -118,6 +118,7 @@ export const useVirtualMonthScroll = ({
   locale = 'en-US',
   startOfWeek = 1,
   isEnabled = true,
+  snapToMonth = false,
 }: UseVirtualMonthScrollProps): UseVirtualMonthScrollReturn => {
   const targetNavigationRef = useRef<{ month: string; year: number } | null>(
     null
@@ -751,6 +752,60 @@ export const useVirtualMonthScroll = ({
       }
     });
   }, [isInitialized, initialScrollTop, isEnabled]);
+
+  // Snap-to-month: when scrolling stops, smooth-scroll to the start of the
+  // dominant month so the view always shows a clean month boundary.
+  useEffect(() => {
+    if (!snapToMonth || isScrolling || isNavigating || !isInitialized) return;
+
+    const startIndex = Math.floor(scrollTop / weekHeight);
+    const endIndex = Math.min(weeksData.length - 1, startIndex + 5);
+
+    const counts: Record<string, number> = {};
+    for (let i = startIndex; i <= endIndex; i++) {
+      weeksData[i]?.days.forEach(d => {
+        const k = `${d.month}-${d.year}`;
+        counts[k] = (counts[k] || 0) + 1;
+      });
+    }
+
+    let dominantMonth = 0;
+    let dominantYear = 0;
+    let max = 0;
+    for (const [key, count] of Object.entries(counts)) {
+      if (count > max) {
+        max = count;
+        [dominantMonth, dominantYear] = key.split('-').map(Number);
+      }
+    }
+
+    const targetDate = new Date(dominantYear, dominantMonth, 1);
+    const targetWeekIndex = weeksData.findIndex(week =>
+      week.days.some(
+        day => day.date.toDateString() === targetDate.toDateString()
+      )
+    );
+
+    if (targetWeekIndex === -1) return;
+
+    const targetTop = targetWeekIndex * weekHeight;
+    if (Math.abs(targetTop - scrollTop) > 5) {
+      // Small additional delay on top of SCROLL_DEBOUNCE for a natural feel
+      const snapTimeout = setTimeout(() => {
+        scrollToDate(targetDate, true);
+      }, 200);
+      return () => clearTimeout(snapTimeout);
+    }
+  }, [
+    isScrolling,
+    snapToMonth,
+    isNavigating,
+    isInitialized,
+    scrollTop,
+    weekHeight,
+    weeksData,
+    scrollToDate,
+  ]);
 
   // Cleanup
   useEffect(

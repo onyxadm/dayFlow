@@ -76,11 +76,12 @@ function MyCalendar() {
 
 #### 配置
 
-| 属性                 | 类型      | 默认值  | 描述                                     |
-| :------------------- | :-------- | :------ | :--------------------------------------- |
-| `showWeekNumbers`    | `boolean` | `false` | 是否显示周数。                           |
-| `showMonthIndicator` | `boolean` | `true`  | 是否在滚动时显示月份指示标题。           |
-| `startOfWeek`        | `number`  | `1`     | 一周的开始日期（0 为周日，1 为周一等）。 |
+| 属性                 | 类型      | 默认值  | 描述                                                           |
+| :------------------- | :-------- | :------ | :------------------------------------------------------------- |
+| `showWeekNumbers`    | `boolean` | `false` | 是否显示周数。                                                 |
+| `showMonthIndicator` | `boolean` | `true`  | 是否在滚动时显示月份指示标题。                                 |
+| `startOfWeek`        | `number`  | `1`     | 一周的开始日期（0 为周日，1 为周一等）。                       |
+| `snapToMonth`        | `boolean` | `false` | 启用后，用户停止滚动时视图会自动对齐到当前主要月份的起始位置。 |
 
 ```tsx copy {10}
 import {

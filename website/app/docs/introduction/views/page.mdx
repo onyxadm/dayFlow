@@ -76,11 +76,12 @@ The month view displays a traditional calendar grid showing all days in a month.
 
 #### Configuration
 
-| Property             | Type      | Default | Description                                                   |
-| :------------------- | :-------- | :------ | :------------------------------------------------------------ |
-| `showWeekNumbers`    | `boolean` | `false` | Whether to show week numbers.                                 |
-| `showMonthIndicator` | `boolean` | `true`  | Whether to show the month indicator title when scrolling.     |
-| `startOfWeek`        | `number`  | `1`     | The start day of the week (0 for Sunday, 1 for Monday, etc.). |
+| Property             | Type      | Default | Description                                                                                     |
+| :------------------- | :-------- | :------ | :---------------------------------------------------------------------------------------------- |
+| `showWeekNumbers`    | `boolean` | `false` | Whether to show week numbers.                                                                   |
+| `showMonthIndicator` | `boolean` | `true`  | Whether to show the month indicator title when scrolling.                                       |
+| `startOfWeek`        | `number`  | `1`     | The start day of the week (0 for Sunday, 1 for Monday, etc.).                                   |
+| `snapToMonth`        | `boolean` | `false` | When enabled, the view snaps to the start of the dominant month after the user stops scrolling. |
 
 ```tsx copy {10}
 import {

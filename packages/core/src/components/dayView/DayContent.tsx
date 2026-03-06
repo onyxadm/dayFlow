@@ -31,6 +31,10 @@ import {
   ICalendarApp,
 } from '@/types';
 import { formatTime, scrollbarTakesSpace } from '@/utils';
+import {
+  startPendingCreate,
+  finalizeCreateOnDblClick,
+} from '@/views/utils/dragCreate';
 
 interface DayContentProps {
   app: ICalendarApp;
@@ -178,6 +182,18 @@ export const DayContent = ({
       firstRow.getBoundingClientRect().top -
       content.getBoundingClientRect().top +
       content.scrollTop
+    );
+  };
+
+  /** Returns the fractional hour at the given clientY, or null if the ref is unavailable. */
+  const getClickedHour = (clientY: number): number | null => {
+    const content = calendarRef.current?.querySelector('.calendar-content');
+    if (!content) return null;
+    const rect = content.getBoundingClientRect();
+    const scrollTop = (content as HTMLElement).scrollTop || 0;
+    return (
+      FIRST_HOUR +
+      (clientY - rect.top + scrollTop - getGridOffset()) / HOUR_HEIGHT
     );
   };
 
@@ -477,26 +493,30 @@ export const DayContent = ({
                       !isMobile && hasScrollbarSpace ? 'border-r' : ''
                     )}
                     onClick={() => onDateChange?.(currentDate)}
-                    onDblClick={e => {
-                      const currentDayIndex = Math.floor(
+                    onMouseDown={e => {
+                      const hour = getClickedHour(e.clientY);
+                      if (hour === null) return;
+                      const dayIndex = Math.floor(
                         (currentDate.getTime() - currentWeekStart.getTime()) /
                           (24 * 60 * 60 * 1000)
                       );
-                      const rect = calendarRef.current
-                        ?.querySelector('.calendar-content')
-                        ?.getBoundingClientRect();
-                      if (!rect) return;
-                      const scrollTop =
-                        (
-                          calendarRef.current?.querySelector(
-                            '.calendar-content'
-                          ) as HTMLElement
-                        )?.scrollTop || 0;
-                      const gridOffset = getGridOffset();
-                      const relativeY =
-                        e.clientY - rect.top + scrollTop - gridOffset;
-                      const clickedHour = FIRST_HOUR + relativeY / HOUR_HEIGHT;
-                      handleCreateStart?.(e, currentDayIndex, clickedHour);
+                      startPendingCreate(
+                        e,
+                        dayIndex,
+                        hour,
+                        isTouch,
+                        handleCreateStart
+                      );
+                    }}
+                    onDblClick={e => {
+                      const hour = getClickedHour(e.clientY);
+                      if (hour === null) return;
+                      const dayIndex = Math.floor(
+                        (currentDate.getTime() - currentWeekStart.getTime()) /
+                          (24 * 60 * 60 * 1000)
+                      );
+                      handleCreateStart?.(e, dayIndex, hour);
+                      finalizeCreateOnDblClick();
                     }}
                     onTouchStart={e => {
                       const currentDayIndex = Math.floor(

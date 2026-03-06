@@ -41,6 +41,7 @@ jobs:
           npm run build
         env:
           BASE_PATH: /calendar
+          NEXT_PUBLIC_BASE_PATH: /calendar
 
       - name: Disable Jekyll and verify output
         run: |

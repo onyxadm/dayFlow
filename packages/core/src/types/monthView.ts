@@ -10,6 +10,7 @@ export interface UseVirtualMonthScrollProps {
   locale?: string;
   startOfWeek?: number;
   isEnabled?: boolean;
+  snapToMonth?: boolean;
 }
 
 // Hook return value interface

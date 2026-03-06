@@ -1,3 +1,5 @@
+import { ComponentChildren } from 'preact';
+
 import MultiDayEvent from '@/components/monthView/MultiDayEvent';
 import { MultiDayEventSegment } from '@/components/monthView/WeekComponent';
 import { YearMultiDaySegment } from '@/components/yearView/utils';
@@ -155,9 +157,8 @@ export const EventContent = ({
     );
   }
 
-  let defaultContent;
   if (isMonthView) {
-    defaultContent = event.allDay ? (
+    const defaultContent = event.allDay ? (
       <MonthAllDayContent event={event} isEventSelected={isEventSelected} />
     ) : (
       <MonthRegularContent
@@ -168,8 +169,30 @@ export const EventContent = ({
         isMobile={isMobile}
       />
     );
-  } else {
-    defaultContent = event.allDay ? (
+    return (
+      <ContentSlot
+        store={customRenderingStore}
+        generatorName={generatorName}
+        generatorArgs={eventContentSlotArgs}
+        defaultContent={defaultContent}
+      />
+    );
+  }
+
+  // Day/Week view: resize handles live inside AllDayContent/RegularEventContent.
+  // Use renderSlot so resize handles are always rendered even when a custom slot overrides
+  // the visual content.
+  const slotRenderer = (defaultContent: ComponentChildren) => (
+    <ContentSlot
+      store={customRenderingStore}
+      generatorName={generatorName}
+      generatorArgs={eventContentSlotArgs}
+      defaultContent={defaultContent}
+    />
+  );
+
+  if (isAllDay) {
+    return (
       <AllDayContent
         event={event}
         isEditable={isEditable}
@@ -177,27 +200,22 @@ export const EventContent = ({
         isMultiDay={isMultiDay}
         segment={segment}
         isSlidingView={isSlidingView}
-      />
-    ) : (
-      <RegularEventContent
-        event={event}
-        app={app}
-        multiDaySegmentInfo={multiDaySegmentInfo}
-        isEditable={isEditable}
-        isTouchEnabled={isTouchEnabled}
-        isEventSelected={isEventSelected}
-        onResizeStart={onResizeStart}
-        timeFormat={timeFormat}
+        renderSlot={slotRenderer}
       />
     );
   }
 
   return (
-    <ContentSlot
-      store={customRenderingStore}
-      generatorName={generatorName}
-      generatorArgs={eventContentSlotArgs}
-      defaultContent={defaultContent}
+    <RegularEventContent
+      event={event}
+      app={app}
+      multiDaySegmentInfo={multiDaySegmentInfo}
+      isEditable={isEditable}
+      isTouchEnabled={isTouchEnabled}
+      isEventSelected={isEventSelected}
+      onResizeStart={onResizeStart}
+      timeFormat={timeFormat}
+      renderSlot={slotRenderer}
     />
   );
 };

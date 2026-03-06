@@ -23,6 +23,10 @@ import {
   ICalendarApp,
 } from '@/types';
 import { formatTime, getEventsForDay, scrollbarTakesSpace } from '@/utils';
+import {
+  startPendingCreate,
+  finalizeCreateOnDblClick,
+} from '@/views/utils/dragCreate';
 
 interface TimeGridProps {
   app: ICalendarApp;
@@ -144,6 +148,13 @@ export const TimeGrid = ({
     date: Date;
   } | null>(null);
   const hasScrollbarSpace = useMemo(() => scrollbarTakesSpace(), []);
+
+  /** Returns the fractional hour at the given clientY within the time grid. */
+  const getGridHour = (clientY: number) => {
+    if (!timeGridRef.current) return FIRST_HOUR;
+    const rect = timeGridRef.current.getBoundingClientRect();
+    return FIRST_HOUR + (clientY - rect.top) / HOUR_HEIGHT;
+  };
 
   const handleContextMenu = (e: MouseEvent, dayIndex: number, hour: number) => {
     e.preventDefault();
@@ -382,8 +393,22 @@ export const TimeGrid = ({
                           );
                           onDateChange?.(clickedDate);
                         }}
+                        onMouseDown={e => {
+                          startPendingCreate(
+                            e,
+                            dayIndex,
+                            getGridHour(e.clientY),
+                            isTouch,
+                            handleCreateStart
+                          );
+                        }}
                         onDblClick={e => {
-                          handleCreateStart?.(e, dayIndex, slot.hour);
+                          handleCreateStart?.(
+                            e,
+                            dayIndex,
+                            getGridHour(e.clientY)
+                          );
+                          finalizeCreateOnDblClick();
                         }}
                         onTouchStart={e =>
                           handleTouchStart(e, dayIndex, slot.hour)

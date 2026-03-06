@@ -2,6 +2,7 @@
 'use client';
 
 import { Event, getLineColor } from '@dayflow/core';
+import { createDragPlugin } from '@dayflow/plugin-drag';
 import {
   useCalendarApp,
   DayFlowCalendar,
@@ -17,6 +18,8 @@ import React, { useState, useMemo } from 'react';
 import { getWebsiteCalendars } from '@/utils/palette';
 import { generateSampleEvents } from '@/utils/sampleData';
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 const EventIcon = ({
   calendarId,
   defaultIcon,
@@ -27,7 +30,7 @@ const EventIcon = ({
   if (calendarId === 'team') {
     return (
       <img
-        src='/images/avatar/avatar1.png'
+        src={`${BASE}/images/avatar/avatar1.png`}
         className='h-4 w-4 shrink-0 rounded-full object-cover'
         alt='Product Team'
       />
@@ -36,7 +39,7 @@ const EventIcon = ({
   if (calendarId === 'personal') {
     return (
       <img
-        src='/images/avatar/avatar2.png'
+        src={`${BASE}/images/avatar/avatar2.png`}
         className='h-4 w-4 shrink-0 rounded-full object-cover'
         alt='Personal'
       />
@@ -67,6 +70,7 @@ export const EventContentShowcase: React.FC = () => {
         showTimedEventsInYearView: true,
       }),
     ],
+    plugins: [createDragPlugin()],
     events: events,
     calendars: getWebsiteCalendars(),
     defaultCalendar: 'work',

@@ -1,4 +1,4 @@
-import Image from 'next/image';
+/* eslint-disable @next/next/no-img-element */
 import { useMDXComponents as getDocsMDXComponents } from 'nextra-theme-docs';
 
 import { FrameworkInstall } from './components/FrameworkInstall';
@@ -10,14 +10,30 @@ const docsComponents = getDocsMDXComponents();
 // DocImg is used instead of <img> in MDX files because explicit JSX <img> elements
 // bypass the useMDXComponents override (only markdown ![]() goes through it).
 // Using an uppercase component name ensures MDX routes it through the components system.
-function DocImg(props) {
-  return <Image {...props} src={withBasePath(props.src)} alt='' />;
+// Plain <img> is used instead of next/image because images.unoptimized is true and
+// next/image requires explicit width/height for static exports.
+function DocImg({ src, alt, ...props }) {
+  return (
+    <img
+      {...props}
+      src={withBasePath(src)}
+      alt={alt || ''}
+      style={{ maxWidth: '100%', height: 'auto', ...props.style }}
+    />
+  );
 }
 
 export function useMDXComponents(components) {
   return {
     ...docsComponents,
-    img: props => <Image {...props} src={withBasePath(props.src)} alt='' />,
+    img: ({ src, alt, ...props }) => (
+      <img
+        {...props}
+        src={withBasePath(src)}
+        alt={alt || ''}
+        style={{ maxWidth: '100%', height: 'auto', ...props.style }}
+      />
+    ),
     DocImg,
     FrameworkInstall,
     FrameworkTabs,

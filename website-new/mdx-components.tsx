@@ -2,7 +2,7 @@ import defaultMdxComponents from 'fumadocs-ui/mdx';
 import type { MDXComponents } from 'mdx/types';
 
 import { DefaultColorPalette } from '@/components/ColorPalette';
-import { FrameworkInstall } from '@/components/FrameworkInstall';
+import { FrameworkInstall, PackageTabs } from '@/components/FrameworkInstall';
 import { FrameworkTabs, Tab } from '@/components/FrameworkTabs';
 
 function DocImg({
@@ -30,6 +30,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     ...defaultMdxComponents,
     FrameworkTabs,
     FrameworkInstall,
+    PackageTabs,
     Tab,
     DefaultColorPalette,
     DocImg,

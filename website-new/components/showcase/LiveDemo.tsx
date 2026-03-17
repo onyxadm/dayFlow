@@ -42,6 +42,10 @@ export function LiveDemo() {
           <InteractiveCalendarComponent />
         </div>
       </section>
+
+      <footer className='py-8 text-center text-sm text-slate-500 dark:text-slate-400'>
+        MIT {new Date().getFullYear()} © DayFlow.
+      </footer>
     </div>
   );
 }

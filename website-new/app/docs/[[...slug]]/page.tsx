@@ -16,7 +16,12 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const full = page.data.full ?? params.slug?.[0] === 'features';
 
   return (
-    <DocsPage toc={page.data.toc} full={full} breadcrumb={{ enabled: false }}>
+    <DocsPage
+      toc={page.data.toc}
+      full={full}
+      breadcrumb={{ enabled: false }}
+      tableOfContent={{ style: 'clerk' }}
+    >
       <DocsBody>
         <MDX
           components={getMDXComponents({

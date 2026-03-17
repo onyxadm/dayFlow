@@ -129,6 +129,75 @@ const InstallCommand = ({ cmd, pkg }: { cmd: string; pkg: string }) => {
   );
 };
 
+const SimpleCommand = ({ cmd, pkg }: { cmd: string; pkg: string }) => {
+  const [copied, setCopied] = useState(false);
+  const command = `${cmd} ${pkg}`;
+
+  const copy = () => {
+    navigator.clipboard.writeText(command);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className='group relative mt-4'>
+      <div className='overflow-x-auto rounded-lg bg-[#f4f5f7] p-4 text-sm font-medium whitespace-pre dark:bg-zinc-800'>
+        {command}
+      </div>
+      <button
+        type='button'
+        onClick={copy}
+        className='absolute top-2 right-2 rounded-md border border-border bg-white p-2 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-zinc-700'
+        aria-label='Copy to clipboard'
+      >
+        {copied ? (
+          <svg
+            viewBox='0 0 24 24'
+            className='h-4 w-4 text-green-500'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+          >
+            <polyline points='20 6 9 17 4 12' />
+          </svg>
+        ) : (
+          <svg
+            viewBox='0 0 24 24'
+            className='h-4 w-4 text-muted-foreground'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+          >
+            <rect x='9' y='9' width='13' height='13' rx='2' ry='2' />
+            <path d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' />
+          </svg>
+        )}
+      </button>
+    </div>
+  );
+};
+
+export function PackageTabs({ pkg }: { pkg: string }) {
+  return (
+    <div className='my-4'>
+      <Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+        <Tab value='npm'>
+          <SimpleCommand cmd='npm install' pkg={pkg} />
+        </Tab>
+        <Tab value='pnpm'>
+          <SimpleCommand cmd='pnpm add' pkg={pkg} />
+        </Tab>
+        <Tab value='yarn'>
+          <SimpleCommand cmd='yarn add' pkg={pkg} />
+        </Tab>
+        <Tab value='bun'>
+          <SimpleCommand cmd='bun add' pkg={pkg} />
+        </Tab>
+      </Tabs>
+    </div>
+  );
+}
+
 export function FrameworkInstall() {
   const [activeFramework, setActiveFramework] = useState(frameworks[0]);
 

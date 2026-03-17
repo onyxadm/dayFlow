@@ -85,7 +85,11 @@ export function FrameworkTabs({ children }: { children: React.ReactNode }) {
     <Tabs defaultValue='React'>
       <TabsList>
         {frameworks.map(fw => (
-          <TabsTrigger key={fw.id} value={fw.name}>
+          <TabsTrigger
+            key={fw.id}
+            value={fw.name}
+            className='text-black dark:text-white'
+          >
             {fw.icon}
             {fw.name}
           </TabsTrigger>

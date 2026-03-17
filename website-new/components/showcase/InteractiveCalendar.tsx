@@ -25,7 +25,7 @@ import {
 } from '@dayflow/react';
 import { CircleAlert } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -68,6 +68,26 @@ const VIEW_OPTIONS = [
   { label: 'Year', value: ViewType.YEAR },
 ];
 
+interface CalendarViewerProps {
+  config: any;
+  calendarRef: React.MutableRefObject<UseCalendarAppReturn | null>;
+}
+
+/**
+ * Sub-component to handle the calendar instance.
+ * Defined outside InteractiveCalendar so its identity is stable across re-renders —
+ * otherwise React treats it as a new component type on every parent render and
+ * unmounts/remounts it (causing flicker in Month View cells).
+ * Using a key on this component forces useCalendarApp to create a fresh instance
+ * when critical config (like locale) changes.
+ */
+function CalendarViewer({ config, calendarRef }: CalendarViewerProps) {
+  const calendar = useCalendarApp(config);
+  calendarRef.current = calendar;
+
+  return <DayFlowCalendar calendar={calendar} />;
+}
+
 export function InteractiveCalendar() {
   const { resolvedTheme } = useTheme();
 
@@ -78,18 +98,6 @@ export function InteractiveCalendar() {
   const [enableDrag, setEnableDrag] = useState(true);
   const [enableShortcuts, setEnableShortcuts] = useState(true);
   const calendarRef = useRef<UseCalendarAppReturn | null>(null);
-
-  /**
-   * Sub-component to handle the calendar instance.
-   * Using a key on this component forces useCalendarApp to create a fresh instance
-   * when critical config (like locale) changes.
-   */
-  function CalendarViewer({ config }: { config: any }) {
-    const calendar = useCalendarApp(config);
-    calendarRef.current = calendar;
-
-    return <DayFlowCalendar calendar={calendar} />;
-  }
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
@@ -404,6 +412,7 @@ export function InteractiveCalendar() {
           <CalendarViewer
             key={`${locale}-${showSidebar}-${enableDrag}-${enableShortcuts}-${showHeader}-${selectedViews.join(',')}-${yearMode}`}
             config={config}
+            calendarRef={calendarRef}
           />
         </div>
       </div>

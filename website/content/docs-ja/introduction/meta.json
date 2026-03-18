@@ -1,0 +1,5 @@
+{
+  "title": "はじめに",
+  "defaultOpen": true,
+  "pages": ["index", "events", "views", "dayflow-calendar", "use-calendar-app"]
+}

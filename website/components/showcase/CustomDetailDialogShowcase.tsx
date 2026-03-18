@@ -31,7 +31,7 @@ import { Temporal } from 'temporal-polyfill';
 import { CALENDAR_SIDE_PANEL, getWebsiteCalendars } from '@/utils/palette';
 import { generateMinimalSampleEvents } from '@/utils/sampleData';
 
-import '@dayflow/core/dist/styles.css';
+import '@dayflow/core/dist/styles.components.css';
 
 const cloneCalendarTypes = (): CalendarType[] => getWebsiteCalendars();
 
@@ -596,7 +596,7 @@ export const CustomDetailDialogShowcase: React.FC = () => {
   );
 
   return (
-    <div className='rounded-xl bg-white dark:border-slate-700 dark:bg-slate-900'>
+    <div className='not-prose rounded-xl bg-white dark:border-slate-700 dark:bg-slate-900'>
       <DayFlowCalendar calendar={calendar} eventDetailDialog={customDialog} />
     </div>
   );

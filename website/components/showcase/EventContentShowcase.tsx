@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
+import '@dayflow/core/dist/styles.components.css';
 import { Event, getLineColor } from '@dayflow/core';
 import { createDragPlugin } from '@dayflow/plugin-drag';
 import {
@@ -79,7 +80,7 @@ export const EventContentShowcase: React.FC = () => {
   });
 
   return (
-    <div className='p-1'>
+    <div className='not-prose p-1'>
       <DayFlowCalendar
         calendar={calendar}
         eventContentDay={({ event, isSelected }) => (

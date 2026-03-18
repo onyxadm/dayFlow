@@ -36,7 +36,7 @@ export function ColorPickerShowcase() {
   });
 
   return (
-    <div className='w-full overflow-hidden rounded-lg p-1'>
+    <div className='not-prose w-full overflow-hidden rounded-lg p-1'>
       <DayFlowCalendar
         calendar={calendar}
         colorPicker={(args: ColorPickerProps) => (

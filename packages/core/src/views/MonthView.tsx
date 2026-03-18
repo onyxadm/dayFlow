@@ -25,9 +25,34 @@ import {
   dayLabel,
   scrollContainer,
 } from '@/styles/classNames';
-import { Event, MonthEventDragState, ViewType, MonthViewProps } from '@/types';
-import { hasEventChanged } from '@/utils';
+import {
+  Event,
+  MonthEventDragState,
+  ViewType,
+  MonthViewProps,
+  WeeksData,
+} from '@/types';
+import { hasEventChanged, generateWeekData } from '@/utils';
 import { temporalToDate } from '@/utils/temporal';
+
+/** Compute the 6 weeks that fill a month-view grid for the given date. */
+const getMonthWeeks = (date: Date, startOfWeek: number): WeeksData[] => {
+  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+  const diff = (firstDay.getDay() - startOfWeek + 7) % 7;
+  const gridStart = new Date(firstDay);
+  gridStart.setDate(firstDay.getDate() - diff);
+  gridStart.setHours(0, 0, 0, 0);
+
+  const weeks: WeeksData[] = [];
+  for (let i = 0; i < 6; i++) {
+    const weekStart = new Date(gridStart);
+    weekStart.setDate(gridStart.getDate() + i * 7);
+    weeks.push(generateWeekData(weekStart));
+  }
+  return weeks;
+};
+
+const STATIC_TRANSITION_DURATION = 300;
 
 const MonthView = ({
   app,
@@ -44,6 +69,61 @@ const MonthView = ({
   const currentDate = app.getCurrentDate();
   const rawEvents = app.getEvents();
   const startOfWeek = config.startOfWeek ?? 1;
+
+  const scrollDisabled = config.scroll?.disabled === true;
+  const isFadeMode = scrollDisabled && config.scroll?.transition === 'fade';
+
+  const [fadeDisplayDate, setFadeDisplayDate] = useState(currentDate);
+  const [isFadingOut, setIsFadingOut] = useState(false);
+  const [fadeDirection, setFadeDirection] = useState<'forward' | 'backward'>(
+    'forward'
+  );
+  const prevFadeDateRef = useRef(currentDate);
+  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentDateYear = currentDate.getFullYear();
+  const currentDateMonth = currentDate.getMonth();
+
+  useEffect(() => {
+    if (!isFadeMode) return;
+    if (
+      currentDateYear === prevFadeDateRef.current.getFullYear() &&
+      currentDateMonth === prevFadeDateRef.current.getMonth()
+    )
+      return;
+
+    const isForward = currentDate > prevFadeDateRef.current;
+    prevFadeDateRef.current = currentDate;
+    setFadeDirection(isForward ? 'forward' : 'backward');
+
+    if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+    setIsFadingOut(true);
+
+    // After fade-out completes, swap the displayed month and fade back in
+    fadeTimerRef.current = setTimeout(() => {
+      setFadeDisplayDate(currentDate);
+      setIsFadingOut(false);
+    }, STATIC_TRANSITION_DURATION);
+
+    // Only clean up on unmount or rapid navigation (month changed again)
+    return () => {
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+    };
+  }, [currentDateYear, currentDateMonth, isFadeMode]);
+
+  const fadeWeeks = useMemo(
+    () => (isFadeMode ? getMonthWeeks(fadeDisplayDate, startOfWeek) : []),
+    [isFadeMode, fadeDisplayDate, startOfWeek]
+  );
+
+  // Slight horizontal nudge in the direction of navigation, fades alongside opacity
+  const fadeStyle = useMemo((): Record<string, string | number> => {
+    const xOut = fadeDirection === 'forward' ? '-6%' : '6%';
+    return {
+      opacity: isFadingOut ? 0 : 1,
+      transform: isFadingOut ? `translateX(${xOut})` : 'translateX(0)',
+      transition: `opacity ${STATIC_TRANSITION_DURATION}ms ease, transform ${STATIC_TRANSITION_DURATION}ms ease`,
+    };
+  }, [isFadingOut, fadeDirection]);
   const calendarSignature = app
     .getCalendars()
     .map(c => c.id + c.colors.lineColor)
@@ -492,6 +572,22 @@ const MonthView = ({
     setIsWeekHeightInitialized(true);
   }, []);
 
+  // Block user-initiated scroll in disabled (no-fade) virtual-scroll mode.
+  // Keep onScroll active so virtual scroll state still updates on programmatic
+  // scrollTo(). Only wheel/touch events are blocked (non-passive → preventDefault works).
+  useEffect(() => {
+    if (isFadeMode || !scrollDisabled) return;
+    const el = scrollElementRef.current;
+    if (!el) return;
+    const block = (e: globalThis.Event) => e.preventDefault();
+    el.addEventListener('wheel', block, { passive: false });
+    el.addEventListener('touchmove', block, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', block);
+      el.removeEventListener('touchmove', block);
+    };
+  }, [isFadeMode, scrollDisabled, scrollElementRef]);
+
   const handleEventUpdate = useCallback(
     (updatedEvent: Event) => {
       app.updateEvent(updatedEvent.id, updatedEvent);
@@ -542,6 +638,15 @@ const MonthView = ({
   // Pending: remove getCustomTitle and using app.currentDate to fixed
   const getCustomTitle = () => {
     const isAsianLocale = locale.startsWith('zh') || locale.startsWith('ja');
+
+    if (isFadeMode) {
+      const isAsian = locale.startsWith('zh') || locale.startsWith('ja');
+      const labels = getMonthLabels(locale, isAsian ? 'short' : 'long');
+      const monthName = labels[fadeDisplayDate.getMonth()];
+      const year = fadeDisplayDate.getFullYear();
+      return isAsianLocale ? `${year}年${monthName}` : `${monthName} ${year}`;
+    }
+
     return isAsianLocale
       ? `${currentYear}年${currentMonth}`
       : `${currentMonth} ${currentYear}`;
@@ -556,15 +661,15 @@ const MonthView = ({
         customTitle={getCustomTitle()}
         onPrevious={() => {
           app.goToPrevious();
-          handlePreviousMonth();
+          if (!isFadeMode) handlePreviousMonth();
         }}
         onNext={() => {
           app.goToNext();
-          handleNextMonth();
+          if (!isFadeMode) handleNextMonth();
         }}
         onToday={() => {
           app.goToToday();
-          handleToday();
+          if (!isFadeMode) handleToday();
         }}
       />
 
@@ -578,88 +683,138 @@ const MonthView = ({
         </div>
       </div>
 
-      <div
-        ref={scrollElementRef}
-        className={scrollContainer}
-        style={{
-          overflow: 'hidden auto',
-          visibility: isWeekHeightInitialized ? 'visible' : 'hidden',
-        }}
-        onScroll={handleScroll}
-      >
+      {isFadeMode ? (
         <div
-          style={{
-            height: topSpacerHeight,
-          }}
-        />
-        {visibleWeeks.map((item, index) => {
-          const weekEvents =
-            eventsByWeek.get(item.weekData.startDate.getTime()) ?? [];
-
-          // The 6th week (index=5) fills the remaining space to ensure the container is filled
-          const adjustedItem =
-            index === 5
-              ? {
-                  ...item,
-                  height: item.height + remainingSpace,
-                }
-              : item;
-
-          // Only pass real isScrolling to the week containing the 1st of the month
-          // (for month title animation). Other weeks always receive false so memo()
-          // can bail out of re-rendering them when isScrolling changes.
-          const weekIsScrolling =
-            config.showMonthIndicator !== false &&
-            item.weekData.days.some(d => d.day === 1)
-              ? isScrolling
-              : false;
-
-          return (
-            <WeekComponent
-              key={`week-${item.weekData.startDate.getTime()}`}
-              item={adjustedItem}
-              weekHeight={weekHeight}
-              showWeekNumbers={config.showWeekNumbers}
-              showMonthIndicator={config.showMonthIndicator}
-              currentMonth={currentMonth}
-              currentYear={currentYear}
-              screenSize={screenSize}
-              isScrolling={weekIsScrolling}
-              calendarRef={calendarRef}
-              events={weekEvents}
-              onEventUpdate={handleEventUpdate}
-              onEventDelete={handleEventDelete}
-              onMoveStart={handleMoveStart}
-              onCreateStart={handleCreateStart}
-              onResizeStart={handleResizeStart}
-              isDragging={isDragging}
-              dragState={dragState as MonthEventDragState}
-              newlyCreatedEventId={newlyCreatedEventId}
-              onDetailPanelOpen={handleDetailPanelOpen}
-              onMoreEventsClick={app.onMoreEventsClick}
-              onChangeView={handleChangeView}
-              onSelectDate={app.selectDate}
-              selectedEventId={selectedEventId}
-              onEventSelect={handleWeekEventSelect}
-              onEventLongPress={handleWeekEventLongPress}
-              detailPanelEventId={detailPanelEventId}
-              onDetailPanelToggle={setDetailPanelEventId}
-              customDetailPanelContent={customDetailPanelContent}
-              customEventDetailDialog={customEventDetailDialog}
-              onCalendarDrop={handleDrop}
-              onCalendarDragOver={handleDragOver}
-              calendarSignature={calendarSignature}
-              app={app}
-              enableTouch={isTouch}
-            />
-          );
-        })}
+          ref={scrollElementRef}
+          className={scrollContainer}
+          style={{ overflow: 'hidden' }}
+        >
+          <div style={fadeStyle}>
+            {fadeWeeks.map((weekData, index) => {
+              const weekEvents =
+                eventsByWeek.get(weekData.startDate.getTime()) ?? [];
+              const item = {
+                index,
+                weekData,
+                top: index * weekHeight,
+                height: weekHeight,
+              };
+              const adjustedItem =
+                index === 5
+                  ? { ...item, height: item.height + remainingSpace }
+                  : item;
+              return (
+                <WeekComponent
+                  key={`week-${weekData.startDate.getTime()}`}
+                  item={adjustedItem}
+                  weekHeight={weekHeight}
+                  showWeekNumbers={config.showWeekNumbers}
+                  showMonthIndicator={false}
+                  currentMonth={''}
+                  currentYear={0}
+                  screenSize={screenSize}
+                  isScrolling={false}
+                  calendarRef={calendarRef}
+                  events={weekEvents}
+                  onEventUpdate={handleEventUpdate}
+                  onEventDelete={handleEventDelete}
+                  onMoveStart={handleMoveStart}
+                  onCreateStart={handleCreateStart}
+                  onResizeStart={handleResizeStart}
+                  isDragging={isDragging}
+                  dragState={dragState as MonthEventDragState}
+                  newlyCreatedEventId={newlyCreatedEventId}
+                  onDetailPanelOpen={handleDetailPanelOpen}
+                  onMoreEventsClick={app.onMoreEventsClick}
+                  onChangeView={handleChangeView}
+                  onSelectDate={app.selectDate}
+                  selectedEventId={selectedEventId}
+                  onEventSelect={handleWeekEventSelect}
+                  onEventLongPress={handleWeekEventLongPress}
+                  detailPanelEventId={detailPanelEventId}
+                  onDetailPanelToggle={setDetailPanelEventId}
+                  customDetailPanelContent={customDetailPanelContent}
+                  customEventDetailDialog={customEventDetailDialog}
+                  onCalendarDrop={handleDrop}
+                  onCalendarDragOver={handleDragOver}
+                  calendarSignature={calendarSignature}
+                  app={app}
+                  enableTouch={isTouch}
+                />
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        // Virtual-scroll mode (default, or disabled without fade)
         <div
+          ref={scrollElementRef}
+          className={scrollContainer}
           style={{
-            height: bottomSpacerHeight,
+            overflow: 'hidden auto',
+            visibility: isWeekHeightInitialized ? 'visible' : 'hidden',
           }}
-        />
-      </div>
+          onScroll={handleScroll}
+        >
+          <div style={{ height: topSpacerHeight }} />
+          {visibleWeeks.map((item, index) => {
+            const weekEvents =
+              eventsByWeek.get(item.weekData.startDate.getTime()) ?? [];
+
+            const adjustedItem =
+              index === 5
+                ? { ...item, height: item.height + remainingSpace }
+                : item;
+
+            const weekIsScrolling =
+              config.showMonthIndicator !== false &&
+              item.weekData.days.some(d => d.day === 1)
+                ? isScrolling
+                : false;
+
+            return (
+              <WeekComponent
+                key={`week-${item.weekData.startDate.getTime()}`}
+                item={adjustedItem}
+                weekHeight={weekHeight}
+                showWeekNumbers={config.showWeekNumbers}
+                showMonthIndicator={config.showMonthIndicator}
+                currentMonth={currentMonth}
+                currentYear={currentYear}
+                screenSize={screenSize}
+                isScrolling={weekIsScrolling}
+                calendarRef={calendarRef}
+                events={weekEvents}
+                onEventUpdate={handleEventUpdate}
+                onEventDelete={handleEventDelete}
+                onMoveStart={handleMoveStart}
+                onCreateStart={handleCreateStart}
+                onResizeStart={handleResizeStart}
+                isDragging={isDragging}
+                dragState={dragState as MonthEventDragState}
+                newlyCreatedEventId={newlyCreatedEventId}
+                onDetailPanelOpen={handleDetailPanelOpen}
+                onMoreEventsClick={app.onMoreEventsClick}
+                onChangeView={handleChangeView}
+                onSelectDate={app.selectDate}
+                selectedEventId={selectedEventId}
+                onEventSelect={handleWeekEventSelect}
+                onEventLongPress={handleWeekEventLongPress}
+                detailPanelEventId={detailPanelEventId}
+                onDetailPanelToggle={setDetailPanelEventId}
+                customDetailPanelContent={customDetailPanelContent}
+                customEventDetailDialog={customEventDetailDialog}
+                onCalendarDrop={handleDrop}
+                onCalendarDragOver={handleDragOver}
+                calendarSignature={calendarSignature}
+                app={app}
+                enableTouch={isTouch}
+              />
+            );
+          })}
+          <div style={{ height: bottomSpacerHeight }} />
+        </div>
+      )}
       <MobileEventDrawerComponent
         isOpen={isDrawerOpen}
         onClose={() => {

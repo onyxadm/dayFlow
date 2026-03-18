@@ -42,6 +42,7 @@ jobs:
         env:
           BASE_PATH: /calendar
           NEXT_PUBLIC_BASE_PATH: /calendar
+          NEXT_PUBLIC_SITE_URL: https://dayflow-js.github.io/calendar
 
       - name: Disable Jekyll and verify output
         run: |

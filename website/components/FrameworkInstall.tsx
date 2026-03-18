@@ -1,6 +1,6 @@
 'use client';
 
-import { Tabs } from 'nextra/components';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import React, { useState } from 'react';
 
 const frameworks = [
@@ -67,10 +67,14 @@ const frameworks = [
     package: '@dayflow/svelte',
     color: '#FF3E00',
     icon: (
-      <svg viewBox='0 0 100 100' className='h-5 w-5'>
+      <svg viewBox='0 0 98.1 118' className='h-5 w-5'>
         <path
           fill='#FF3E00'
-          d='M62.6 30.5c-3.1-4.8-10.7-3.7-12.2 2.1-1.3 5 4.3 7.8 7.3 10.2 4.1 3.3 8.3 7.2 8.3 13.5 0 11.2-11.8 17-21.7 13.5-3.1-1.1-4.6-2.9-4.7-2.9l3.5-7.7s1.3 1.1 2.9 1.7c4.6 1.6 9.3-.5 9.3-5 0-3.3-3.1-5.6-5.9-7.8-4-3.1-10.6-7.3-10.6-16.1 0-10.6 10.9-17 21-13.5 3.3 1.1 5.3 3 5.3 3l-3.3 7.7s-2.1-1.5-3.6-1.9c-4.6-1.6-9.3.5-9.3 5 0 2.2 2.1 4.1 4.1 5.6 1.8 1.4 3.7 2.8 5.3 4.3 3.6 3.4 5.9 8 5.9 13.5 0 12.5-12.3 22.8-26.6 22.8-5.7 0-10.4-1.6-10.4-1.6l3.3-7.7s3.8 1.6 7.1 1.6c8.5 0 15.3-6.1 15.3-13.5s-5.3-12.3-13.2-18.7c-4.4-3.5-10.8-7.9-10.8-17.1 0-11.8 11-20.9 24.3-20.9 6.2 0 11.3 2.1 11.3 2.1l-3.3 7.7s-3.9-2.1-8-2.1c-8.5 0-14.3 5.8-14.3 13.2 0 4.1 2.5 7.1 5.1 9.2 3.1 2.5 6.6 5.1 9.4 8.2 3.4 3.8 5.6 8.5 5.6 14 0 12.5-10.3 22.7-23 22.7-5.7 0-10.4-1.6-10.4-1.6l3.3-7.7s3.8 1.6 7.1 1.6c7.7 0 11.7-6.1 11.7-13.5 0-4.1-2.5-7.1-5.1-9.2-3.1-2.5-6.6-5.1-9.4-8.2-1.9-2.1-3.3-4.5-4-7'
+          d='M91.8 15.6C80.9-.1 59.2-4.7 43.6 5.2L16.1 22.8C8.6 27.5 3.4 35.2 1.9 43.9c-1.3 7.3-.2 14.8 3.3 21.3-2.4 3.6-4 7.6-4.7 11.8-1.6 8.9.5 18.1 5.7 25.4 11 15.7 32.6 20.3 48.2 10.4l27.5-17.5c7.5-4.7 12.7-12.4 14.2-21.1 1.3-7.3.2-14.8-3.3-21.3 2.4-3.6 4-7.6 4.7-11.8 1.7-8.9-.4-18.1-5.7-25.5'
+        />
+        <path
+          fill='#FFF'
+          d='M40.9 103.9c-8.9 2.3-18.2-1.2-23.4-8.7-3.2-4.4-4.4-9.9-3.5-15.3.2-.9.4-1.7.6-2.6l.5-1.6 1.4 1c3.3 2.4 6.9 4.2 10.8 5.4l1 .3-.1 1c-.1 1.4.3 2.9 1.1 4.1 1.6 2.3 4.4 3.4 7.1 2.7.6-.2 1.2-.4 1.7-.7L65.5 72c1.4-.9 2.3-2.2 2.6-3.8.3-1.6-.1-3.3-1-4.6-1.6-2.3-4.4-3.3-7.1-2.6-.6.2-1.2.4-1.7.7l-10.5 6.7c-1.7 1.1-3.6 1.9-5.6 2.4-8.9 2.3-18.2-1.2-23.4-8.7-3.1-4.4-4.4-9.9-3.4-15.3.9-5.2 4.1-9.9 8.6-12.7l27.5-17.5c1.7-1.1 3.6-1.9 5.6-2.5 8.9-2.3 18.2 1.2 23.4 8.7 3.2 4.4 4.4 9.9 3.5 15.3-.2.9-.4 1.7-.7 2.6l-.5 1.6-1.4-1c-3.3-2.4-6.9-4.2-10.8-5.4l-1-.3.1-1c.1-1.4-.3-2.9-1.1-4.1-1.6-2.3-4.4-3.3-7.1-2.6-.6.2-1.2.4-1.7.7L32.4 46.1c-1.4.9-2.3 2.2-2.6 3.8s.1 3.3 1 4.6c1.6 2.3 4.4 3.3 7.1 2.6.6-.2 1.2-.4 1.7-.7l10.5-6.7c1.7-1.1 3.6-1.9 5.6-2.5 8.9-2.3 18.2 1.2 23.4 8.7 3.2 4.4 4.4 9.9 3.5 15.3-.9 5.2-4.1 9.9-8.6 12.7L47.2 101.5c-1.8 1.1-3.7 1.9-5.7 2.5h-.6z'
         />
       </svg>
     ),
@@ -125,6 +129,75 @@ const InstallCommand = ({ cmd, pkg }: { cmd: string; pkg: string }) => {
   );
 };
 
+const SimpleCommand = ({ cmd, pkg }: { cmd: string; pkg: string }) => {
+  const [copied, setCopied] = useState(false);
+  const command = `${cmd} ${pkg}`;
+
+  const copy = () => {
+    navigator.clipboard.writeText(command);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className='group relative mt-4'>
+      <div className='overflow-x-auto rounded-lg bg-[#f4f5f7] p-4 text-sm font-medium whitespace-pre dark:bg-zinc-800'>
+        {command}
+      </div>
+      <button
+        type='button'
+        onClick={copy}
+        className='absolute top-2 right-2 rounded-md border border-border bg-white p-2 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-zinc-700'
+        aria-label='Copy to clipboard'
+      >
+        {copied ? (
+          <svg
+            viewBox='0 0 24 24'
+            className='h-4 w-4 text-green-500'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+          >
+            <polyline points='20 6 9 17 4 12' />
+          </svg>
+        ) : (
+          <svg
+            viewBox='0 0 24 24'
+            className='h-4 w-4 text-muted-foreground'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+          >
+            <rect x='9' y='9' width='13' height='13' rx='2' ry='2' />
+            <path d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' />
+          </svg>
+        )}
+      </button>
+    </div>
+  );
+};
+
+export function PackageTabs({ pkg }: { pkg: string }) {
+  return (
+    <div className='my-4'>
+      <Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+        <Tab value='npm'>
+          <SimpleCommand cmd='npm install' pkg={pkg} />
+        </Tab>
+        <Tab value='pnpm'>
+          <SimpleCommand cmd='pnpm add' pkg={pkg} />
+        </Tab>
+        <Tab value='yarn'>
+          <SimpleCommand cmd='yarn add' pkg={pkg} />
+        </Tab>
+        <Tab value='bun'>
+          <SimpleCommand cmd='bun add' pkg={pkg} />
+        </Tab>
+      </Tabs>
+    </div>
+  );
+}
+
 export function FrameworkInstall() {
   const [activeFramework, setActiveFramework] = useState(frameworks[0]);
 
@@ -138,29 +211,31 @@ export function FrameworkInstall() {
             onClick={() => setActiveFramework(fw)}
             className={`flex items-center gap-2 rounded-lg border px-4 py-2 transition-all ${
               activeFramework.id === fw.id
-                ? 'border-[#bfdbfe] bg-[#e5effe] font-medium text-blue-700 shadow-sm'
-                : 'border-transparent bg-transparent text-muted-foreground hover:bg-muted'
+                ? 'border-[#bfdbfe] bg-[#e5effe] shadow-sm dark:border-[#1e3a5f] dark:bg-[#0d2137]'
+                : 'border-transparent bg-transparent hover:bg-muted dark:hover:bg-zinc-800'
             }`}
           >
             {fw.icon}
-            <span className='text-sm font-bold'>{fw.name}</span>
+            <span className='text-sm font-bold text-black dark:text-white'>
+              {fw.name}
+            </span>
           </button>
         ))}
       </div>
       <div className='p-4'>
         <Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
-          <Tabs.Tab>
+          <Tab value='npm'>
             <InstallCommand cmd='npm install' pkg={activeFramework.package} />
-          </Tabs.Tab>
-          <Tabs.Tab>
+          </Tab>
+          <Tab value='pnpm'>
             <InstallCommand cmd='pnpm add' pkg={activeFramework.package} />
-          </Tabs.Tab>
-          <Tabs.Tab>
+          </Tab>
+          <Tab value='yarn'>
             <InstallCommand cmd='yarn add' pkg={activeFramework.package} />
-          </Tabs.Tab>
-          <Tabs.Tab>
+          </Tab>
+          <Tab value='bun'>
             <InstallCommand cmd='bun add' pkg={activeFramework.package} />
-          </Tabs.Tab>
+          </Tab>
         </Tabs>
       </div>
     </div>

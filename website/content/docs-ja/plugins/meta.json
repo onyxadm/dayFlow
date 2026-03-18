@@ -1,0 +1,12 @@
+{
+  "title": "プラグイン",
+  "defaultOpen": true,
+  "pages": [
+    "overview",
+    "localization",
+    "drag",
+    "events",
+    "keyboard-shortcuts",
+    "sidebar"
+  ]
+}

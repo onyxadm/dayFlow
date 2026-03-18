@@ -1,44 +1,7 @@
-import { Footer, Layout, Navbar } from 'nextra-theme-docs';
-import { getPageMap } from 'nextra/page-map';
+import { HomeLayout } from 'fumadocs-ui/layouts/home';
 
-import { BrandLogo } from '@/components/BrandLogo';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { baseOptions } from '@/lib/layout.shared';
 
-// const banner = <Banner storageKey="nextra-banner">Welcome to DayFlow 🎉</Banner>;
-const navbar = (
-  <Navbar
-    logo={<BrandLogo />}
-    projectLink='https://github.com/dayflow-js/dayflow'
-    chatLink='https://discord.gg/9vdFZKJqBb'
-  >
-    <LanguageSwitcher />
-    <ThemeToggle />
-  </Navbar>
-);
-const footer = <Footer>MIT {new Date().getFullYear()} © DayFlow.</Footer>;
-
-export default async function BlogLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <Layout
-      // banner={banner}
-      navbar={navbar}
-      pageMap={await getPageMap('/blog')}
-      docsRepositoryBase='https://github.com/dayflow-js/dayflow/blob/main/website'
-      footer={footer}
-      sidebar={{
-        toggleButton: false,
-      }}
-      nextThemes={{
-        defaultTheme: 'system',
-        storageKey: 'theme',
-      }}
-    >
-      {children}
-    </Layout>
-  );
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <HomeLayout {...baseOptions()}>{children}</HomeLayout>;
 }

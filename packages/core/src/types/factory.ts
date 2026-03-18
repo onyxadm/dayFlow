@@ -103,6 +103,20 @@ export interface WeekViewConfig extends ViewFactoryConfig {
 }
 
 /**
+ * Month scroll / navigation configuration
+ */
+export interface MonthScrollConfig {
+  /** Disable continuous scrolling; only Prev/Next buttons switch months */
+  disabled?: boolean;
+  /**
+   * Transition animation when switching months in disabled-scroll mode.
+   * - 'slide'  (default) – vertical slide up/down
+   * - 'fade'             – horizontal fade-slide (left ↔ right)
+   */
+  transition?: 'slide' | 'fade';
+}
+
+/**
  * Month view factory configuration
  */
 export interface MonthViewConfig extends ViewFactoryConfig {
@@ -110,6 +124,8 @@ export interface MonthViewConfig extends ViewFactoryConfig {
   showMonthIndicator?: boolean;
   startOfWeek?: number;
   snapToMonth?: boolean;
+  /** Scroll / navigation behavior for the month view */
+  scroll?: MonthScrollConfig;
 }
 
 /**
@@ -119,6 +135,8 @@ export interface YearViewConfig extends ViewFactoryConfig {
   mode?: 'year-canvas' | 'fixed-week' | 'grid';
   showTimedEventsInYearView?: boolean;
   startOfWeek?: number;
+  /** Scroll / navigation behavior for the month view */
+  scroll?: MonthScrollConfig;
   /**
    * Grid mode: action when a date cell is clicked.
    * - 'popup' (default): show a popup with events for that day

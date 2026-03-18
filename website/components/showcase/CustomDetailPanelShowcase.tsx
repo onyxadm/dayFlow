@@ -22,7 +22,7 @@ import React, { useMemo, useCallback } from 'react';
 import { getWebsiteCalendars } from '@/utils/palette';
 import { generateMinimalSampleEvents } from '@/utils/sampleData';
 
-import '@dayflow/core/dist/styles.css';
+import '@dayflow/core/dist/styles.components.css';
 
 type SwitcherMode = 'buttons' | 'select';
 
@@ -263,7 +263,7 @@ export const CustomDetailPanelShowcase: React.FC = () => {
   );
 
   return (
-    <div className='p-1'>
+    <div className='not-prose p-1'>
       <DemoCalendar customDetailPanelContent={detailPanel} className='h-130' />
     </div>
   );

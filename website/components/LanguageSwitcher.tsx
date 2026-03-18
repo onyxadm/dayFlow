@@ -1,206 +1,103 @@
 'use client';
 
-import cn from 'clsx';
+import { buttonVariants } from 'fumadocs-ui/components/ui/button';
 import { Languages } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import React, { useState, useEffect, useMemo } from 'react';
-
-import { getBasePath } from '@/utils/basePath';
+import { usePathname } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 const locales = [
-  { code: 'en', name: 'English' },
-  { code: 'zh', name: '中文' },
-  { code: 'ja', name: '日本語' },
+  { code: 'en', name: 'English', prefix: '/docs' },
+  { code: 'zh', name: '中文', prefix: '/docs-zh' },
+  { code: 'ja', name: '日本語', prefix: '/docs-ja' },
 ];
 
-export function LanguageSwitcher() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentLocale, setCurrentLocale] = useState('en');
-  const [mounted, setMounted] = useState(false);
-  const { resolvedTheme } = useTheme();
-  const isDarkMode = resolvedTheme === 'dark';
+function getLocaleFromPath(path: string) {
+  if (path.startsWith('/docs-zh')) return 'zh';
+  if (path.startsWith('/docs-ja')) return 'ja';
+  return 'en';
+}
 
-  const triggerClasses = useMemo(
-    () =>
-      cn(
-        'inline-flex h-9 items-center justify-center rounded-md transition-colors',
-        isDarkMode
-          ? 'text-gray-200 hover:bg-gray-800 focus-visible:outline-white'
-          : 'text-gray-700 focus-visible:outline-black'
-      ),
-    [isDarkMode]
-  );
+function switchTo(newLocale: string, currentPath: string) {
+  const current = locales.find(l => l.code === getLocaleFromPath(currentPath));
+  const next = locales.find(l => l.code === newLocale);
+  if (!next) return;
 
-  const dropdownClasses = useMemo(
-    () =>
-      cn(
-        'absolute right-0 z-20 mt-2 w-48 origin-top-right rounded-md shadow-lg ring-1 focus:outline-none',
-        isDarkMode ? 'bg-gray-900 ring-white/10' : 'bg-white ring-black/5'
-      ),
-    [isDarkMode]
-  );
-
-  const itemClasses = useMemo(
-    () =>
-      cn(
-        'flex w-full items-center gap-3 px-4 py-2 text-sm transition-colors',
-        isDarkMode ? 'text-gray-200 hover:bg-gray-800' : 'text-gray-700'
-      ),
-    [isDarkMode]
-  );
-
-  useEffect(() => {
-    setMounted(true);
-    // Detect current locale from pathname
-    const basePath = getBasePath();
-    let path = window.location.pathname;
-
-    // Remove basePath if present
-    if (basePath && path.startsWith(basePath)) {
-      path = path.slice(basePath.length);
-    }
-
-    if (path.startsWith('/docs-zh')) {
-      setCurrentLocale('zh');
-    } else if (path.startsWith('/docs-ja')) {
-      setCurrentLocale('ja');
-    } else {
-      setCurrentLocale('en');
-    }
-  }, []);
-
-  const switchLanguage = (newLocale: string) => {
-    const basePath = getBasePath();
-    let path = window.location.pathname;
-
-    // Remove basePath if present
-    if (basePath && path.startsWith(basePath)) {
-      path = path.slice(basePath.length);
-    }
-
-    let newPath = path;
-
-    // Handle root path first
-    if (path === '/' || path === '') {
-      newPath =
-        newLocale === 'zh'
-          ? '/docs-zh/introduction'
-          : newLocale === 'ja'
-            ? '/docs-ja/introduction'
-            : '/docs/introduction';
-    } else {
-      // Remove any existing locale prefix to get the content path
-      let contentPath = path;
-      if (path.startsWith('/docs-zh')) {
-        contentPath = path.slice('/docs-zh'.length) || '/';
-      } else if (path.startsWith('/docs-ja')) {
-        contentPath = path.slice('/docs-ja'.length) || '/';
-      } else if (path.startsWith('/docs')) {
-        contentPath = path.slice('/docs'.length) || '/';
-      }
-
-      // Ensure contentPath starts with /
-      if (!contentPath.startsWith('/')) {
-        contentPath = '/' + contentPath;
-      }
-
-      // Apply the new locale prefix
-      if (newLocale === 'zh') {
-        newPath = '/docs-zh' + contentPath;
-      } else if (newLocale === 'ja') {
-        newPath = '/docs-ja' + contentPath;
-      } else {
-        // English (default)
-        newPath = '/docs' + contentPath;
-      }
-
-      // Handle the case where contentPath is just '/'
-      if (contentPath === '/') {
-        newPath = newPath.replace(/\/$/, '');
-      }
-    }
-
-    // Add basePath back
-    if (basePath) {
-      newPath = basePath + newPath;
-    }
-
-    // Store preference and navigate
-    localStorage.setItem('dayflow-locale', newLocale);
-    window.location.href = newPath;
-  };
-
-  // Avoid hydration mismatch
-  if (!mounted) {
-    return (
-      <div className='relative inline-block text-left'>
-        <button
-          type='button'
-          disabled
-          className={cn(triggerClasses, 'opacity-50')}
-          aria-label='Language selector'
-        >
-          <Languages className='h-5 w-5' />
-        </button>
-      </div>
-    );
+  // strip current locale prefix
+  let contentPath = currentPath;
+  if (current && currentPath.startsWith(current.prefix)) {
+    contentPath = currentPath.slice(current.prefix.length) || '/';
   }
+  if (!contentPath.startsWith('/')) contentPath = '/' + contentPath;
+
+  let newPath = next.prefix + contentPath;
+  // avoid trailing slash for root
+  if (contentPath === '/') newPath = next.prefix;
+
+  localStorage.setItem('dayflow-locale', newLocale);
+  window.location.href = newPath;
+}
+
+export function LanguageSwitcher() {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const currentLocale = getLocaleFromPath(pathname);
+
+  // close on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    }
+    if (open) document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
 
   return (
-    <div className='relative inline-block text-left'>
+    <div ref={ref} className='relative'>
       <button
         type='button'
-        onClick={() => setIsOpen(!isOpen)}
-        className={triggerClasses}
-        aria-expanded={isOpen}
-        aria-haspopup='true'
-        aria-label='Language selector'
+        onClick={() => setOpen(v => !v)}
+        aria-label='Switch language'
+        aria-expanded={open}
+        className={buttonVariants({ size: 'icon-sm', color: 'ghost' })}
       >
-        <Languages className='h-5 w-5' />
+        <Languages className='size-4' />
       </button>
 
-      {isOpen && (
-        <>
-          <div
-            className='fixed inset-0 z-10'
-            onClick={() => setIsOpen(false)}
-          />
-          <div className={dropdownClasses}>
-            <div className='py-1' role='menu' aria-orientation='vertical'>
-              {locales.map(locale => (
-                <button
-                  type='button'
-                  key={locale.code}
-                  onClick={() => {
-                    switchLanguage(locale.code);
-                    setIsOpen(false);
-                  }}
-                  className={cn(
-                    itemClasses,
-                    currentLocale === locale.code &&
-                      (isDarkMode ? 'bg-gray-800/60' : 'bg-gray-50')
-                  )}
-                  role='menuitem'
+      {open && (
+        <div className='bg-fd-background absolute end-0 top-full z-50 mt-1 w-36 rounded-lg border py-1 shadow-md'>
+          {locales.map(locale => (
+            <button
+              key={locale.code}
+              type='button'
+              onClick={() => {
+                setOpen(false);
+                switchTo(locale.code, pathname);
+              }}
+              className={`hover:bg-fd-accent hover:text-fd-accent-foreground flex w-full items-center justify-between px-3 py-1.5 text-sm transition-colors ${
+                currentLocale === locale.code
+                  ? 'text-fd-primary font-medium'
+                  : 'text-fd-muted-foreground'
+              }`}
+            >
+              {locale.name}
+              {currentLocale === locale.code && (
+                <svg
+                  className='size-3.5'
+                  fill='currentColor'
+                  viewBox='0 0 20 20'
                 >
-                  <span>{locale.name}</span>
-                  {currentLocale === locale.code && (
-                    <svg
-                      className='ml-auto h-4 w-4'
-                      fill='currentColor'
-                      viewBox='0 0 20 20'
-                    >
-                      <path
-                        fillRule='evenodd'
-                        d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-                        clipRule='evenodd'
-                      />
-                    </svg>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
+                  <path
+                    fillRule='evenodd'
+                    d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
+                    clipRule='evenodd'
+                  />
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );

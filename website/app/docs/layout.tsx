@@ -1,44 +1,32 @@
-import { Footer, Layout, Navbar } from 'nextra-theme-docs';
-import { getPageMap } from 'nextra/page-map';
+import { DocsLayout } from 'fumadocs-ui/layouts/docs';
+import React from 'react';
 
-import { BrandLogo } from '@/components/BrandLogo';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { DocsHeader } from '@/components/DocsHeader';
+import { baseOptions, gitConfig } from '@/lib/layout.shared';
+import { source } from '@/lib/source';
 
-// const banner = <Banner storageKey="nextra-banner">Welcome to DayFlow</Banner>;
-const navbar = (
-  <Navbar
-    logo={<BrandLogo />}
-    projectLink='https://github.com/dayflow-js/dayflow'
-    chatLink='https://discord.gg/9vdFZKJqBb'
-  >
-    <LanguageSwitcher />
-    <ThemeToggle />
-  </Navbar>
-);
-const footer = <Footer>MIT {new Date().getFullYear()} © DayFlow.</Footer>;
-
-export default async function DocsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function Layout({ children }: LayoutProps<'/docs'>) {
   return (
-    <Layout
-      // banner={banner}
-      navbar={navbar}
-      pageMap={await getPageMap('/docs')}
-      docsRepositoryBase='https://github.com/dayflow-js/dayflow/blob/main/website'
-      footer={footer}
-      sidebar={{
-        toggleButton: false,
+    <DocsLayout
+      tree={source.getPageTree()}
+      {...baseOptions()}
+      links={[]}
+      nav={{
+        component: (
+          <DocsHeader
+            githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}`}
+          />
+        ),
       }}
-      nextThemes={{
-        defaultTheme: 'system',
-        storageKey: 'theme',
+      sidebar={{ collapsible: false }}
+      containerProps={{
+        style: {
+          '--fd-banner-height': '56px',
+          gridTemplate: `"banner banner banner banner banner" 56px "sidebar sidebar header toc toc" "sidebar sidebar toc-popover toc toc" "sidebar sidebar main toc toc" 1fr / minmax(min-content, 1fr) var(--fd-sidebar-col) minmax(0, calc(var(--fd-layout-width,97rem) - var(--fd-sidebar-width) - var(--fd-toc-width))) var(--fd-toc-width) minmax(min-content, 1fr)`,
+        } as React.CSSProperties,
       }}
     >
       {children}
-    </Layout>
+    </DocsLayout>
   );
 }

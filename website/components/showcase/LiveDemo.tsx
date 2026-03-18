@@ -6,14 +6,14 @@ import InteractiveCalendarComponent from './InteractiveCalendar';
 
 export function LiveDemo() {
   return (
-    <div className='landingPage mx-auto px-0 sm:px-12'>
+    <div className='live-demo-container mx-auto'>
       <section className='space-y-12 py-8'>
         <div className='mx-auto text-center'>
           <span className='inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium tracking-wide text-blue-600 uppercase dark:bg-blue-500/10 dark:text-blue-300'>
             Calendar toolkit for product teams
           </span>
           <h1 className='mt-6 px-6 text-3xl leading-tight font-semibold sm:text-5xl'>
-            A lightweight and elegant full calendar component for the web
+            A lightweight and elegant full calendar component
           </h1>
           <p className='mt-4 text-base text-slate-600 sm:text-lg dark:text-slate-400'>
             DayFlow provides production-ready calendar views, drag-and-drop, and
@@ -42,6 +42,10 @@ export function LiveDemo() {
           <InteractiveCalendarComponent />
         </div>
       </section>
+
+      <footer className='py-8 text-center text-sm text-slate-500 dark:text-slate-400'>
+        MIT {new Date().getFullYear()} © DayFlow.
+      </footer>
     </div>
   );
 }

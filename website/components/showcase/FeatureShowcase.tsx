@@ -18,7 +18,7 @@ import { generateMinimalSampleEvents } from '@/utils/sampleData';
 
 import { CustomDetailDialogShowcase } from './CustomDetailDialogShowcase';
 
-import '@dayflow/core/dist/styles.css';
+import '@dayflow/core/dist/styles.components.css';
 
 type SwitcherMode = 'buttons' | 'select';
 
@@ -111,7 +111,7 @@ const DemoCalendar: React.FC<DemoCalendarProps> = ({
   const calendar = useDemoCalendar({ switcherMode, useEventDetailDialog });
 
   return (
-    <div className='rounded-xl bg-white dark:border-slate-700 dark:bg-slate-900'>
+    <div className='not-prose rounded-xl bg-white dark:border-slate-700 dark:bg-slate-900'>
       <DayFlowCalendar calendar={calendar} />
     </div>
   );

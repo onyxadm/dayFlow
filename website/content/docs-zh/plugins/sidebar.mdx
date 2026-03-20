@@ -42,6 +42,7 @@ function MyCalendar() {
 | `createCalendarMode`         | `'inline' \| 'modal'`                          | `'inline'`  | 创建日历表单的显示方式              |
 | `colorPickerMode`            | `'blossom' \| 'default'`                       | `'default'` | 使用的颜色选择器组件                |
 | `render`                     | `(props: CalendarSidebarRenderProps) => TNode` | `undefined` | 完全自定义侧边栏 UI                 |
+| `renderSidebarHeader`        | `(args: SidebarHeaderSlotArgs) => TNode`       | `undefined` | 自定义侧边栏头部渲染器              |
 | `renderCalendarContextMenu`  | `(calendar, onClose) => TNode`                 | `undefined` | 日历项的自定义右键菜单渲染器        |
 | `renderCreateCalendarDialog` | `(props) => TNode`                             | `undefined` | 自定义创建日历对话框渲染器          |
 
@@ -167,6 +168,26 @@ createSidebarPlugin({
 createSidebarPlugin({
   renderCreateCalendarDialog: ({ onCreate, onClose }) => (
     <MyCustomDialog onSave={onCreate} onCancel={onClose} />
+  ),
+});
+```
+
+## 自定义侧边栏头部
+
+可以替换默认的侧边栏头部（包含“日历”标题和折叠按钮的区域）：
+
+```tsx
+createSidebarPlugin({
+  renderSidebarHeader: ({ isCollapsed, onCollapseToggle }) => (
+    <div className='flex items-center justify-between p-4 border-b'>
+      {!isCollapsed && <span className='font-bold text-lg'>我的日历</span>}
+      <button
+        onClick={onCollapseToggle}
+        className='p-1 hover:bg-slate-100 rounded'
+      >
+        {isCollapsed ? '→' : '←'}
+      </button>
+    </div>
   ),
 });
 ```

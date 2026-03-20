@@ -39,6 +39,7 @@ export interface DayFlowCalendarProps {
   eventDetailDialog?: (args: EventDetailDialogProps) => ReactNode;
   /** Custom create calendar dialog (React) */
   createCalendarDialog?: (args: CreateCalendarDialogProps) => ReactNode;
+  /** Optional left padding to account for safe area insets (e.g. on Mac) */
   collapsedSafeAreaLeft?: number;
   /** Title bar slot (React) */
   titleBarSlot?: (context: TitleBarSlotProps) => ReactNode;
@@ -72,6 +73,9 @@ function computeActiveOverrides(
         }
         if (config['renderCalendarContextMenu']) {
           fromPlugins.push('calendarContextMenu');
+        }
+        if (config['renderSidebarHeader']) {
+          fromPlugins.push('sidebarHeader');
         }
       }
     });
@@ -174,14 +178,21 @@ export const DayFlowCalendar: FC<DayFlowCalendarProps> = ({
         app.state.plugins.forEach(plugin => {
           if (plugin.name === 'sidebar' && plugin.config) {
             const config = plugin.config as Record<string, unknown>;
-            if (generatorName === 'sidebar') {
-              generator = config['render'];
-            }
-            if (generatorName === 'createCalendarDialog') {
-              generator = config['renderCreateCalendarDialog'];
-            }
-            if (generatorName === 'calendarContextMenu') {
-              generator = config['renderCalendarContextMenu'];
+            switch (generatorName) {
+              case 'sidebar':
+                generator = config['render'];
+                break;
+              case 'createCalendarDialog':
+                generator = config['renderCreateCalendarDialog'];
+                break;
+              case 'calendarContextMenu':
+                generator = config['renderCalendarContextMenu'];
+                break;
+              case 'sidebarHeader':
+                generator = config['renderSidebarHeader'];
+                break;
+              default:
+                break;
             }
           }
         });

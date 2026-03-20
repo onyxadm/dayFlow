@@ -128,7 +128,7 @@ return <DayFlowCalendar calendar={calendar} />;
 ```
 
 - When `createSidebarPlugin()` is added to plugins, the default sidebar (`DefaultCalendarSidebar`) is rendered with calendar filters and toggle-all controls.
-- You can customize width, default collapsed state, creation mode (`createCalendarMode`), or supply your own renderer via `render`. Your renderer receives `CalendarSidebarRenderProps`, so you can reuse its helper callbacks and data.
+- You can customize width, default collapsed state, creation mode (`createCalendarMode`), or supply your own renderer via `render` or `renderSidebarHeader`. Your renderer receives `CalendarSidebarRenderProps` (for `render`) or `SidebarHeaderSlotArgs` (for `renderSidebarHeader`), so you can reuse its helper callbacks and data.
 
 ## Event Detail Experiences
 

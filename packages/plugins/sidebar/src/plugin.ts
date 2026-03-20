@@ -4,6 +4,7 @@ import {
   CalendarType,
   TNode,
   CreateCalendarDialogProps,
+  SidebarHeaderSlotArgs,
   registerSidebarImplementation,
   SidebarBridgeReturn,
   normalizeCssWidth,
@@ -30,6 +31,8 @@ const COLORS = [
   '#957e5e',
 ];
 
+export type { SidebarHeaderSlotArgs };
+
 export interface CalendarSidebarRenderProps {
   app: ICalendarApp;
   calendars: CalendarType[];
@@ -41,6 +44,7 @@ export interface CalendarSidebarRenderProps {
     calendar: CalendarType,
     onClose: () => void
   ) => TNode;
+  renderSidebarHeader?: (args: SidebarHeaderSlotArgs) => TNode;
   createCalendarMode?: 'inline' | 'modal';
   renderCreateCalendarDialog?: (props: CreateCalendarDialogProps) => TNode;
   editingCalendarId?: string | null;
@@ -58,6 +62,7 @@ export interface SidebarPluginConfig {
     calendar: CalendarType,
     onClose: () => void
   ) => TNode;
+  renderSidebarHeader?: (args: SidebarHeaderSlotArgs) => TNode;
   renderCreateCalendarDialog?: (props: CreateCalendarDialogProps) => TNode;
   [key: string]: unknown;
 }
@@ -156,6 +161,7 @@ export function createSidebarPlugin(
               isCollapsed,
               setCollapsed: setIsCollapsed,
               renderCalendarContextMenu: config.renderCalendarContextMenu,
+              renderSidebarHeader: config.renderSidebarHeader,
               createCalendarMode: config.createCalendarMode,
               renderCreateCalendarDialog: config.renderCreateCalendarDialog,
               editingCalendarId,

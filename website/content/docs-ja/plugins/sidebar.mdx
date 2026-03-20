@@ -42,6 +42,7 @@ function MyCalendar() {
 | `createCalendarMode`         | `'inline' \| 'modal'`                          | `'inline'`  | カレンダー作成フォームの表示方法                       |
 | `colorPickerMode`            | `'blossom' \| 'default'`                       | `'default'` | 使用するカラーピッカーコンポーネント                   |
 | `render`                     | `(props: CalendarSidebarRenderProps) => TNode` | `undefined` | サイドバー UI を完全にオーバーライドします             |
+| `renderSidebarHeader`        | `(args: SidebarHeaderSlotArgs) => TNode`       | `undefined` | カスタムサイドバーヘッダーレンダラー                   |
 | `renderCalendarContextMenu`  | `(calendar, onClose) => TNode`                 | `undefined` | カレンダー項目のカスタムコンテキストメニューレンダラー |
 | `renderCreateCalendarDialog` | `(props) => TNode`                             | `undefined` | カスタムカレンダー作成ダイアログレンダラー             |
 
@@ -167,6 +168,28 @@ createSidebarPlugin({
 createSidebarPlugin({
   renderCreateCalendarDialog: ({ onCreate, onClose }) => (
     <MyCustomDialog onSave={onCreate} onCancel={onClose} />
+  ),
+});
+```
+
+## カスタムサイドバーヘッダー
+
+デフォルトのサイドバーヘッダー（「カレンダー」というタイトルと折りたたみボタンがある領域）を置き換えることができます：
+
+```tsx
+createSidebarPlugin({
+  renderSidebarHeader: ({ isCollapsed, onCollapseToggle }) => (
+    <div className='flex items-center justify-between p-4 border-b'>
+      {!isCollapsed && (
+        <span className='font-bold text-lg'>マイカレンダー</span>
+      )}
+      <button
+        onClick={onCollapseToggle}
+        className='p-1 hover:bg-slate-100 rounded'
+      >
+        {isCollapsed ? '→' : '←'}
+      </button>
+    </div>
   ),
 });
 ```

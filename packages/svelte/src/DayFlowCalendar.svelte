@@ -13,6 +13,7 @@
     EventContentSlotArgs,
     ColorPickerProps,
     CreateCalendarDialogColorPickerProps,
+    SidebarHeaderSlotArgs,
   } from "@dayflow/core";
 
   const {
@@ -31,6 +32,7 @@
     titleBarSlot = null,
     colorPicker = null,
     createCalendarDialogColorPicker = null,
+    sidebarHeader = null,
     collapsedSafeAreaLeft = null,
   } = $props<{
     calendar: ICalendarApp | UseCalendarAppReturn;
@@ -48,6 +50,7 @@
     titleBarSlot?: Component<TitleBarSlotProps>;
     colorPicker?: Component<ColorPickerProps>;
     createCalendarDialogColorPicker?: Component<CreateCalendarDialogColorPickerProps>;
+    sidebarHeader?: Component<SidebarHeaderSlotArgs>;
     collapsedSafeAreaLeft?: number | null;
   }>();
 
@@ -79,6 +82,7 @@
     titleBarSlot,
     colorPicker,
     createCalendarDialogColorPicker,
+    sidebarHeader,
     collapsedSafeAreaLeft,
   } as Record<string, unknown>);
 

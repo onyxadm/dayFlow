@@ -42,6 +42,7 @@ function MyCalendar() {
 | `createCalendarMode`         | `'inline' \| 'modal'`                          | `'inline'`  | How the "create calendar" form is displayed     |
 | `colorPickerMode`            | `'blossom' \| 'default'`                       | `'default'` | Which color picker component to use             |
 | `render`                     | `(props: CalendarSidebarRenderProps) => TNode` | `undefined` | Full override for the sidebar UI                |
+| `renderSidebarHeader`        | `(args: SidebarHeaderSlotArgs) => TNode`       | `undefined` | Custom sidebar header renderer                  |
 | `renderCalendarContextMenu`  | `(calendar, onClose) => TNode`                 | `undefined` | Custom context menu renderer for calendar items |
 | `renderCreateCalendarDialog` | `(props) => TNode`                             | `undefined` | Custom create-calendar dialog renderer          |
 
@@ -167,6 +168,26 @@ You can replace the default create-calendar dialog:
 createSidebarPlugin({
   renderCreateCalendarDialog: ({ onCreate, onClose }) => (
     <MyCustomDialog onSave={onCreate} onCancel={onClose} />
+  ),
+});
+```
+
+## Custom Sidebar Header
+
+You can replace the default sidebar header (the area with the "Calendars" title and collapse toggle):
+
+```tsx
+createSidebarPlugin({
+  renderSidebarHeader: ({ isCollapsed, onCollapseToggle }) => (
+    <div className='flex items-center justify-between p-4 border-b'>
+      {!isCollapsed && <span className='font-bold text-lg'>My Calendars</span>}
+      <button
+        onClick={onCollapseToggle}
+        className='p-1 hover:bg-slate-100 rounded'
+      >
+        {isCollapsed ? '→' : '←'}
+      </button>
+    </div>
   ),
 });
 ```

@@ -1,10 +1,44 @@
-import { DragConfig } from './config';
-import { ViewType } from './core';
-import { MonthDragState, WeekDayDragState } from './dragIndicator';
+import { CalendarType } from './calendarTypes';
 // Plugin-related type definitions
+import { DragConfig } from './config';
+import { ICalendarApp, ViewType } from './core';
+import { MonthDragState, WeekDayDragState } from './dragIndicator';
 import { Event } from './event';
 import { EventLayout } from './layout';
 
+// Sidebar Plugin Slot Args
+export interface TitleBarSlotProps {
+  isCollapsed: boolean;
+  toggleCollapsed: () => void;
+}
+
+export interface SidebarHeaderSlotArgs {
+  isCollapsed: boolean;
+  onCollapseToggle: () => void;
+}
+
+export interface CreateCalendarDialogColorPickerProps {
+  color: string;
+  onChange: (color: { hex: string }) => void;
+  onAccept?: () => void;
+  onCancel?: () => void;
+  // oxlint-disable-next-line typescript/no-explicit-any
+  styles?: any;
+}
+
+export interface ColorPickerProps {
+  color: string;
+  onChange: (color: { hex: string }) => void;
+  onChangeComplete?: (color: { hex: string }) => void;
+}
+
+export interface CreateCalendarDialogProps {
+  onClose: () => void;
+  onCreate: (calendar: CalendarType) => void;
+  app: ICalendarApp;
+}
+
+// Events Plugin
 /**
  * Events service interface
  * Provides various event management functions

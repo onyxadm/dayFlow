@@ -95,31 +95,6 @@ export interface CalendarCallbacks {
   onDismissUI?: () => void | Promise<void>;
 }
 
-export interface TitleBarSlotProps {
-  isCollapsed: boolean;
-  toggleCollapsed: () => void;
-}
-
-export interface CreateCalendarDialogColorPickerProps {
-  color: string;
-  onChange: (color: { hex: string }) => void;
-  onAccept?: () => void;
-  onCancel?: () => void;
-  styles?: any;
-}
-
-export interface ColorPickerProps {
-  color: string;
-  onChange: (color: { hex: string }) => void;
-  onChangeComplete?: (color: { hex: string }) => void;
-}
-
-export interface CreateCalendarDialogProps {
-  onClose: () => void;
-  onCreate: (calendar: CalendarType) => void;
-  app: ICalendarApp;
-}
-
 export interface CalendarHeaderProps {
   calendar: ICalendarApp;
   switcherMode?: ViewSwitcherMode;

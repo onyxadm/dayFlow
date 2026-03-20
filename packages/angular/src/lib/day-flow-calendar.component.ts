@@ -23,7 +23,6 @@ import type {
   EventContentSlotArgs,
   ColorPickerProps,
   CreateCalendarDialogColorPickerProps,
-  SidebarHeaderSlotArgs,
 } from '@dayflow/core';
 import { CalendarRenderer, CalendarApp } from '@dayflow/core';
 

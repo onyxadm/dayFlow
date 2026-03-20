@@ -263,7 +263,7 @@ async function main() {
   p.note(nextSteps, 'Next steps');
 
   p.outro(
-    `${pc.green('✓')} DayFlow is ready! See ${pc.cyan('https://dayflow.dev/docs')} for documentation.`
+    `${pc.green('✓')} DayFlow is ready! See ${pc.cyan('https://dayflow-js.github.io/calendar/docs/introduction')} for documentation.`
   );
 }
 

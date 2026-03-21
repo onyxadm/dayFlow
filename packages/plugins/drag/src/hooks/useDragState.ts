@@ -149,6 +149,11 @@ export const useDragState = (options: useDragProps): UseDragStateReturn => {
       originalEndTime: null,
       sourceElement: null,
       indicatorVisible: false,
+      initialIndicatorLeft: undefined,
+      initialIndicatorTop: undefined,
+      initialIndicatorWidth: undefined,
+      initialIndicatorHeight: undefined,
+      indicatorContainer: null,
     };
   }, [isMonthView]);
 

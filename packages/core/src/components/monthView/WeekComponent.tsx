@@ -520,58 +520,15 @@ const WeekComponent = memo(
       return occupied;
     }, [organizedMultiDaySegments]);
 
-    // Calculate effective max layers for multi-day overlay
-    // If any day needs "+ x more" indicator, must use maxSlotsWithMore for the overlay
-    const effectiveMaxLayers = useMemo(() => {
-      // Check if any day has more total visual slots than maxSlots
-      // Timed events can fill gaps in multi-day layers, so need to calculate properly
-      for (let dayIndex = 0; dayIndex < weekData.days.length; dayIndex++) {
-        const day = weekData.days[dayIndex];
-        const dayEvents = eventsByDayDate.get(day.date.toDateString()) ?? [];
-
-        // Filter out all-day events that have segments (they're already counted in multi-day layers)
-        const timedEvents = dayEvents.filter(event => {
-          if (!event.allDay) return true;
-          const hasSegment = allSegments.some(
-            seg => seg.originalEventId === event.id
-          );
-          return !hasSegment;
-        });
-        // Calculate total slots needed considering that timed events can fill gaps
-        const occupiedLayers = dayOccupiedLayers[dayIndex];
-        const maxOccupiedLayer = dayLayerCounts[dayIndex] - 1;
-        // Count gaps (empty layers within the multi-day range)
-        let gapCount = 0;
-        for (let i = 0; i <= maxOccupiedLayer; i++) {
-          if (!occupiedLayers.has(i)) {
-            gapCount++;
-          }
-        }
-        // Timed events first fill gaps, then extend beyond maxOccupiedLayer
-        const timedEventsAfterGaps = Math.max(0, timedEvents.length - gapCount);
-        const totalVisualSlots = maxOccupiedLayer + 1 + timedEventsAfterGaps;
-
-        if (totalVisualSlots > layoutParams.maxSlots) {
-          // This day needs "+ x more", so use maxSlotsWithMore for the whole week
-          return layoutParams.maxSlotsWithMore;
-        }
-      }
-      // No day needs "+ x more", use maxSlots
-      return layoutParams.maxSlots;
-    }, [
-      weekData.days,
-      eventsByDayDate,
-      allSegments,
-      dayLayerCounts,
-      dayOccupiedLayers,
-      layoutParams.maxSlots,
-      layoutParams.maxSlotsWithMore,
-    ]);
+    const overlayVisibleLayerCount = useMemo(
+      () => Math.min(organizedMultiDaySegments.length, layoutParams.maxSlots),
+      [organizedMultiDaySegments.length, layoutParams.maxSlots]
+    );
 
     // Calculate the height of the multi-day event area
     const multiDayAreaHeight = useMemo(
-      () => Math.max(0, organizedMultiDaySegments.length * ROW_SPACING),
-      [organizedMultiDaySegments]
+      () => Math.max(0, overlayVisibleLayerCount * ROW_SPACING),
+      [overlayVisibleLayerCount]
     );
 
     // Render date cell
@@ -632,6 +589,18 @@ const WeekComponent = memo(
         ? layoutParams.maxSlotsWithMore
         : layoutParams.maxSlots;
 
+      let hiddenSegmentCount = 0;
+      organizedMultiDaySegments.slice(displaySlotLimit).forEach(layer => {
+        layer.forEach(segment => {
+          if (
+            segment.startDayIndex <= dayIndex &&
+            segment.endDayIndex >= dayIndex
+          ) {
+            hiddenSegmentCount++;
+          }
+        });
+      });
+
       // Calculate how many timed events can display
       // Available slots for timed events = gaps within limit + slots after maxOccupiedLayer within limit
       const gapsWithinLimit = gapLayers.filter(
@@ -647,7 +616,12 @@ const WeekComponent = memo(
       );
 
       const displayEvents = timedEventsOnly.slice(0, displayCount);
-      const hiddenEventsCount = totalTimedEvents - displayCount;
+      const hiddenEventsCount =
+        hiddenSegmentCount + (totalTimedEvents - displayCount);
+      const maskHiddenOverlayRows =
+        hasMoreEvents && overlayVisibleLayerCount > displaySlotLimit;
+      const hiddenOverlayHeight =
+        (overlayVisibleLayerCount - displaySlotLimit) * ROW_SPACING;
 
       // Create render array - need to interleave placeholders and timed events
       const renderElements: unknown[] = [];
@@ -787,7 +761,16 @@ const WeekComponent = memo(
           </div>
 
           {/* Event display area */}
-          <div className='flex-1 overflow-hidden px-1'>
+          <div className='relative flex-1 overflow-hidden px-1'>
+            {maskHiddenOverlayRows && (
+              <div
+                className='pointer-events-none absolute right-0 left-0 z-[15] bg-white dark:bg-gray-900'
+                style={{
+                  top: `${displaySlotLimit * ROW_SPACING}px`,
+                  height: `${hiddenOverlayHeight}px`,
+                }}
+              />
+            )}
             {renderElements}
 
             {/* More events indicator */}
@@ -865,7 +848,7 @@ const WeekComponent = memo(
                 }}
               >
                 {organizedMultiDaySegments
-                  .slice(0, effectiveMaxLayers)
+                  .slice(0, overlayVisibleLayerCount)
                   .map((layer, layerIndex) => (
                     <div
                       key={`layer-${layerIndex}`}

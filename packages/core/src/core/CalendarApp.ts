@@ -59,6 +59,7 @@ export class CalendarApp implements ICalendarApp {
       selectedEventId: null,
       readOnly: config.readOnly || false,
       overrides: [],
+      allDaySortComparator: config.allDaySortComparator,
     };
 
     this.callbacks = config.callbacks || {};
@@ -796,6 +797,13 @@ export class CalendarApp implements ICalendarApp {
         this.state.locale = newLocale;
         hasChanged = true;
       }
+    }
+    if (
+      config.allDaySortComparator !== undefined &&
+      config.allDaySortComparator !== this.state.allDaySortComparator
+    ) {
+      this.state.allDaySortComparator = config.allDaySortComparator;
+      hasChanged = true;
     }
 
     if (hasChanged) {

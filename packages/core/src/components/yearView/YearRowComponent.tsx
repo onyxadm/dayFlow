@@ -79,8 +79,14 @@ export const YearRowComponent = memo(
     };
 
     const segments = useMemo(
-      () => analyzeMultiDayEventsForRow(events, rowDays, columnsPerRow),
-      [events, rowDays, columnsPerRow]
+      () =>
+        analyzeMultiDayEventsForRow(
+          events,
+          rowDays,
+          columnsPerRow,
+          app.state.allDaySortComparator
+        ),
+      [events, rowDays, columnsPerRow, app.state.allDaySortComparator]
     );
 
     const { visibleSegments, moreCounts } = useMemo(() => {

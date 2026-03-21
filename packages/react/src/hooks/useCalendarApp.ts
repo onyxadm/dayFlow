@@ -1,5 +1,5 @@
 import type { CalendarAppConfig, UseCalendarAppReturn } from '@dayflow/core';
-import { CalendarApp } from '@dayflow/core';
+import { CalendarApp, isDeepEqual } from '@dayflow/core';
 import { useState, useEffect, useMemo, useRef } from 'react';
 
 export function useCalendarApp(
@@ -26,7 +26,7 @@ export function useCalendarApp(
 
   // Sync config changes to the app instance
   useEffect(() => {
-    if (app && config !== configRef.current) {
+    if (app && !isDeepEqual(config, configRef.current)) {
       app.updateConfig(config);
       configRef.current = config;
     }

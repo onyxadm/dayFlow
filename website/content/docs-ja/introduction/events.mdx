@@ -289,6 +289,43 @@ const nightShift: Event = {
 };
 ```
 
+## イベントメタデータ
+
+`meta` フィールドにはあらゆる追加情報を格納できます。
+
+```tsx
+import { Temporal } from 'temporal-polyfill';
+import { Event } from '@dayflow/core';
+
+const event: Event = {
+  id: '1',
+  title: 'プロジェクトキックオフ',
+  start: Temporal.ZonedDateTime.from('2024-10-15T10:00:00[America/New_York]'),
+  end: Temporal.ZonedDateTime.from('2024-10-15T11:00:00[America/New_York]'),
+  meta: {
+    // ミーティング詳細
+    location: '会議室 A',
+    meetingUrl: 'https://zoom.us/j/123456',
+
+    // 参加者情報
+    organizer: 'john@example.com',
+    attendees: ['jane@example.com', 'bob@example.com'],
+
+    // カスタムフィールド
+    project: 'プロジェクト X',
+    priority: 'high',
+    tags: ['planning', 'kickoff'],
+
+    // 繰り返し情報
+    recurring: true,
+    recurrenceRule: 'FREQ=WEEKLY;BYDAY=MO',
+
+    // その他任意のデータ
+    customField: 'custom value',
+  },
+};
+```
+
 ## ベストプラクティス
 
 1. **ID は必ず一意に**：UUID もしくはバックエンドの ID をそのまま使う
@@ -299,7 +336,14 @@ const nightShift: Event = {
 6. **開始と終了の整合性をチェック**：`start < end` を守るとバグを防げる
 7. **バッチ更新を検討**：大量更新はまとめて `updateEvents` 相当の処理に寄せる
 
-## 参考リンク
+## 型リファレンス
 
-- 型定義：`src/types/event.ts`
-- 関連ドキュメント：[ビュー](/docs-ja/introduction/views) / [はじめに](/docs-ja/introduction)
+日付と時刻の処理の詳細については以下を参照してください。
+
+- イベントインターフェース：`src/types/event.ts`
+
+## 関連ドキュメント
+
+- [ビュー](/docs-ja/introduction/views) - カレンダービューについて
+- [プラグイン](/docs-ja/plugins/overview) - プラグインによるイベント管理
+- [はじめに](/docs-ja/introduction) - 基本的な使い方

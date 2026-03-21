@@ -119,3 +119,39 @@ app.unsubscribeThemeChange(callback: (theme: ThemeMode) => void): void;
 3. 若使用 `auto` 模式，记得在系统主题切换时手动测试一次，确保没有闪烁。
 
 通过这些配置，DayFlow 可以轻松融入任何品牌配色与暗色策略中。
+
+## 示例
+
+### 简单主题切换
+
+```tsx
+import { DayFlowCalendar, useCalendarApp } from '@dayflow/core';
+import { Sun, Moon } from 'lucide-react';
+
+function SimpleThemeToggle() {
+  const calendar = useCalendarApp({
+    theme: { mode: 'light' },
+  });
+
+  const [isDark, setIsDark] = useState(false);
+
+  const toggleTheme = () => {
+    const nextTheme = isDark ? 'light' : 'dark';
+    calendar.app.setTheme(nextTheme);
+    setIsDark(!isDark);
+  };
+
+  return (
+    <div>
+      <button onClick={toggleTheme}>{isDark ? <Sun /> : <Moon />}</button>
+      <DayFlowCalendar calendar={calendar} />
+    </div>
+  );
+}
+```
+
+## 相关文档
+
+- [useCalendarApp](/docs-zh/introduction/use-calendar-app) - 核心日历配置
+- [日历类型](/docs-zh/introduction/events#calendar-types) - 事件分类与颜色
+- [主题自定义指南](/docs-zh/guides/theme-customization) - 高级主题设置

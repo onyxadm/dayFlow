@@ -99,8 +99,7 @@ export const useDragCommon = (options: useDragProps): UseDragCommonReturn => {
     (clientY: number): boolean => {
       if (isMonthView || !allDayRowRef?.current) return false;
       const allDayRect = allDayRowRef.current.getBoundingClientRect();
-      // Considered in all-day area if within the row or above it (e.g. in header)
-      return clientY <= allDayRect.bottom;
+      return clientY >= allDayRect.top && clientY <= allDayRect.bottom;
     },
     [allDayRowRef, isMonthView]
   );
@@ -127,24 +126,25 @@ export const useDragCommon = (options: useDragProps): UseDragCommonReturn => {
       )
         return null;
 
-      const element = document.elementFromPoint(clientX, clientY);
-      if (!element) return null;
+      const hitElements = document.elementsFromPoint(clientX, clientY);
+      for (const element of hitElements) {
+        let dateElement = element as HTMLElement | null;
+        let searchDepth = 0;
 
-      let dateElement = element as HTMLElement | null;
-      let searchDepth = 0;
-      while (
-        dateElement &&
-        !Object.hasOwn(dateElement.dataset, 'date') &&
-        searchDepth < 10
-      ) {
-        dateElement = dateElement.parentElement as HTMLElement | null;
-        searchDepth++;
-      }
+        while (
+          dateElement &&
+          !Object.hasOwn(dateElement.dataset, 'date') &&
+          searchDepth < 10
+        ) {
+          dateElement = dateElement.parentElement as HTMLElement | null;
+          searchDepth++;
+        }
 
-      if (dateElement && Object.hasOwn(dateElement.dataset, 'date')) {
-        const dateStr = dateElement.dataset.date;
-        if (dateStr) {
-          return new Date(dateStr + 'T00:00:00');
+        if (dateElement && Object.hasOwn(dateElement.dataset, 'date')) {
+          const dateStr = dateElement.dataset.date;
+          if (dateStr) {
+            return new Date(dateStr + 'T00:00:00');
+          }
         }
       }
 

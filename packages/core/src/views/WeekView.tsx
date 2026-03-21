@@ -5,6 +5,7 @@ import {
   useMemo,
   useRef,
   useLayoutEffect,
+  useCallback,
 } from 'preact/hooks';
 
 import ViewHeader from '@/components/common/ViewHeader';
@@ -401,8 +402,19 @@ const WeekView = ({
 
   // Organize the hierarchy of all-day events to avoid overlap
   const organizedAllDaySegments = useMemo(
-    () => organizeAllDaySegments(currentWeekEvents, displayStart, displayDays),
-    [currentWeekEvents, displayStart, displayDays]
+    () =>
+      organizeAllDaySegments(
+        currentWeekEvents,
+        displayStart,
+        displayDays,
+        app.state.allDaySortComparator
+      ),
+    [
+      currentWeekEvents,
+      displayStart,
+      displayDays,
+      app.state.allDaySortComparator,
+    ]
   );
 
   // Calculate the required height for the all-day event area
@@ -426,20 +438,8 @@ const WeekView = ({
     [currentWeekEvents, displayStart, displayDays]
   );
 
-  // Use drag functionality provided by the plugin
-  const {
-    handleMoveStart,
-    handleCreateStart,
-    handleResizeStart,
-    handleCreateAllDayEvent,
-    dragState,
-    isDragging,
-  } = useDragForView(app, {
-    calendarRef,
-    allDayRowRef: showAllDay ? allDayRowRef : undefined,
-    timeGridRef,
-    viewType: DragViewType.WEEK,
-    onEventsUpdate: (
+  const handleEventsUpdate = useCallback(
+    (
       updateFunc: (events: Event[]) => Event[],
       isResizing?: boolean,
       source?: 'drag' | 'resize'
@@ -474,7 +474,11 @@ const WeekView = ({
         source
       );
     },
-    onEventCreate: (event: Event) => {
+    [currentWeekEvents, app]
+  );
+
+  const handleEventCreate = useCallback(
+    (event: Event) => {
       if (isMobile) {
         setDraftEvent(event);
         setIsDrawerOpen(true);
@@ -483,18 +487,25 @@ const WeekView = ({
         setNewlyCreatedEventId(event.id);
       }
     },
-    onEventEdit: () => {
-      /* noop */
-    },
-    currentWeekStart: displayStart,
-    events: currentWeekEvents,
-    calculateNewEventLayout: (targetDay, startHour, endHour) =>
+    [isMobile, app]
+  );
+
+  const handleEventEdit = useCallback(() => {
+    /* noop */
+  }, []);
+
+  const handleCalculateNewEventLayout = useCallback(
+    (targetDay: number, startHour: number, endHour: number) =>
       calculateNewEventLayout(targetDay, startHour, endHour, currentWeekEvents),
-    calculateDragLayout: (
-      draggedEvent,
-      targetDay,
-      targetStartHour,
-      targetEndHour
+    [currentWeekEvents]
+  );
+
+  const handleCalculateDragLayout = useCallback(
+    (
+      draggedEvent: Event,
+      targetDay: number,
+      targetStartHour: number,
+      targetEndHour: number
     ) =>
       calculateDragLayout(
         draggedEvent,
@@ -503,11 +514,52 @@ const WeekView = ({
         targetEndHour,
         currentWeekEvents
       ),
-    TIME_COLUMN_WIDTH: sidebarWidth,
-    isMobile,
-    gridWidth,
-    displayDays,
-  });
+    [currentWeekEvents]
+  );
+
+  const dragOptions = useMemo(
+    () => ({
+      calendarRef,
+      allDayRowRef: showAllDay ? allDayRowRef : undefined,
+      timeGridRef,
+      viewType: DragViewType.WEEK,
+      onEventsUpdate: handleEventsUpdate,
+      onEventCreate: handleEventCreate,
+      onEventEdit: handleEventEdit,
+      currentWeekStart: displayStart,
+      events: currentWeekEvents,
+      calculateNewEventLayout: handleCalculateNewEventLayout,
+      calculateDragLayout: handleCalculateDragLayout,
+      TIME_COLUMN_WIDTH: sidebarWidth,
+      isMobile,
+      gridWidth,
+      displayDays,
+    }),
+    [
+      calendarRef,
+      showAllDay,
+      handleEventsUpdate,
+      handleEventCreate,
+      handleEventEdit,
+      displayStart,
+      currentWeekEvents,
+      handleCalculateNewEventLayout,
+      handleCalculateDragLayout,
+      sidebarWidth,
+      isMobile,
+      gridWidth,
+      displayDays,
+    ]
+  );
+
+  const {
+    handleMoveStart,
+    handleCreateStart,
+    handleResizeStart,
+    handleCreateAllDayEvent,
+    dragState,
+    isDragging,
+  } = useDragForView(app, dragOptions);
 
   const handleTouchStart = (e: TouchEvent, dayIndex: number, hour: number) => {
     if (!isMobile && !isTouch) return;

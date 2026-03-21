@@ -125,11 +125,14 @@ const DefaultEventDetailPanel = ({
     const plainDate = isPlainDate(event.start)
       ? event.start
       : event.start.toPlainDate();
+    const plainEndDate = isPlainDate(event.end)
+      ? event.end
+      : event.end.toPlainDate();
     onEventUpdate({
       ...event,
       allDay: true,
       start: plainDate,
-      end: plainDate,
+      end: plainEndDate,
     });
   };
 

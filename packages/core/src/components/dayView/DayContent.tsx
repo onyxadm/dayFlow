@@ -257,7 +257,7 @@ export const DayContent = ({
           <div
             className={cn(
               allDayRow,
-              'items-stretch border-t border-gray-200 dark:border-gray-700'
+              'relative items-stretch border-t border-gray-200 dark:border-gray-700'
             )}
             ref={allDayRowRef}
             style={{

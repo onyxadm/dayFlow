@@ -152,7 +152,7 @@ export const useDragManager = (options: useDragProps): UseDragManagerReturn => {
       } else {
         // Week/Day view indicator
         const targetContainer = drag.allDay
-          ? allDayRowRef?.current
+          ? drag.indicatorContainer || allDayRowRef?.current
           : timeGridRef?.current ||
             calendarRef.current?.querySelector('.df-calendar-content');
         const isInsideTimeGrid =
@@ -172,20 +172,14 @@ export const useDragManager = (options: useDragProps): UseDragManagerReturn => {
 
           if (containerRect) {
             if (drag.allDay && isDayView) {
-              indicator.style.left = `${TIME_COLUMN_WIDTH}px`;
-              indicator.style.top = `${sourceElement.offsetTop - 2}px`;
-              const gutterOffset = isMobile ? 0 : 11;
-              indicator.style.width = `calc(100% - ${TIME_COLUMN_WIDTH}px - ${2 + gutterOffset}px)`;
+              indicator.style.left = `${sourceRect.left - containerRect.left}px`;
+              indicator.style.top = `${sourceRect.top - containerRect.top}px`;
+              indicator.style.width = `${sourceRect.width}px`;
               indicator.style.height = `${sourceRect.height}px`;
             } else if (drag.allDay && !isDayView) {
-              const totalWidth =
-                options.gridWidth || (isMobile ? '175%' : '100%');
-              const daysToShow = options.displayDays || 7;
-              const dayColumnWidth = `calc(${totalWidth} / ${daysToShow})`;
-
-              indicator.style.left = `calc(${dayColumnWidth} * ${drag.dayIndex})`;
-              indicator.style.top = `${sourceElement.offsetTop - 2}px`;
-              indicator.style.width = `calc(${dayColumnWidth} - 2px)`;
+              indicator.style.left = `${sourceRect.left - containerRect.left}px`;
+              indicator.style.top = `${sourceRect.top - containerRect.top}px`;
+              indicator.style.width = `${sourceRect.width}px`;
               indicator.style.height = `${sourceRect.height}px`;
             } else {
               const top = (drag.startHour - FIRST_HOUR) * HOUR_HEIGHT;
@@ -206,6 +200,7 @@ export const useDragManager = (options: useDragProps): UseDragManagerReturn => {
             }
 
             indicator.className = sourceElement.className;
+            indicator.style.margin = '0';
             indicator.style.opacity = '0.8';
             indicator.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
           }
@@ -357,10 +352,11 @@ export const useDragManager = (options: useDragProps): UseDragManagerReturn => {
       } else {
         const [dayIndex, startHour, endHour, isAllDay = false, layout] =
           args as [number, number, number, boolean?, EventLayout?];
+        const currentDrag = dragPropsRef.current?.drag;
 
         // Ensure in correct container
         const targetContainer = isAllDay
-          ? allDayRowRef?.current
+          ? currentDrag?.indicatorContainer || allDayRowRef?.current
           : timeGridRef?.current ||
             calendarRef.current?.querySelector('.df-calendar-content');
 
@@ -372,21 +368,44 @@ export const useDragManager = (options: useDragProps): UseDragManagerReturn => {
           !isAllDay && targetContainer === timeGridRef?.current;
 
         if (isAllDay) {
-          if (isDayView) {
+          const hasInitialAllDayGeometry =
+            currentDrag?.initialIndicatorLeft !== undefined &&
+            currentDrag?.initialIndicatorTop !== undefined &&
+            currentDrag?.initialIndicatorWidth !== undefined &&
+            currentDrag?.initialIndicatorHeight !== undefined;
+
+          if (hasInitialAllDayGeometry) {
+            indicator.style.top = `${currentDrag.initialIndicatorTop}px`;
+            indicator.style.width = `${currentDrag.initialIndicatorWidth}px`;
+            indicator.style.height = `${currentDrag.initialIndicatorHeight}px`;
+
+            if (isDayView) {
+              indicator.style.left = `${currentDrag.initialIndicatorLeft}px`;
+            } else {
+              const containerWidth =
+                targetContainer?.getBoundingClientRect().width || 0;
+              const daysToShow = options.displayDays || 7;
+              const dayColumnWidth = containerWidth / daysToShow;
+              const startDayIndex = currentDrag.startDragDayIndex ?? dayIndex;
+              const dayDelta = dayIndex - startDayIndex;
+              indicator.style.left = `${currentDrag.initialIndicatorLeft + dayDelta * dayColumnWidth}px`;
+            }
+          } else if (isDayView) {
+            indicator.style.top = '2px';
             indicator.style.left = `${TIME_COLUMN_WIDTH}px`;
             const gutterOffset = isMobile ? 0 : 11;
             indicator.style.width = `calc(100% - ${TIME_COLUMN_WIDTH}px - ${2 + gutterOffset}px)`;
+            indicator.style.height = `${ALL_DAY_HEIGHT - 4}px`;
           } else {
+            indicator.style.top = '2px';
             const totalWidth =
               options.gridWidth || (isMobile && !isDayView ? '175%' : '100%');
             const daysToShow = options.displayDays || 7;
             const dayColumnWidth = `calc(${totalWidth} / ${daysToShow})`;
             indicator.style.left = `calc(${dayColumnWidth} * ${dayIndex})`;
             indicator.style.width = `calc(${dayColumnWidth} - 2px)`;
-            indicator.style.top = '2px';
+            indicator.style.height = `${ALL_DAY_HEIGHT - 4}px`;
           }
-
-          indicator.style.height = `${ALL_DAY_HEIGHT - 4}px`;
           indicator.style.marginBottom = '3px';
           indicator.className = indicator.className.replace(
             'rounded-sm',

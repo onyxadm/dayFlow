@@ -275,7 +275,7 @@ export const AllDayRow = ({
             {/* All-day event area */}
             {showAllDay && (
               <div
-                className={`${allDayRow} border-none transition-[min-height] duration-300 ease-in-out`}
+                className={`${allDayRow} relative border-none transition-[min-height] duration-300 ease-in-out`}
                 ref={allDayRowRef}
                 style={{ minHeight: `${allDayAreaHeight}px` }}
               >

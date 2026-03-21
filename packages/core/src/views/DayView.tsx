@@ -230,8 +230,9 @@ const DayView = ({
 
   // Organize all-day events into rows to avoid overlap
   const organizedAllDayEvents = useMemo(
-    () => organizeAllDayEvents(currentDayEvents),
-    [currentDayEvents]
+    () =>
+      organizeAllDayEvents(currentDayEvents, app.state.allDaySortComparator),
+    [currentDayEvents, app.state.allDaySortComparator]
   );
 
   const allDayAreaHeight = useMemo(() => {

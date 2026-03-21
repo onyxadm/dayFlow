@@ -115,3 +115,55 @@ app.unsubscribeThemeChange((mode: ThemeMode) => void): void;
 3. `auto` モードを使う場合は、OS のテーマ変更イベントを実機で試し、即時反映されるかチェックする。
 
 この仕組みを使えば、DayFlow を既存アプリのテーマ戦略にスムーズに統合できます。
+
+## カラー推奨事項
+
+読みやすさとアクセシビリティを最適化するために：
+
+**ライトモード：**
+
+- 線の色：鮮やかで彩度の高い色 (#0066cc、#16a34a)
+- イベント色：明るいティント (#e6f2ff、#dcfce7)
+- テキスト色：コントラストのための暗い色調 (#003d7a、#14532d)
+
+**ダークモード：**
+
+- 線の色：より明るく発光感のある色 (#4da6ff、#4ade80)
+- イベント色：暗く彩度を落とした背景 (#1a3d5c、#1e4d2b)
+- テキスト色：読みやすい明るい色調 (#b3d9ff、#bbf7d0)
+
+## 使用例
+
+### シンプルなテーマ切り替え
+
+```tsx
+import { DayFlowCalendar, useCalendarApp } from '@dayflow/core';
+import { Sun, Moon } from 'lucide-react';
+
+function SimpleThemeToggle() {
+  const calendar = useCalendarApp({
+    theme: { mode: 'light' },
+  });
+
+  const [isDark, setIsDark] = useState(false);
+
+  const toggleTheme = () => {
+    const nextTheme = isDark ? 'light' : 'dark';
+    calendar.app.setTheme(nextTheme);
+    setIsDark(!isDark);
+  };
+
+  return (
+    <div>
+      <button onClick={toggleTheme}>{isDark ? <Sun /> : <Moon />}</button>
+      <DayFlowCalendar calendar={calendar} />
+    </div>
+  );
+}
+```
+
+## 関連ドキュメント
+
+- [useCalendarApp](/docs-ja/introduction/use-calendar-app) - コアカレンダー設定
+- [カレンダータイプ](/docs-ja/introduction/events#calendar-types) - イベントのカテゴリと色
+- [テーマカスタマイズガイド](/docs-ja/guides/theme-customization) - 高度なテーマ設定

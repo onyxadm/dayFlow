@@ -32,7 +32,8 @@ export function groupDaysIntoRows(
 export function analyzeMultiDayEventsForRow(
   events: Event[],
   rowDays: Date[],
-  columnsPerRow: number
+  columnsPerRow: number,
+  comparator?: (a: Event, b: Event) => number
 ): YearMultiDaySegment[] {
   if (rowDays.length === 0) return [];
 
@@ -76,19 +77,21 @@ export function analyzeMultiDayEventsForRow(
     return eventStartMs <= rowEndMs && eventEndMs >= rowStartMs;
   });
 
-  // Sort events by length (longer first) then start time for better packing
-  rowEvents.sort((a, b) => {
-    const aStart = temporalToDate(a.start!).getTime();
-    const aEnd = a.end ? temporalToDate(a.end).getTime() : aStart;
-    const bStart = temporalToDate(b.start!).getTime();
-    const bEnd = b.end ? temporalToDate(b.end).getTime() : bStart;
-
-    const durationA = aEnd - aStart;
-    const durationB = bEnd - bStart;
-
-    if (durationA !== durationB) return durationB - durationA; // Longest first
-    return aStart - bStart; // Then earliest start
-  });
+  if (comparator) {
+    rowEvents.sort(comparator);
+  } else {
+    // Default: group by calendar (first-seen order), then preserve load order
+    const calendarOrder = new Map<string | undefined, number>();
+    rowEvents.forEach(e => {
+      if (!calendarOrder.has(e.calendarId))
+        calendarOrder.set(e.calendarId, calendarOrder.size);
+    });
+    rowEvents.sort(
+      (a, b) =>
+        (calendarOrder.get(a.calendarId) ?? 0) -
+        (calendarOrder.get(b.calendarId) ?? 0)
+    );
+  }
 
   const segments: YearMultiDaySegment[] = [];
   const occupiedSlots: boolean[][] = []; // [visualRowIndex][colIndex]

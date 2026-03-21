@@ -49,6 +49,7 @@ export function TeamCalendar() {
 | `useCalendarHeader`         | `boolean \| Function`       | Optional | `true`                 | Enables the default header, hides it (`false`), or lets you provide a custom renderer.                             |
 | `readOnly`                  | `boolean \| ReadOnlyConfig` | Optional | `false`                | Disables interactions. Can be a boolean or a config for fine-grained control (drag/view).                          |
 | `customMobileEventRenderer` | `MobileEventRenderer`       | Optional | —                      | Custom component to replace the default mobile event drawer/dialog.                                                |
+| `allDaySortComparator`      | `AllDaySortComparator`      | Optional | Calendar-group order   | Custom comparator controlling the row order of all-day events across all views.                                    |
 
 ## Key Options
 
@@ -212,6 +213,41 @@ const calendar = useCalendarApp({
 
 - Allows replacing the default bottom-drawer for mobile event editing with your own component.
 - See [Sidebar Plugin](/docs/plugins/sidebar) for more on specific features.
+
+### allDaySortComparator
+
+Controls the row order of all-day events in every view (day, week, month, year). By default, events are grouped by their `calendarId` in first-seen order; within each group the original load order is preserved.
+
+Pass a comparator to take full control — it receives two `Event` objects and works like JavaScript's `Array.sort`:
+
+```tsx
+const calendar = useCalendarApp({
+  allDaySortComparator: (a, b) => a.title.localeCompare(b.title),
+});
+```
+
+**Built-in preset** exported from `@dayflow/core`:
+
+| Preset                 | Behavior                                                                               |
+| :--------------------- | :------------------------------------------------------------------------------------- |
+| `sortAllDayByCalendar` | Groups events by `calendarId` alphabetically; events without a `calendarId` sort first |
+
+```tsx
+import { sortAllDayByCalendar } from '@dayflow/core';
+
+const calendar = useCalendarApp({
+  allDaySortComparator: sortAllDayByCalendar,
+});
+```
+
+Use `updateConfig` to change the sort at runtime:
+
+```tsx
+calendar.app.updateConfig({ allDaySortComparator: sortAllDayByCalendar });
+
+// Restore default (first-seen calendar-grouping) order
+calendar.app.updateConfig({ allDaySortComparator: undefined });
+```
 
 ## Advanced Configuration Example
 

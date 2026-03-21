@@ -45,6 +45,7 @@ export function TeamCalendar() {
 | `useCalendarHeader`         | `boolean \| Function`       | 可选 | `true`              | 启用默认页眉、隐藏页眉（`false`）或提供自定义渲染函数                 |
 | `readOnly`                  | `boolean \| ReadOnlyConfig` | 可选 | `false`             | 禁用交互。可以是布尔值，也可以是用于细粒度控制（拖拽/查看）的配置对象 |
 | `customMobileEventRenderer` | `MobileEventRenderer`       | 可选 | —                   | 用于替换默认移动端事件抽屉/对话框的自定义组件                         |
+| `allDaySortComparator`      | `AllDaySortComparator`      | 可选 | 按日历分组顺序      | 控制所有视图中全天事件的行排列顺序的自定义比较函数                    |
 
 ## 核心选项说明
 
@@ -206,10 +207,64 @@ const calendar = useCalendarApp({
 });
 ```
 
+### useEventDetailDialog
+
+- `true`：启用默认模态对话框（`DefaultEventDetailDialog`）。
+- 与 `DayFlowCalendar` 上的 `customDetailPanelContent` 或 `customEventDetailDialog` 配合使用，可替换 UI 同时保留内部状态机。
+
+### useCalendarHeader
+
+- `true`（默认）：渲染内置日历头部。
+- `false`：完全隐藏头部。
+- `(props) => ReactNode`：渲染自定义头部，详见 [Calendar Header](/docs-zh/features/calendar-header)。
+
+### readOnly
+
+- `true`：禁用所有修改操作（拖拽、创建、编辑）。
+- `ReadOnlyConfig`：细粒度控制：
+  - `draggable`：是否允许拖拽。
+  - `viewable`：是否允许打开事件详情。
+- 详见 [只读模式](/docs-zh/features/read-only)。
+
 ### customMobileEventRenderer
 
 - 允许使用您自己的组件替换移动端的默认事件编辑抽屉。
 - 详见[侧边栏插件](/docs-zh/plugins/sidebar)。
+
+### allDaySortComparator
+
+控制所有视图（日、周、月、年）中全天事件的行排列顺序。默认情况下，事件按 `calendarId` 分组（首次出现顺序），组内保留原始加载顺序。
+
+传入比较函数可完全自定义排序——接收两个 `Event` 对象，与 JavaScript 的 `Array.sort` 用法相同：
+
+```tsx
+const calendar = useCalendarApp({
+  allDaySortComparator: (a, b) => a.title.localeCompare(b.title),
+});
+```
+
+**内置预设**（从 `@dayflow/core` 导出）：
+
+| 预设                   | 行为                                                           |
+| :--------------------- | :------------------------------------------------------------- |
+| `sortAllDayByCalendar` | 按 `calendarId` 字母顺序分组；没有 `calendarId` 的事件排在最前 |
+
+```tsx
+import { sortAllDayByCalendar } from '@dayflow/core';
+
+const calendar = useCalendarApp({
+  allDaySortComparator: sortAllDayByCalendar,
+});
+```
+
+使用 `updateConfig` 在运行时更改排序：
+
+```tsx
+calendar.app.updateConfig({ allDaySortComparator: sortAllDayByCalendar });
+
+// 恢复默认（首次出现顺序）分组
+calendar.app.updateConfig({ allDaySortComparator: undefined });
+```
 
 ## 高级配置示例
 

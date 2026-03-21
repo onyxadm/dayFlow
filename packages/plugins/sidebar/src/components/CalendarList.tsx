@@ -54,7 +54,7 @@ interface CalendarItemProps {
 const CalendarItem = ({
   calendar,
   isDraggable,
-  isEditable,
+  isEditable: _isEditable,
   editingId,
   editingName,
   setEditingName,
@@ -419,7 +419,7 @@ export const CalendarList = ({
       {Array.from(groups.entries())
         .filter(([source]) => source !== null)
         .map(([source, groupCalendars]) => {
-          const isCollapsed = collapsedSources[source!] === true;
+          const isCollapsed = collapsedSources[source!];
           return (
             <div key={source} className='mt-1'>
               <button

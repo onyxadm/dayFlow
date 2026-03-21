@@ -189,4 +189,42 @@ describe('CalendarApp', () => {
       );
     });
   });
+
+  describe('Config Updates', () => {
+    it('does not trigger a render when allDaySortComparator is unchanged', () => {
+      const onRender = jest.fn();
+      const comparator = jest.fn(() => 0);
+      const app = new CalendarApp({
+        views: [],
+        plugins: [],
+        events: [],
+        callbacks: { onRender },
+        allDaySortComparator: comparator,
+      });
+
+      onRender.mockClear();
+      app.updateConfig({ allDaySortComparator: comparator });
+
+      expect(onRender).not.toHaveBeenCalled();
+    });
+
+    it('triggers a render when allDaySortComparator changes', () => {
+      const onRender = jest.fn();
+      const comparatorA = jest.fn(() => 0);
+      const comparatorB = jest.fn(() => 0);
+      const app = new CalendarApp({
+        views: [],
+        plugins: [],
+        events: [],
+        callbacks: { onRender },
+        allDaySortComparator: comparatorA,
+      });
+
+      onRender.mockClear();
+      app.updateConfig({ allDaySortComparator: comparatorB });
+
+      expect(onRender).toHaveBeenCalledTimes(1);
+      expect(app.state.allDaySortComparator).toBe(comparatorB);
+    });
+  });
 });

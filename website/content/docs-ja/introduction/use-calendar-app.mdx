@@ -45,6 +45,7 @@ export function TeamCalendar() {
 | `useCalendarHeader`         | `boolean \| Function`       | 任意 | `true`               | デフォルトヘッダーの有効化、非表示（`false`）、またはカスタムレンダラーの指定。         |
 | `readOnly`                  | `boolean \| ReadOnlyConfig` | 任意 | `false`              | インタラクションを無効化。真偽値、または詳細制御（ドラッグ/表示）用の設定オブジェクト。 |
 | `customMobileEventRenderer` | `MobileEventRenderer`       | 任意 | —                    | デフォルトのモバイル用イベントドロワー/ダイアログを置き換えるカスタムコンポーネント。   |
+| `allDaySortComparator`      | `AllDaySortComparator`      | 任意 | カレンダーグループ順 | 全ビューでの終日イベントの行順を制御するカスタム比較関数。                              |
 
 ## それぞれのポイント
 
@@ -99,6 +100,11 @@ const calendar = useCalendarApp({
 | `onCalendarCreate / onCalendarUpdate / onCalendarDelete` | カレンダーの追加・更新・削除を捕捉。                                               |
 | `onCalendarMerge(sourceId, targetId)`                    | カレンダーのマージ操作を捕捉（例：「仕事」を「個人」に統合）。                     |
 | `onRender()`                                             | レンダリング完了時に 1 度だけ発火。計測用。                                        |
+
+### defaultView と initialDate
+
+- 単一ビューのカレンダーでは必ず `defaultView` を明示的に設定してください。
+- `initialDate` はルーティング、ユーザー設定、またはサーバーデータから取得してマルチデバイス間の一貫性を保つことができます。
 
 ### switcherMode
 
@@ -156,10 +162,64 @@ const calendar = useCalendarApp({
 });
 ```
 
+### useEventDetailDialog
+
+- `true`：デフォルトのモーダルダイアログ（`DefaultEventDetailDialog`）を有効にします。
+- `DayFlowCalendar` の `customDetailPanelContent` または `customEventDetailDialog` と組み合わせると、内部のステートマシンを保ちながら UI を差し替えられます。
+
+### useCalendarHeader
+
+- `true`（デフォルト）：組み込みカレンダーヘッダーを表示します。
+- `false`：ヘッダーを完全に非表示にします。
+- `(props) => ReactNode`：カスタムヘッダーをレンダリングします。詳細は [Calendar Header](/docs-ja/features/calendar-header) を参照してください。
+
+### readOnly
+
+- `true`：すべての変更操作（ドラッグ、作成、編集）を無効にします。
+- `ReadOnlyConfig`：詳細制御：
+  - `draggable`：ドラッグ操作を許可するかどうか。
+  - `viewable`：イベント詳細の表示を許可するかどうか。
+- 詳細は [読み取り専用モード](/docs-ja/features/read-only) を参照してください。
+
 ### customMobileEventRenderer
 
 - モバイル用のデフォルトのイベント編集ドロワーを独自のコンポーネントで置き換えることができます。
 - 詳細は[サイドバープラグイン](/docs-ja/plugins/sidebar)を参照してください。
+
+### allDaySortComparator
+
+全ビュー（日・週・月・年）での終日イベントの行順を制御します。デフォルトでは `calendarId` でグループ化（初出現順）され、グループ内は元の読み込み順が保持されます。
+
+比較関数を渡すと完全に制御できます — 2 つの `Event` オブジェクトを受け取り、JavaScript の `Array.sort` と同じ動作です：
+
+```tsx
+const calendar = useCalendarApp({
+  allDaySortComparator: (a, b) => a.title.localeCompare(b.title),
+});
+```
+
+**組み込みプリセット**（`@dayflow/core` からエクスポート）：
+
+| プリセット             | 動作                                                                                 |
+| :--------------------- | :----------------------------------------------------------------------------------- |
+| `sortAllDayByCalendar` | `calendarId` のアルファベット順でグループ化。`calendarId` がないイベントが先頭に来る |
+
+```tsx
+import { sortAllDayByCalendar } from '@dayflow/core';
+
+const calendar = useCalendarApp({
+  allDaySortComparator: sortAllDayByCalendar,
+});
+```
+
+`updateConfig` を使うとランタイムで変更できます：
+
+```tsx
+calendar.app.updateConfig({ allDaySortComparator: sortAllDayByCalendar });
+
+// デフォルト（初出現順グループ）に戻す
+calendar.app.updateConfig({ allDaySortComparator: undefined });
+```
 
 ## 応用的な設定例
 
@@ -224,3 +284,10 @@ export function AdvancedCalendar() {
 ```
 
 > ヒント：`useCalendarApp` が返すインスタンスをカレンダー本体・ヘッダー・サイドバーなど複数のコンポーネントで共有すると、状態が常に同期されたまま UI を構築できます。
+
+## 関連ドキュメント
+
+- [DayFlowCalendar](/docs-ja/introduction/dayflow-calendar) — メイン UI コンポーネント
+- [クイックスタート](/docs-ja/introduction) — セットアップガイド
+- [イベント](/docs-ja/introduction/events) — イベント管理
+- [ビュー](/docs-ja/introduction/views) — 利用可能なビュー

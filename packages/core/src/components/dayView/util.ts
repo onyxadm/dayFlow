@@ -82,19 +82,27 @@ export const normalizeLayoutEvents = (
 };
 
 // Organize all-day events into rows
-export const organizeAllDayEvents = (currentDayEvents: Event[]) => {
+export const organizeAllDayEvents = (
+  currentDayEvents: Event[],
+  comparator?: (a: Event, b: Event) => number
+) => {
   const allDayEvents = currentDayEvents.filter(e => e.allDay);
 
-  allDayEvents.sort((a, b) => {
-    const aStart = temporalToDate(a.start);
-    const bStart = temporalToDate(b.start);
-    if (aStart.getTime() !== bStart.getTime()) {
-      return aStart.getTime() - bStart.getTime();
-    }
-    const aEnd = temporalToDate(a.end);
-    const bEnd = temporalToDate(b.end);
-    return bEnd.getTime() - aEnd.getTime();
-  });
+  if (comparator) {
+    allDayEvents.sort(comparator);
+  } else {
+    // Default: group by calendar (first-seen order), then preserve load order
+    const calendarOrder = new Map<string | undefined, number>();
+    allDayEvents.forEach(e => {
+      if (!calendarOrder.has(e.calendarId))
+        calendarOrder.set(e.calendarId, calendarOrder.size);
+    });
+    allDayEvents.sort(
+      (a, b) =>
+        (calendarOrder.get(a.calendarId) ?? 0) -
+        (calendarOrder.get(b.calendarId) ?? 0)
+    );
+  }
 
   const rows: Event[][] = [];
   const eventsWithRow: Array<Event & { row: number }> = [];

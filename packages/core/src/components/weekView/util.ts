@@ -115,7 +115,8 @@ export const filterWeekEvents = (
 export const organizeAllDaySegments = (
   currentWeekEvents: Event[],
   currentWeekStart: Date,
-  daysToShow: number = 7
+  daysToShow: number = 7,
+  comparator?: (a: Event, b: Event) => number
 ) => {
   const multiDaySegments = analyzeMultiDayEventsForWeek(
     currentWeekEvents,
@@ -126,18 +127,23 @@ export const organizeAllDaySegments = (
     (seg: MultiDayEventSegment) => seg.event.allDay
   );
 
-  segments.sort((a: MultiDayEventSegment, b: MultiDayEventSegment) => {
-    // Use absolute start time for stable sorting across window shifts
-    const aStart = temporalToDate(a.event.start).getTime();
-    const bStart = temporalToDate(b.event.start).getTime();
-
-    if (aStart !== bStart) {
-      return aStart - bStart;
-    }
-    const aDays = a.totalDays;
-    const bDays = b.totalDays;
-    return bDays - aDays;
-  });
+  if (comparator) {
+    segments.sort((a: MultiDayEventSegment, b: MultiDayEventSegment) =>
+      comparator(a.event, b.event)
+    );
+  } else {
+    // Default: group by calendar (first-seen order), then preserve load order
+    const calendarOrder = new Map<string | undefined, number>();
+    segments.forEach((seg: MultiDayEventSegment) => {
+      const id = seg.event.calendarId;
+      if (!calendarOrder.has(id)) calendarOrder.set(id, calendarOrder.size);
+    });
+    segments.sort(
+      (a: MultiDayEventSegment, b: MultiDayEventSegment) =>
+        (calendarOrder.get(a.event.calendarId) ?? 0) -
+        (calendarOrder.get(b.event.calendarId) ?? 0)
+    );
+  }
 
   const segmentsWithRow: Array<MultiDayEventSegment & { row: number }> = [];
 

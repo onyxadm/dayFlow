@@ -128,6 +128,12 @@ export interface EventContentSlotArgs {
  * Calendar application configuration
  * Used to initialize CalendarApp
  */
+/**
+ * Comparator function for sorting all-day events across all views.
+ * Return negative if `a` should appear before `b`, positive if after, 0 if equal.
+ */
+export type AllDaySortComparator = (a: Event, b: Event) => number;
+
 export interface CalendarAppConfig {
   views: CalendarView[];
   plugins?: CalendarPlugin[];
@@ -144,6 +150,8 @@ export interface CalendarAppConfig {
   customMobileEventRenderer?: MobileEventRenderer;
   locale?: string | Locale;
   readOnly?: boolean | ReadOnlyConfig;
+  /** Custom sort comparator for all-day events, applied in day/week/month/year views. */
+  allDaySortComparator?: AllDaySortComparator;
 }
 
 /**
@@ -171,6 +179,7 @@ export interface CalendarAppState {
   selectedEventId?: string | null;
   readOnly: boolean | ReadOnlyConfig;
   overrides: string[];
+  allDaySortComparator?: AllDaySortComparator;
 }
 
 /**

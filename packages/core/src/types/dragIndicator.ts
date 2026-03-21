@@ -89,6 +89,12 @@ export interface UnifiedDragRef extends DragRef {
   currentSegmentDays?: number;
   // dayIndex when dragging starts (for cross-day event fragment dragging)
   startDragDayIndex?: number;
+  // Initial rendered all-day indicator geometry for Day/Week views
+  initialIndicatorLeft?: number;
+  initialIndicatorTop?: number;
+  initialIndicatorWidth?: number;
+  initialIndicatorHeight?: number;
+  indicatorContainer?: HTMLElement | null;
   // Event properties needed for deferred indicator creation
   calendarId?: string;
   title?: string;

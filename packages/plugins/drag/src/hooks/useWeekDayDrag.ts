@@ -45,7 +45,8 @@ export const useWeekDayDrag = (
           day: dayIndex,
           start: startTemporal,
           end: endTemporal,
-          calendarId: 'blue',
+          calendarId:
+            app?.getCalendarRegistry()?.getDefaultCalendar()?.id ?? 'blue',
           allDay: true,
         };
 

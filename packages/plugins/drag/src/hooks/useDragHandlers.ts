@@ -1257,7 +1257,8 @@ export const useDragHandlers = (
             day: drag.dayIndex,
             start: startTemporal,
             end: endTemporal,
-            calendarId: 'blue',
+            calendarId:
+              app?.getCalendarRegistry()?.getDefaultCalendar()?.id ?? 'blue',
             allDay: isAllDay,
           });
         } else if (drag.mode === 'move' || drag.mode === 'resize') {
@@ -1413,7 +1414,8 @@ export const useDragHandlers = (
           start: startTemporal,
           end: endTemporal,
           day: targetDate.getDay(),
-          calendarId: 'blue',
+          calendarId:
+            app?.getCalendarRegistry()?.getDefaultCalendar()?.id ?? 'blue',
           allDay: false,
         };
 

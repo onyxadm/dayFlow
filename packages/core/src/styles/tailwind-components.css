@@ -19,10 +19,27 @@
 
 .df-calendar-container,
 .df-portal {
+  /* Map host Tailwind's semantic color tokens to DayFlow's own variables.
+   * This ensures that when the host app's Tailwind instance generates utility
+   * classes from DayFlow source (via @source), those utilities resolve to
+   * DayFlow's own colors rather than the host's theme colors. */
+  --color-background: var(--df-color-background);
+  --color-foreground: var(--df-color-foreground);
+  --color-hover: var(--df-color-hover);
+  --color-border: var(--df-color-border);
+  --color-card: var(--df-color-card);
+  --color-card-foreground: var(--df-color-card-foreground);
+  --color-muted: var(--df-color-muted);
+  --color-muted-foreground: var(--df-color-muted-foreground);
   --color-primary: var(--df-color-primary);
   --color-primary-foreground: var(--df-color-primary-foreground);
+  --color-secondary: var(--df-color-secondary);
+  --color-secondary-foreground: var(--df-color-secondary-foreground);
   --color-destructive: var(--df-color-destructive);
   --color-destructive-foreground: var(--df-color-destructive-foreground);
+  /* --hover is used directly via hover:bg-(--hover) in Tailwind v4 arbitrary
+   * CSS-variable syntax; map it to the DayFlow hover color. */
+  --hover: var(--df-color-hover);
 }
 
 @layer df-theme {
@@ -397,7 +414,7 @@
  * DayFlow components use Tailwind's semantic utility classes (bg-primary,
  * text-primary-foreground, bg-destructive, etc.) internally. Because
  * styles.components.css does not emit Tailwind utilities, we define the
- * colour behaviour here directly via DayFlow's own CSS custom properties.
+ * color behavior here directly via DayFlow's own CSS custom properties.
  * All rules are scoped to DayFlow's own container/element classes so they
  * never affect the host application's own elements.
  */
@@ -448,7 +465,7 @@
   color: var(--df-color-primary);
 }
 
-/* --- Primary-colour hover/text for other buttons inside the calendar --- */
+/* --- Primary-color hover/text for other buttons inside the calendar --- */
 .df-calendar-container .text-primary {
   color: var(--df-color-primary);
 }

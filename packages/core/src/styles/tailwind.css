@@ -22,10 +22,22 @@
 .df-calendar-container,
 .df-portal {
   --color-background: var(--df-color-background);
+  --color-foreground: var(--df-color-foreground);
+  --color-hover: var(--df-color-hover);
+  --color-border: var(--df-color-border);
+  --color-card: var(--df-color-card);
+  --color-card-foreground: var(--df-color-card-foreground);
+  --color-muted: var(--df-color-muted);
+  --color-muted-foreground: var(--df-color-muted-foreground);
   --color-primary: var(--df-color-primary);
   --color-primary-foreground: var(--df-color-primary-foreground);
+  --color-secondary: var(--df-color-secondary);
+  --color-secondary-foreground: var(--df-color-secondary-foreground);
   --color-destructive: var(--df-color-destructive);
   --color-destructive-foreground: var(--df-color-destructive-foreground);
+  /* --hover is used directly via hover:bg-(--hover) in Tailwind v4 arbitrary
+   * CSS-variable syntax; map it to the DayFlow hover color. */
+  --hover: var(--df-color-hover);
 }
 
 @layer df-theme {
@@ -127,7 +139,9 @@
 
 @layer components {
   .df-calendar-container {
-    @apply relative flex flex-row bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700;
+    @apply relative flex flex-row rounded-lg overflow-hidden shadow-lg;
+    background-color: var(--df-color-background);
+    border: 1px solid var(--df-color-border);
     --df-calendar-height: 800px;
     height: var(--df-calendar-height, 800px);
     font-family: Arial;
@@ -140,7 +154,8 @@
   }
 
   .df-calendar-time-column {
-    @apply w-20 shrink-0 border-gray-200 dark:border-gray-700;
+    @apply w-20 shrink-0;
+    border-color: var(--df-color-border);
   }
 
   .df-calendar-nav-button {
@@ -152,7 +167,8 @@
   }
 
   .df-calendar-checkbox {
-    @apply mr-2 h-4 w-4 inline-flex items-center justify-center border border-gray-300 dark:border-gray-600 rounded-sm cursor-pointer;
+    @apply mr-2 h-4 w-4 inline-flex items-center justify-center rounded-sm cursor-pointer;
+    border: 1px solid var(--df-color-border);
     appearance: none;
     background-color: transparent;
     position: relative;
@@ -179,42 +195,44 @@
   }
 
   .df-header {
-    @apply bg-white dark:bg-gray-900;
+    background-color: var(--df-color-background);
   }
 
   .df-calendar {
-    @apply bg-white dark:bg-gray-900;
+    background-color: var(--df-color-background);
   }
 
   .df-month-view {
-    @apply bg-white dark:bg-gray-900;
+    background-color: var(--df-color-background);
   }
 
   .df-week-header-row,
   .df-week-header {
-    @apply border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900;
+    background-color: var(--df-color-background);
+    border-color: var(--df-color-border);
   }
 
   .df-month-day-cell,
   .df-time-grid-cell,
   .df-all-day-cell {
-    @apply border-gray-200 dark:border-gray-700;
+    border-color: var(--df-color-border);
   }
 
   .df-time-column {
-    @apply border-gray-200 dark:border-gray-700;
+    border-color: var(--df-color-border);
   }
 
   .df-time-grid-row,
   .df-time-grid-boundary,
   .df-all-day-row,
   .df-mini-calendar {
-    @apply border-gray-200 dark:border-gray-700;
+    border-color: var(--df-color-border);
   }
 
   .df-event-detail-panel,
   .df-dialog-container {
-    @apply border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800;
+    background-color: var(--df-color-card);
+    border-color: var(--df-color-border);
   }
 
   /* Sidebar portal dialogs (delete/merge calendar) */
@@ -234,7 +252,8 @@
   }
 
   .df-sidebar {
-    @apply border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900;
+    background-color: var(--df-color-background);
+    border-color: var(--df-color-border);
   }
 
   /* Year View Heatmap Intensity Colors */

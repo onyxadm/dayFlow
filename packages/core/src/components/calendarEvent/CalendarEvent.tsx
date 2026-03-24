@@ -132,13 +132,6 @@ const CalendarEvent = ({
     detailPanelKey,
   });
 
-  const isEventSelected =
-    (selectedEventId === undefined
-      ? isSelected
-      : selectedEventId === event.id) ||
-    (!isTouchEnabled && isPressed) ||
-    isBeingDragged;
-
   const [eventVisibility, setEventVisibility] = useState<
     'visible' | 'sticky-top' | 'sticky-bottom'
   >('visible');
@@ -199,32 +192,43 @@ const CalendarEvent = ({
     });
 
   // Actions Hook
-  const { handleClick, handleDoubleClick, handleContextMenu } = useEventActions(
-    {
-      event,
-      viewType,
-      isAllDay,
-      isMultiDay,
-      segment,
-      multiDaySegmentInfo,
-      calendarRef,
-      firstHour,
-      hourHeight,
-      isMobile,
-      canOpenDetail,
-      detailPanelKey,
-      app,
-      onEventSelect,
-      onDetailPanelToggle,
-      setIsSelected,
-      setDetailPanelPosition,
-      setContextMenuPosition,
-      setActiveDayIndex,
-      getClickedDayIdx,
-      updatePanelPosition,
-      selectedEventElementRef,
-    }
-  );
+  const {
+    handleClick,
+    handleDoubleClick,
+    handleContextMenu,
+    hasPendingSelection,
+  } = useEventActions({
+    event,
+    viewType,
+    isAllDay,
+    isMultiDay,
+    segment,
+    multiDaySegmentInfo,
+    calendarRef,
+    firstHour,
+    hourHeight,
+    isMobile,
+    canOpenDetail,
+    detailPanelKey,
+    app,
+    onEventSelect,
+    onDetailPanelToggle,
+    setIsSelected,
+    setDetailPanelPosition,
+    setContextMenuPosition,
+    setActiveDayIndex,
+    getClickedDayIdx,
+    updatePanelPosition,
+    selectedEventElementRef,
+  });
+
+  const isEventSelected =
+    (selectedEventId === undefined
+      ? isSelected
+      : selectedEventId === event.id) ||
+    hasPendingSelection ||
+    (!isTouchEnabled && isPressed) ||
+    isBeingDragged;
 
   // Styles Hook
   const { calculateEventStyle } = useEventStyles({

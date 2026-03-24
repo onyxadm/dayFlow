@@ -1,6 +1,6 @@
 import { RefObject } from 'preact';
 import { memo } from 'preact/compat';
-import { useMemo } from 'preact/hooks';
+import { useCallback, useMemo } from 'preact/hooks';
 
 import { CalendarEvent } from '@/components/calendarEvent';
 import {
@@ -72,11 +72,21 @@ export const YearRowComponent = memo(
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const handleContextMenu = (e: MouseEvent, date: Date) => {
-      e.preventDefault();
-      e.stopPropagation();
-      onContextMenu({ x: e.clientX, y: e.clientY, date });
-    };
+    const handleContextMenu = useCallback(
+      (e: MouseEvent, date: Date) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onContextMenu({ x: e.clientX, y: e.clientY, date });
+      },
+      [onContextMenu]
+    );
+
+    const handleSelectDate = useCallback(
+      (d: Date) => {
+        app.selectDate(d);
+      },
+      [app]
+    );
 
     const segments = useMemo(
       () =>
@@ -161,9 +171,7 @@ export const YearRowComponent = memo(
               date={date}
               isToday={isToday}
               locale={locale}
-              onSelectDate={(d: Date) => {
-                app.selectDate(d);
-              }}
+              onSelectDate={handleSelectDate}
               onCreateStart={onCreateStart}
               onMoreEventsClick={onMoreEventsClick}
               moreCount={moreCounts[index]}

@@ -403,10 +403,16 @@ const WeekComponent = memo(
       );
 
       const spaceForMore = availableHeight - MORE_TEXT_HEIGHT;
-      const maxSlotsWithMore = Math.min(
+      const maxSlotsWithMoreRaw = Math.min(
         hardCap,
         Math.max(0, Math.floor(spaceForMore / ROW_SPACING))
       );
+
+      // Ensure maxSlotsWithMore is always at most maxSlots - 1 to leave room for the "+ x more" indicator
+      const maxSlotsWithMore =
+        maxSlots > 0
+          ? Math.min(maxSlotsWithMoreRaw, maxSlots - 1)
+          : maxSlotsWithMoreRaw;
 
       return { maxSlots, maxSlotsWithMore };
     }, [weekHeight]);
@@ -563,6 +569,101 @@ const WeekComponent = memo(
       return occupied;
     }, [organizedMultiDaySegments]);
 
+    const dayLayoutData = useMemo(() => {
+      const { maxSlots, maxSlotsWithMore } = layoutParams;
+
+      // 1. Initial pass: calculate total slots and basic "more" check for each day
+      const initialResults = weekData.days.map((day, dayIndex) => {
+        const dayEvents = eventsByDayDate.get(day.date.toDateString()) ?? [];
+        const sortedEvents = sortDayEvents(dayEvents);
+
+        // Filter out all-day events that are rendered as multi-day segments
+        const timedEventsOnly = sortedEvents.filter(event => {
+          if (!event.allDay) return true;
+          const hasSegment = allSegments.some(
+            seg => seg.originalEventId === event.id
+          );
+          return !hasSegment;
+        });
+
+        const maxOccupiedLayer = (dayLayerCounts[dayIndex] ?? 0) - 1;
+        const occupiedLayers = dayOccupiedLayers[dayIndex];
+        const gapLayers: number[] = [];
+        for (let i = 0; i <= maxOccupiedLayer; i++) {
+          if (!occupiedLayers.has(i)) {
+            gapLayers.push(i);
+          }
+        }
+
+        const totalTimedEvents = timedEventsOnly.length;
+        const eventsAfterMultiDay = Math.max(
+          0,
+          totalTimedEvents - gapLayers.length
+        );
+        const totalSlotsNeeded =
+          Math.max(maxOccupiedLayer + 1, 0) + eventsAfterMultiDay;
+
+        const hasMore = totalSlotsNeeded > maxSlots;
+        const limit = hasMore ? maxSlotsWithMore : maxSlots;
+
+        return {
+          totalSlotsNeeded,
+          hasMore,
+          limit,
+          timedEventsOnly,
+          gapLayers,
+          occupiedLayers,
+          maxOccupiedLayer,
+        };
+      });
+
+      // 2. Multi-day segment visibility check
+      // A segment in Layer L is hidden if it spans any day where L >= limit
+      const segmentIsHidden = new Set<string>(); // segment.id
+      organizedMultiDaySegments.forEach((layer, layerIndex) => {
+        layer.forEach(segment => {
+          for (let d = segment.startDayIndex; d <= segment.endDayIndex; d++) {
+            if (d >= 0 && d < 7 && layerIndex >= initialResults[d].limit) {
+              segmentIsHidden.add(segment.id);
+              break;
+            }
+          }
+        });
+      });
+
+      // 3. Final pass: update hasMore and limit if a day contains a segment that was forced to hide
+      return initialResults.map((res, dayIndex) => {
+        let hasHiddenSegment = false;
+        allSegments.forEach(segment => {
+          if (
+            segment.startDayIndex <= dayIndex &&
+            segment.endDayIndex >= dayIndex &&
+            segmentIsHidden.has(segment.id)
+          ) {
+            hasHiddenSegment = true;
+          }
+        });
+
+        const finalHasMore = res.hasMore || hasHiddenSegment;
+        const finalLimit = finalHasMore ? maxSlotsWithMore : maxSlots;
+
+        return {
+          ...res,
+          hasMore: finalHasMore,
+          limit: finalLimit,
+          segmentIsHidden,
+        };
+      });
+    }, [
+      layoutParams,
+      weekData.days,
+      eventsByDayDate,
+      allSegments,
+      dayLayerCounts,
+      dayOccupiedLayers,
+      organizedMultiDaySegments,
+    ]);
+
     const overlayVisibleLayerCount = useMemo(
       () => Math.min(organizedMultiDaySegments.length, layoutParams.maxSlots),
       [organizedMultiDaySegments.length, layoutParams.maxSlots]
@@ -588,49 +689,16 @@ const WeekComponent = memo(
 
       const belongsToCurrentMonth =
         dayMonthName === currentMonth && day.year === currentYear;
-      const dayEvents = eventsByDayDate.get(day.date.toDateString()) ?? [];
-      const sortedEvents = sortDayEvents(dayEvents);
 
-      // Filter out all-day events that are rendered as multi-day segments (they occupy their own layer)
-      // This prevents double-counting: they already take a layer via segment, shouldn't also count as single-day
-      const timedEventsOnly = sortedEvents.filter(event => {
-        if (!event.allDay) return true; // Keep all timed events
-        // Check if this all-day event has a segment (rendered separately in overlay)
-        const hasSegment = allSegments.some(
-          seg => seg.originalEventId === event.id
-        );
-        return !hasSegment; // Only keep all-day events WITHOUT segments
-      });
-
-      // Get which layers are occupied by multi-day events for this day
-      const occupiedLayers = dayOccupiedLayers[dayIndex];
-      const maxOccupiedLayer = (dayLayerCounts[dayIndex] ?? 0) - 1;
-
-      // Find gaps (empty layers within the multi-day range that can be filled by timed events)
-      const gapLayers: number[] = [];
-      for (let i = 0; i <= maxOccupiedLayer; i++) {
-        if (!occupiedLayers.has(i)) {
-          gapLayers.push(i);
-        }
-      }
-
-      // Calculate total slots needed:
-      // - Timed events first fill gaps in multi-day layers
-      // - Remaining timed events extend beyond maxOccupiedLayer
-      const totalTimedEvents = timedEventsOnly.length;
-      // const eventsInGaps = Math.min(totalTimedEvents, gapLayers.length);
-      const eventsAfterMultiDay = Math.max(
-        0,
-        totalTimedEvents - gapLayers.length
-      );
-      const totalSlotsNeeded =
-        Math.max(maxOccupiedLayer + 1, 0) + eventsAfterMultiDay;
-
-      // Determine if need "+ x more"
-      const hasMoreEvents = totalSlotsNeeded > layoutParams.maxSlots;
-      const displaySlotLimit = hasMoreEvents
-        ? layoutParams.maxSlotsWithMore
-        : layoutParams.maxSlots;
+      const {
+        hasMore: hasMoreEvents,
+        limit: displaySlotLimit,
+        timedEventsOnly,
+        gapLayers,
+        occupiedLayers,
+        maxOccupiedLayer,
+        totalSlotsNeeded,
+      } = dayLayoutData[dayIndex];
 
       let hiddenSegmentCount = 0;
       organizedMultiDaySegments.slice(displaySlotLimit).forEach(layer => {
@@ -644,23 +712,52 @@ const WeekComponent = memo(
         });
       });
 
+      // Also count multi-day segments that are hidden because they were hidden on an adjacent day
+      organizedMultiDaySegments.slice(0, displaySlotLimit).forEach(layer => {
+        layer.forEach(segment => {
+          if (
+            segment.startDayIndex <= dayIndex &&
+            segment.endDayIndex >= dayIndex &&
+            dayLayoutData[dayIndex].segmentIsHidden.has(segment.id)
+          ) {
+            hiddenSegmentCount++;
+          }
+        });
+      });
+
       // Calculate how many timed events can display
       // Available slots for timed events = gaps within limit + slots after maxOccupiedLayer within limit
       const gapsWithinLimit = gapLayers.filter(
         l => l < displaySlotLimit
       ).length;
+
+      // Special handling: if a multi-day segment in a visible layer is hidden (due to adjacent day), it leaves an empty slot
+      const hiddenSegmentsInVisibleLayers = organizedMultiDaySegments
+        .slice(0, displaySlotLimit)
+        .filter(layer =>
+          layer.some(
+            seg =>
+              seg.startDayIndex <= dayIndex &&
+              seg.endDayIndex >= dayIndex &&
+              dayLayoutData[dayIndex].segmentIsHidden.has(seg.id)
+          )
+        ).length;
+
       const slotsAfterMultiDayWithinLimit = Math.max(
         0,
         displaySlotLimit - Math.max(maxOccupiedLayer + 1, 0)
       );
+
       const displayCount = Math.min(
-        totalTimedEvents,
-        gapsWithinLimit + slotsAfterMultiDayWithinLimit
+        timedEventsOnly.length,
+        gapsWithinLimit +
+          slotsAfterMultiDayWithinLimit +
+          hiddenSegmentsInVisibleLayers
       );
 
       const displayEvents = timedEventsOnly.slice(0, displayCount);
       const hiddenEventsCount =
-        hiddenSegmentCount + (totalTimedEvents - displayCount);
+        hiddenSegmentCount + (timedEventsOnly.length - displayCount);
       const maskHiddenOverlayRows =
         hasMoreEvents && overlayVisibleLayerCount > displaySlotLimit;
       const hiddenOverlayHeight =
@@ -674,8 +771,16 @@ const WeekComponent = memo(
       const slotsToRender = Math.min(displaySlotLimit, totalSlotsNeeded);
 
       for (let slot = 0; slot < slotsToRender; slot++) {
-        if (occupiedLayers.has(slot)) {
-          // This slot is occupied by a multi-day event - add placeholder
+        if (
+          occupiedLayers.has(slot) &&
+          !organizedMultiDaySegments[slot].some(
+            seg =>
+              seg.startDayIndex <= dayIndex &&
+              seg.endDayIndex >= dayIndex &&
+              dayLayoutData[dayIndex].segmentIsHidden.has(seg.id)
+          )
+        ) {
+          // This slot is occupied by a visible multi-day event - add placeholder
           renderElements.push(
             <div
               key={`placeholder-layer-${slot}-${day.date.getTime()}`}
@@ -687,7 +792,7 @@ const WeekComponent = memo(
             />
           );
         } else if (timedEventIndex < displayEvents.length) {
-          // This slot is a gap or after multi-day layers - fill with timed event
+          // This slot is a gap, after multi-day layers, or occupied by a hidden multi-day segment - fill with timed event
           const event = displayEvents[timedEventIndex];
 
           renderElements.push(
@@ -804,10 +909,10 @@ const WeekComponent = memo(
           </div>
 
           {/* Event display area */}
-          <div className='relative flex-1 overflow-hidden px-1'>
+          <div className='pointer-events-none relative flex-1 overflow-hidden px-1'>
             {maskHiddenOverlayRows && (
               <div
-                className='pointer-events-none absolute right-0 left-0 z-[15] bg-white dark:bg-gray-900'
+                className='pointer-events-none absolute right-0 left-0 z-[100] bg-white dark:bg-gray-900'
                 style={{
                   top: `${displaySlotLimit * ROW_SPACING}px`,
                   height: `${hiddenOverlayHeight}px`,
@@ -823,7 +928,9 @@ const WeekComponent = memo(
                   monthMoreEvents,
                   screenSize === 'desktop'
                     ? 'text-left font-normal'
-                    : 'text-center font-medium'
+                    : 'text-center font-medium',
+                  'pointer-events-auto',
+                  'z-[100]'
                 )}
                 onClick={e => {
                   e.stopPropagation();
@@ -887,7 +994,6 @@ const WeekComponent = memo(
                 style={{
                   top: `${MULTI_DAY_TOP_OFFSET}px`,
                   height: `${multiDayAreaHeight}px`,
-                  zIndex: 10,
                 }}
               >
                 {organizedMultiDaySegments
@@ -897,46 +1003,51 @@ const WeekComponent = memo(
                       key={`layer-${layerIndex}`}
                       className='absolute inset-0'
                     >
-                      {layer.map(segment => (
-                        <CalendarEvent
-                          key={segment.id}
-                          event={segment.event}
-                          isAllDay={true}
-                          segment={segment}
-                          segmentIndex={layerIndex}
-                          viewType={ViewType.MONTH}
-                          isMultiDay={true}
-                          calendarRef={calendarRef}
-                          hourHeight={72}
-                          firstHour={0}
-                          onEventUpdate={onEventUpdate}
-                          onEventDelete={onEventDelete}
-                          onMoveStart={onMoveStart}
-                          onResizeStart={onResizeStart}
-                          isBeingDragged={
-                            isDragging &&
-                            dragState.eventId === segment.event.id &&
-                            dragState.mode === 'move'
-                          }
-                          isBeingResized={
-                            isDragging &&
-                            dragState.eventId === segment.event.id &&
-                            dragState.mode === 'resize'
-                          }
-                          newlyCreatedEventId={newlyCreatedEventId}
-                          onDetailPanelOpen={onDetailPanelOpen}
-                          selectedEventId={selectedEventId}
-                          onEventSelect={onEventSelect}
-                          onEventLongPress={onEventLongPress}
-                          detailPanelEventId={detailPanelEventId}
-                          onDetailPanelToggle={onDetailPanelToggle}
-                          customDetailPanelContent={customDetailPanelContent}
-                          customEventDetailDialog={customEventDetailDialog}
-                          app={app}
-                          isMobile={screenSize !== 'desktop'}
-                          enableTouch={enableTouch}
-                        />
-                      ))}
+                      {layer
+                        .filter(
+                          segment =>
+                            !dayLayoutData[0].segmentIsHidden.has(segment.id)
+                        )
+                        .map(segment => (
+                          <CalendarEvent
+                            key={segment.id}
+                            event={segment.event}
+                            isAllDay={true}
+                            segment={segment}
+                            segmentIndex={layerIndex}
+                            viewType={ViewType.MONTH}
+                            isMultiDay={true}
+                            calendarRef={calendarRef}
+                            hourHeight={72}
+                            firstHour={0}
+                            onEventUpdate={onEventUpdate}
+                            onEventDelete={onEventDelete}
+                            onMoveStart={onMoveStart}
+                            onResizeStart={onResizeStart}
+                            isBeingDragged={
+                              isDragging &&
+                              dragState.eventId === segment.event.id &&
+                              dragState.mode === 'move'
+                            }
+                            isBeingResized={
+                              isDragging &&
+                              dragState.eventId === segment.event.id &&
+                              dragState.mode === 'resize'
+                            }
+                            newlyCreatedEventId={newlyCreatedEventId}
+                            onDetailPanelOpen={onDetailPanelOpen}
+                            selectedEventId={selectedEventId}
+                            onEventSelect={onEventSelect}
+                            onEventLongPress={onEventLongPress}
+                            detailPanelEventId={detailPanelEventId}
+                            onDetailPanelToggle={onDetailPanelToggle}
+                            customDetailPanelContent={customDetailPanelContent}
+                            customEventDetailDialog={customEventDetailDialog}
+                            app={app}
+                            isMobile={screenSize !== 'desktop'}
+                            enableTouch={enableTouch}
+                          />
+                        ))}
                     </div>
                   ))}
               </div>

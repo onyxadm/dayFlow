@@ -1,5 +1,5 @@
 import { RefObject } from 'preact';
-import { useCallback } from 'preact/hooks';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 
 import { MultiDayEventSegment } from '@/components/monthView/WeekComponent';
 import { Event, ViewType, ICalendarApp, EventDetailPosition } from '@/types';
@@ -62,6 +62,17 @@ export const useEventActions = ({
 }: UseEventActionsProps) => {
   const isMonthView = viewType === ViewType.MONTH;
   const isYearView = viewType === ViewType.YEAR;
+  const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [hasPendingSelection, setHasPendingSelection] = useState(false);
+
+  const clearPendingClick = useCallback(() => {
+    if (!clickTimeoutRef.current) return;
+    clearTimeout(clickTimeoutRef.current);
+    clickTimeoutRef.current = null;
+    setHasPendingSelection(false);
+  }, []);
+
+  useEffect(() => () => clearPendingClick(), [clearPendingClick]);
 
   const scrollEventToCenter = useCallback(
     (): Promise<void> =>
@@ -128,16 +139,62 @@ export const useEventActions = ({
 
   const handleContextMenu = useCallback(
     (e: MouseEvent) => {
+      clearPendingClick();
       e.preventDefault();
       e.stopPropagation();
       if (onEventSelect) onEventSelect(event.id);
       setContextMenuPosition({ x: e.clientX, y: e.clientY });
     },
-    [event.id, onEventSelect, setContextMenuPosition]
+    [clearPendingClick, event.id, onEventSelect, setContextMenuPosition]
+  );
+
+  const performSingleClick = useCallback(
+    (clientX: number) => {
+      if (isMultiDay) {
+        const clickedDay = getClickedDayIdx(clientX);
+        setActiveDayIndex(
+          clickedDay === null
+            ? (multiDaySegmentInfo?.dayIndex ?? event.day ?? null)
+            : segment
+              ? Math.min(
+                  Math.max(clickedDay, segment.startDayIndex),
+                  segment.endDayIndex
+                )
+              : clickedDay
+        );
+      } else {
+        setActiveDayIndex(event.day ?? null);
+      }
+
+      if (app) app.onEventClick(event);
+
+      if (onEventSelect) {
+        onEventSelect(event.id);
+      } else if (canOpenDetail) {
+        setIsSelected(true);
+      }
+      onDetailPanelToggle?.(null);
+      setDetailPanelPosition(null);
+    },
+    [
+      isMultiDay,
+      getClickedDayIdx,
+      setActiveDayIndex,
+      multiDaySegmentInfo?.dayIndex,
+      event,
+      segment,
+      app,
+      onEventSelect,
+      canOpenDetail,
+      setIsSelected,
+      onDetailPanelToggle,
+      setDetailPanelPosition,
+    ]
   );
 
   const handleDoubleClick = useCallback(
     (e: MouseEvent) => {
+      clearPendingClick();
       e.preventDefault();
       e.stopPropagation();
       if (!canOpenDetail) return;
@@ -168,6 +225,9 @@ export const useEventActions = ({
 
       scrollEventToCenter().then(() => {
         setIsSelected(true);
+        if (isYearView) {
+          onEventSelect?.(event.id);
+        }
         if (!isMobile) {
           onDetailPanelToggle?.(detailPanelKey);
           setDetailPanelPosition({
@@ -182,6 +242,7 @@ export const useEventActions = ({
       });
     },
     [
+      clearPendingClick,
       canOpenDetail,
       isMultiDay,
       selectedEventElementRef,
@@ -192,6 +253,7 @@ export const useEventActions = ({
       event.day,
       scrollEventToCenter,
       setIsSelected,
+      isYearView,
       isMobile,
       onDetailPanelToggle,
       detailPanelKey,
@@ -204,52 +266,28 @@ export const useEventActions = ({
     (e: MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      if (isMultiDay) {
-        const clickedDay = getClickedDayIdx(e.clientX);
-        setActiveDayIndex(
-          clickedDay === null
-            ? (multiDaySegmentInfo?.dayIndex ?? event.day ?? null)
-            : segment
-              ? Math.min(
-                  Math.max(clickedDay, segment.startDayIndex),
-                  segment.endDayIndex
-                )
-              : clickedDay
-        );
-      } else {
-        setActiveDayIndex(event.day ?? null);
+      const clientX = e.clientX;
+      if (isYearView && !isMobile) {
+        clearPendingClick();
+        setHasPendingSelection(true);
+        clickTimeoutRef.current = setTimeout(() => {
+          performSingleClick(clientX);
+          clickTimeoutRef.current = null;
+          setHasPendingSelection(false);
+        }, 180);
+        return;
       }
 
-      if (app) app.onEventClick(event);
-
-      if (onEventSelect) {
-        onEventSelect(event.id);
-      } else if (canOpenDetail) {
-        setIsSelected(true);
-      }
-      onDetailPanelToggle?.(null);
-      setDetailPanelPosition(null);
+      performSingleClick(clientX);
     },
-    [
-      isMultiDay,
-      getClickedDayIdx,
-      setActiveDayIndex,
-      segment,
-      multiDaySegmentInfo?.dayIndex,
-      event,
-      app,
-      onEventSelect,
-      canOpenDetail,
-      setIsSelected,
-      onDetailPanelToggle,
-      setDetailPanelPosition,
-    ]
+    [clearPendingClick, isYearView, isMobile, performSingleClick]
   );
 
   return {
     handleClick,
     handleDoubleClick,
     handleContextMenu,
+    hasPendingSelection,
     scrollEventToCenter,
   };
 };

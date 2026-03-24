@@ -72,7 +72,24 @@ describe('YearView utils - analyzeMultiDayEventsForRow', () => {
     expect(segE?.visualRowIndex).toBe(2);
   });
 
-  it('should not throw TypeError when calculating daysDifference (Date objects vs timestamps)', () => {
+  it('should prioritize all-day events over timed events regardless of input order', () => {
+    const rowDays = [createDate(2026, 3, 18)];
+    const events: Event[] = [
+      createTimedEvent('Timed', '2026-03-18T10:00:00', '2026-03-18T11:00:00'),
+      createAllDayEvent('AllDay', '2026-03-18', '2026-03-18'),
+    ];
+
+    const segments = analyzeMultiDayEventsForRow(events, rowDays, 1);
+
+    const timedSeg = segments.find(s => s.event.id === 'Timed');
+    const allDaySeg = segments.find(s => s.event.id === 'AllDay');
+
+    // All-day should be in row 0, timed in row 1
+    expect(allDaySeg?.visualRowIndex).toBe(0);
+    expect(timedSeg?.visualRowIndex).toBe(1);
+  });
+
+  it('should not throw TypeError', () => {
     const rowDays = [createDate(2026, 3, 18)];
     const events: Event[] = [
       createAllDayEvent('Test', '2026-03-18', '2026-03-18'),

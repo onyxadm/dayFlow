@@ -303,7 +303,7 @@ const DefaultEventDetailDialog = ({
               {editedEvent.allDay ? (
                 <button
                   type='button'
-                  className='rounded-lg bg-secondary/10 px-3 py-2 text-xs font-medium text-secondary transition hover:bg-secondary/20'
+                  className='rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary transition hover:bg-primary/20'
                   onClick={convertToRegular}
                 >
                   {t('setAsTimed')}
@@ -311,7 +311,7 @@ const DefaultEventDetailDialog = ({
               ) : (
                 <button
                   type='button'
-                  className='rounded-lg bg-secondary/10 px-3 py-2 text-xs font-medium text-secondary transition hover:bg-secondary/20'
+                  className='rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary transition hover:bg-primary/20'
                   onClick={convertToAllDay}
                 >
                   {t('setAsAllDay')}

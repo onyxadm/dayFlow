@@ -30,10 +30,20 @@ const CalendarDaysIcon = ({ className }: { className?: string }) => (
 );
 
 export const DefaultDragIndicatorRenderer: DragIndicatorRenderer = {
-  renderAllDayContent: ({ title, color: _color }) => (
+  renderAllDayContent: ({ title, color: _color, isMobile }) => (
     <div className='flex h-full items-center overflow-hidden pt-1 pl-3'>
       <CalendarDaysIcon className='mr-1 h-3 w-3 text-white' />
-      <div className='truncate pr-1 text-xs font-medium text-white'>
+      <div
+        className={`pr-1 text-xs font-medium text-white ${isMobile ? 'df-mobile-mask-fade' : 'truncate'}`}
+        style={
+          isMobile
+            ? {
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+              }
+            : undefined
+        }
+      >
         {title}
       </div>
     </div>
@@ -58,10 +68,16 @@ export const DefaultDragIndicatorRenderer: DragIndicatorRenderer = {
         className={`flex h-full flex-col overflow-hidden pl-3 text-white ${getDynamicPadding(drag)}`}
       >
         <div
-          className='truncate pr-1 text-xs font-medium text-white'
+          className={`pr-1 text-xs font-medium text-white ${isMobile ? 'df-mobile-mask-fade' : 'truncate'}`}
           style={{
             lineHeight:
               drag.endHour - drag.startHour <= 0.25 ? '1.2' : 'normal',
+            ...(isMobile
+              ? {
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                }
+              : {}),
           }}
         >
           {title}
@@ -87,7 +103,7 @@ export const DefaultDragIndicatorRenderer: DragIndicatorRenderer = {
     </>
   ),
 
-  renderDefaultContent: ({ drag: _drag, title, allDay }) => {
+  renderDefaultContent: ({ drag: _drag, title, allDay, isMobile }) => {
     if (allDay) {
       return (
         <div className='flex h-full items-center overflow-hidden px-1 py-0 pl-3'>
@@ -105,8 +121,16 @@ export const DefaultDragIndicatorRenderer: DragIndicatorRenderer = {
             />
           </svg>
           <div
-            className='truncate pr-1 text-xs font-medium'
-            style={{ lineHeight: 1.2 }}
+            className={`pr-1 text-xs font-medium ${isMobile ? 'df-mobile-mask-fade' : 'truncate'}`}
+            style={{
+              lineHeight: 1.2,
+              ...(isMobile
+                ? {
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                  }
+                : {}),
+            }}
           >
             {title}
           </div>
@@ -118,7 +142,17 @@ export const DefaultDragIndicatorRenderer: DragIndicatorRenderer = {
       <>
         <div className='absolute top-1 bottom-1 left-0.5 w-0.5 rounded-full bg-primary' />
         <div className='flex h-full flex-col overflow-hidden p-1 pl-3'>
-          <div className='truncate pr-1 text-xs font-medium text-primary'>
+          <div
+            className={`pr-1 text-xs font-medium text-primary ${isMobile ? 'df-mobile-mask-fade' : 'truncate'}`}
+            style={
+              isMobile
+                ? {
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                  }
+                : undefined
+            }
+          >
             {title}
           </div>
         </div>

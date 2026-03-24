@@ -364,6 +364,7 @@ const MonthView = ({
     },
     currentWeekStart,
     events,
+    isMobile: screenSize !== 'desktop',
   });
 
   // Use calendar drop functionality

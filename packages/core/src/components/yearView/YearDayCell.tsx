@@ -34,7 +34,7 @@ export const YearDayCell = memo(
 
     return (
       <div
-        className={`relative flex flex-col border-r border-b border-gray-100 dark:border-gray-800 ${isFirstDay ? 'border-l-2 border-l-primary dark:border-l-primary' : ''} overflow-hidden bg-white select-none dark:bg-gray-900`}
+        className={`relative flex flex-col border-r border-b border-gray-100 dark:border-gray-800 ${isFirstDay ? 'border-l-2 border-l-[var(--df-color-primary)]' : ''} overflow-hidden bg-white select-none dark:bg-gray-900`}
         style={{ aspectRatio: '1/1' }}
         onClick={() => onSelectDate(date)}
         onDblClick={e => onCreateStart?.(e, date)}

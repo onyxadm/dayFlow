@@ -91,6 +91,7 @@ function CalendarViewer({ config, calendarRef }: CalendarViewerProps) {
 
 export function InteractiveCalendar() {
   const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   // States for checkboxes
   const [showSidebar, setShowSidebar] = useState(false);
@@ -101,6 +102,7 @@ export function InteractiveCalendar() {
   const calendarRef = useRef<UseCalendarAppReturn | null>(null);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
       setShowSidebar(true);
       setShowControls(true);
@@ -155,14 +157,15 @@ export function InteractiveCalendar() {
       v.push(
         createMonthView({
           showMonthIndicator: false,
-          scroll: {
-            disabled: true,
-            // timeIndicator: true,
-          },
         })
       );
     if (selectedViews.includes(ViewType.YEAR)) {
-      v.push(createYearView({ mode: yearMode as never }));
+      v.push(
+        createYearView({
+          mode: yearMode as never,
+          showTimedEventsInYearView: true,
+        })
+      );
     }
 
     const currentView = selectedViews.includes(activeView)
@@ -211,6 +214,12 @@ export function InteractiveCalendar() {
       return next.length === 0 ? [view] : next;
     });
   };
+
+  if (!mounted) {
+    return (
+      <div className='calendar-wrapper w-full' style={{ minHeight: '600px' }} />
+    );
+  }
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -441,7 +450,7 @@ export function InteractiveCalendar() {
           This ensures all internal translated strings and plugin states are reset correctly.
         */}
           <CalendarViewer
-            key={`${locale}-${showSidebar}-${enableDrag}-${enableShortcuts}-${showHeader}-${selectedViews.join(',')}-${yearMode}`}
+            key={`${locale}-${selectedViews.join(',')}-${yearMode}`}
             config={config}
             calendarRef={calendarRef}
           />

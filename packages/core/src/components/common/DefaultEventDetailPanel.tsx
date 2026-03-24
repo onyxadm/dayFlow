@@ -417,7 +417,7 @@ const DefaultEventDetailPanel = ({
           {isAllDay ? (
             <button
               type='button'
-              className='rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary'
+              className='rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90'
               onClick={convertToRegular}
             >
               {t('setAsTimed')}
@@ -425,7 +425,7 @@ const DefaultEventDetailPanel = ({
           ) : (
             <button
               type='button'
-              className='rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary'
+              className='rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90'
               onClick={convertToAllDay}
             >
               {t('setAsAllDay')}

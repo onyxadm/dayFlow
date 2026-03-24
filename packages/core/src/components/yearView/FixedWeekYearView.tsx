@@ -114,7 +114,16 @@ function analyzeEventsForMonth(
   const allDayComparator = createAllDayDisplayComparator(
     monthEventsWithDates.map(i => i.event)
   );
-  monthEventsWithDates.sort((a, b) => allDayComparator(a.event, b.event));
+  monthEventsWithDates.sort((a, b) => {
+    // Priority 1: All-day events always before timed events
+    const aAllDay = !!a.event.allDay;
+    const bAllDay = !!b.event.allDay;
+    if (aAllDay !== bAllDay) {
+      return aAllDay ? -1 : 1;
+    }
+    // Priority 2: Standard all-day sort logic (multi-day first, then calendar, then comparator)
+    return allDayComparator(a.event, b.event);
+  });
 
   const segments: MonthEventSegment[] = [];
   const occupiedSlots: boolean[][] = [];
@@ -167,7 +176,7 @@ function analyzeEventsForMonth(
       }
 
       segments.push({
-        id: `${event.id}_month_${monthIndex}`,
+        id: `${event.id}::month-${monthIndex}`,
         event,
         startCellIndex,
         endCellIndex,

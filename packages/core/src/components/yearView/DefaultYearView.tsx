@@ -67,6 +67,12 @@ export const DefaultYearView = ({
     return 7;
   });
   const [isLayoutReady, setIsLayoutReady] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
 
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(
     null
@@ -84,25 +90,35 @@ export const DefaultYearView = ({
       ? internalDetailPanelEventId
       : propDetailPanelEventId;
 
-  const setSelectedEventId = (id: string | null) => {
-    if (propOnEventSelect) {
-      propOnEventSelect(id);
-    } else {
-      setInternalSelectedId(id);
-    }
-  };
-
-  const setDetailPanelEventId = (id: string | null) => {
-    if (propOnDetailPanelToggle) {
-      propOnDetailPanelToggle(id);
-    } else {
-      setInternalDetailPanelEventId(id);
-    }
-  };
-
   const [newlyCreatedEventId, setNewlyCreatedEventId] = useState<string | null>(
     null
   );
+
+  const setSelectedEventId = useCallback(
+    (id: string | null) => {
+      if (propOnEventSelect) {
+        propOnEventSelect(id);
+      } else {
+        setInternalSelectedId(id);
+      }
+    },
+    [propOnEventSelect]
+  );
+
+  const setDetailPanelEventId = useCallback(
+    (id: string | null) => {
+      if (propOnDetailPanelToggle) {
+        propOnDetailPanelToggle(id);
+      } else {
+        setInternalDetailPanelEventId(id);
+      }
+    },
+    [propOnDetailPanelToggle]
+  );
+
+  const handleDetailPanelOpen = useCallback(() => {
+    setNewlyCreatedEventId(null);
+  }, []);
 
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -157,6 +173,7 @@ export const DefaultYearView = ({
         const minCellWidth = 80; // Consistent with previous minmax
         const cols = Math.floor(width / minCellWidth);
         setColumnsPerRow(Math.max(1, cols));
+        setIsMobile(width < 768);
         setIsLayoutReady(true);
       }, 60);
     });
@@ -217,6 +234,7 @@ export const DefaultYearView = ({
     onEventEdit: event => {
       setNewlyCreatedEventId(event.id);
     },
+    isMobile,
   });
 
   // Get config value
@@ -289,6 +307,56 @@ export const DefaultYearView = ({
     });
   }, [rawEvents, currentYear, showTimedEvents]);
 
+  // Group events by row for better performance
+  const eventsByRow = useMemo(() => {
+    // 1. Pre-normalize event dates for the year once
+    const yearEventsWithDates = yearEvents.map(event => {
+      const start = temporalToDate(event.start);
+      const end = event.end ? temporalToDate(event.end) : start;
+      return {
+        event,
+        startMs: new Date(
+          start.getFullYear(),
+          start.getMonth(),
+          start.getDate()
+        ).getTime(),
+        endMs: new Date(
+          end.getFullYear(),
+          end.getMonth(),
+          end.getDate(),
+          23,
+          59,
+          59,
+          999
+        ).getTime(),
+      };
+    });
+
+    // 2. Map rows to their events
+    return rows.map(rowDays => {
+      if (rowDays.length === 0) return [];
+      const rowStartMs = new Date(
+        rowDays[0].getFullYear(),
+        rowDays[0].getMonth(),
+        rowDays[0].getDate()
+      ).getTime();
+      const lastDay = rowDays.at(-1);
+      const rowEndMs = new Date(
+        lastDay.getFullYear(),
+        lastDay.getMonth(),
+        lastDay.getDate(),
+        23,
+        59,
+        59,
+        999
+      ).getTime();
+
+      return yearEventsWithDates
+        .filter(item => item.startMs <= rowEndMs && item.endMs >= rowStartMs)
+        .map(item => item.event);
+    });
+  }, [rows, yearEvents]);
+
   const getCustomTitle = () => {
     const isAsianLocale = locale.startsWith('zh') || locale.startsWith('ja');
     return isAsianLocale ? `${currentYear}年` : `${currentYear}`;
@@ -334,7 +402,7 @@ export const DefaultYearView = ({
             <YearRowComponent
               key={index}
               rowDays={rowDays}
-              events={yearEvents}
+              events={eventsByRow[index]}
               columnsPerRow={columnsPerRow}
               app={app}
               calendarRef={calendarRef}
@@ -348,7 +416,7 @@ export const DefaultYearView = ({
               onEventSelect={setSelectedEventId}
               onMoreEventsClick={app.onMoreEventsClick}
               newlyCreatedEventId={newlyCreatedEventId}
-              onDetailPanelOpen={() => setNewlyCreatedEventId(null)}
+              onDetailPanelOpen={handleDetailPanelOpen}
               detailPanelEventId={detailPanelEventId}
               onDetailPanelToggle={setDetailPanelEventId}
               customDetailPanelContent={customDetailPanelContent}

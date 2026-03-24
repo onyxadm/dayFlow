@@ -38,20 +38,17 @@ export function analyzeMultiDayEventsForRow(
 ): YearMultiDaySegment[] {
   if (rowDays.length === 0) return [];
 
-  const rowStart = rowDays[0];
-  const rowEnd = rowDays.at(-1)!;
-
-  // Normalize row start/end to midnight for consistent comparisons
   const rowStartMs = new Date(
-    rowStart.getFullYear(),
-    rowStart.getMonth(),
-    rowStart.getDate()
+    rowDays[0].getFullYear(),
+    rowDays[0].getMonth(),
+    rowDays[0].getDate()
   ).getTime();
 
+  const lastDay = rowDays.at(-1);
   const rowEndMs = new Date(
-    rowEnd.getFullYear(),
-    rowEnd.getMonth(),
-    rowEnd.getDate(),
+    lastDay.getFullYear(),
+    lastDay.getMonth(),
+    lastDay.getDate(),
     23,
     59,
     59,
@@ -60,26 +57,25 @@ export function analyzeMultiDayEventsForRow(
 
   // 1. Filter and normalize events that overlap with this row
   const eventsWithDates = events
-    .filter(event => !!event.start)
     .map(event => {
       const start = temporalToDate(event.start);
       const end = event.end ? temporalToDate(event.end) : start;
 
-      const eventStartDay = new Date(
+      const startMs = new Date(
         start.getFullYear(),
         start.getMonth(),
         start.getDate()
-      );
-      const eventEndDay = new Date(
+      ).getTime();
+      const endMs = new Date(
         end.getFullYear(),
         end.getMonth(),
         end.getDate()
-      );
+      ).getTime();
 
       return {
         event,
-        startMs: eventStartDay.getTime(),
-        endMs: eventEndDay.getTime(),
+        startMs,
+        endMs,
       };
     })
     .filter(item => item.startMs <= rowEndMs && item.endMs >= rowStartMs);
@@ -92,7 +88,16 @@ export function analyzeMultiDayEventsForRow(
     eventsWithDates.map(d => d.event),
     comparator
   );
-  eventsWithDates.sort((a, b) => allDayComparator(a.event, b.event));
+  eventsWithDates.sort((a, b) => {
+    // Priority 1: All-day events always before timed events
+    const aAllDay = !!a.event.allDay;
+    const bAllDay = !!b.event.allDay;
+    if (aAllDay !== bAllDay) {
+      return aAllDay ? -1 : 1;
+    }
+    // Priority 2: Standard all-day sort logic (multi-day first, then calendar, then comparator)
+    return allDayComparator(a.event, b.event);
+  });
 
   const segments: YearMultiDaySegment[] = [];
   const occupiedSlots: boolean[][] = []; // [visualRowIndex][colIndex]
@@ -138,7 +143,7 @@ export function analyzeMultiDayEventsForRow(
     }
 
     segments.push({
-      id: `${event.id}_${rowStart.getTime()}`,
+      id: `${event.id}::year-${rowStartMs}`,
       event,
       startCellIndex,
       endCellIndex,

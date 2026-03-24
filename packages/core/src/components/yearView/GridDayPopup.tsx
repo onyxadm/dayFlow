@@ -2,6 +2,7 @@ import { ComponentChildren } from 'preact';
 import { createPortal } from 'preact/compat';
 import { useEffect, useRef } from 'preact/hooks';
 
+import { useLocale } from '@/locale';
 import { ICalendarApp, Event } from '@/types';
 import { temporalToDate } from '@/utils/temporal';
 
@@ -27,6 +28,7 @@ export const GridDayPopup = ({
   app,
   customContent,
 }: GridDayPopupProps) => {
+  const { t } = useLocale();
   const popupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -110,6 +112,11 @@ export const GridDayPopup = ({
                   <div className='truncate text-xs font-medium text-gray-900 dark:text-gray-100'>
                     {event.title}
                   </div>
+                  {event.allDay && (
+                    <div className='text-[10px] text-gray-500 dark:text-gray-400'>
+                      {t('allDay')}
+                    </div>
+                  )}
                   {timeStr && (
                     <div className='text-[10px] text-gray-500 dark:text-gray-400'>
                       {timeStr}

@@ -257,7 +257,13 @@ export const GridYearView = ({ app, config }: GridYearViewProps) => {
   const popupEvents = useMemo(() => {
     if (!popup) return [];
     const key = `${popup.date.getFullYear()}-${String(popup.date.getMonth() + 1).padStart(2, '0')}-${String(popup.date.getDate()).padStart(2, '0')}`;
-    return fullEventMap.get(key) ?? [];
+    const events = fullEventMap.get(key) ?? [];
+    return [...events].toSorted((a, b) => {
+      const aAllDay = !!a.allDay;
+      const bAllDay = !!b.allDay;
+      if (aAllDay !== bAllDay) return aAllDay ? -1 : 1;
+      return 0;
+    });
   }, [popup, fullEventMap]);
 
   return (

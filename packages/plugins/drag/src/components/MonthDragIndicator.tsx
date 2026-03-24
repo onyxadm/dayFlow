@@ -27,6 +27,7 @@ interface MonthDragIndicatorProps {
   isMultiDay?: boolean;
   startDate?: Date | null;
   endDate?: Date | null;
+  isMobile?: boolean;
 }
 
 const MonthDragIndicatorComponent = ({
@@ -35,6 +36,7 @@ const MonthDragIndicatorComponent = ({
   isMultiDay = false,
   startDate,
   endDate,
+  isMobile,
 }: MonthDragIndicatorProps) => {
   const { t } = useLocale();
   const getDisplayContent = () => {
@@ -67,7 +69,19 @@ const MonthDragIndicatorComponent = ({
     <div className='flex items-center space-x-2 rounded-sm text-xs font-medium text-white'>
       <div className='shrink-0'>{content.icon}</div>
       <div className='min-w-0 flex-1'>
-        <div className='truncate font-medium'>{content.title}</div>
+        <div
+          className={`font-medium ${isMobile ? 'df-mobile-mask-fade' : 'truncate'}`}
+          style={
+            isMobile
+              ? {
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                }
+              : undefined
+          }
+        >
+          {content.title}
+        </div>
       </div>
     </div>
   );

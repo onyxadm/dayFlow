@@ -475,13 +475,44 @@
 }
 
 /* --- Primary-color hover/text for other buttons inside the calendar --- */
-.df-calendar-container .text-primary {
+.df-calendar-container .text-primary,
+.df-event-detail-panel .text-primary,
+.df-dialog-container .text-primary {
   color: var(--df-color-primary);
 }
-.df-calendar-container .hover\:bg-primary\/10:hover {
+.df-calendar-container .bg-primary\/10,
+.df-event-detail-panel .bg-primary\/10,
+.df-dialog-container .bg-primary\/10 {
   background-color: color-mix(
     in srgb,
     var(--df-color-primary) 10%,
+    transparent
+  );
+}
+.df-calendar-container .hover\:bg-primary\/10:hover,
+.df-event-detail-panel .hover\:bg-primary\/10:hover,
+.df-dialog-container .hover\:bg-primary\/10:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--df-color-primary) 10%,
+    transparent
+  );
+}
+.df-calendar-container .bg-primary\/20,
+.df-event-detail-panel .bg-primary\/20,
+.df-dialog-container .bg-primary\/20 {
+  background-color: color-mix(
+    in srgb,
+    var(--df-color-primary) 20%,
+    transparent
+  );
+}
+.df-calendar-container .hover\:bg-primary\/20:hover,
+.df-event-detail-panel .hover\:bg-primary\/20:hover,
+.df-dialog-container .hover\:bg-primary\/20:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--df-color-primary) 20%,
     transparent
   );
 }

@@ -145,6 +145,7 @@ export const useDragManager = (options: useDragProps): UseDragManagerReturn => {
               targetDate: drag.targetDate || null,
               startDate: drag.originalStartDate || null,
               endDate: drag.originalEndDate || null,
+              isMobile,
             })
           ),
           indicator

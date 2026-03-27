@@ -104,7 +104,7 @@ const CalendarEvent = ({
     showDetailPanel && !customEventDetailDialog;
 
   const readOnlyConfig = app?.getReadOnlyConfig();
-  const isEditable = !app?.state.readOnly;
+  const isEditable = app?.canMutateFromUI() ?? false;
   const canOpenDetail = readOnlyConfig?.viewable !== false;
   const isDraggable = readOnlyConfig?.draggable !== false;
 
@@ -361,6 +361,11 @@ const CalendarEvent = ({
     }
   }, [app?.state.highlightedEventId, event.id]);
 
+  useEffect(() => {
+    if (isEditable) return;
+    setContextMenuPosition(null);
+  }, [isEditable]);
+
   // Auto-open detail panel for newly created events
   useEffect(() => {
     const isFirst =
@@ -511,7 +516,7 @@ const CalendarEvent = ({
         app={app}
       />
 
-      {contextMenuPosition && app && (
+      {contextMenuPosition && app && isEditable && (
         <EventContextMenu
           event={event}
           x={contextMenuPosition.x}

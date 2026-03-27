@@ -164,7 +164,7 @@ const DefaultEventDetailPanel = ({
     appliedTheme === 'dark' ||
     (typeof document !== 'undefined' &&
       document.documentElement.classList.contains('dark'));
-  const isEditable = !app?.state.readOnly;
+  const isEditable = app?.canMutateFromUI() ?? false;
   const isViewable = app?.getReadOnlyConfig().viewable !== false;
   const isDraftAllDay = !!draftEvent.allDay;
 

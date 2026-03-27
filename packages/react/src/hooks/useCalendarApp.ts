@@ -84,6 +84,7 @@ export function useCalendarApp(
     setVisibleMonth: app.setVisibleMonth,
     getVisibleMonth: app.getVisibleMonth,
     emitVisibleRange: app.emitVisibleRange,
+    canMutateFromUI: app.canMutateFromUI,
     readOnlyConfig: app.getReadOnlyConfig(),
   };
 }

@@ -2,6 +2,8 @@
 
 您可以轻松地将日历设置为只读模式，以防止用户修改。这对于公共日历或仅用于展示的仪表板非常有用。
 
+只读模式只会禁用 DayFlow 内置的修改 UI。像 `calendar.addEvent()`、`calendar.updateEvent()`、`calendar.deleteEvent()`、`calendar.applyEventsChanges()` 这样的程序化 API 仍然可以正常使用。
+
 ## 基本用法
 
 要启用只读模式，请在日历配置中传递 `readOnly: true`。
@@ -9,7 +11,7 @@
 ```tsx
 const calendar = useCalendarApp({
   views: [createMonthView()],
-  readOnly: true, // 禁用所有交互（拖拽、创建、编辑）
+  readOnly: true, // 禁用内置修改 UI（拖拽、创建、编辑）
 });
 ```
 
@@ -35,3 +37,19 @@ const calendar = useCalendarApp({
 | `viewable`  | `boolean` | 是否可以查看事件详情（打开详情面板/对话框）。 |
 
 当 `readOnly` 激活时，日历还会隐藏"创建"按钮和其他通常会触发更改的 UI 元素。
+
+## 自定义 UI
+
+如果您渲染了自己的按钮、菜单或弹窗，建议使用 `calendar.canMutateFromUI()` 来决定是否显示修改入口：
+
+```tsx
+const calendar = useCalendarApp({
+  views: [createMonthView()],
+  readOnly: true,
+});
+
+const canEdit = calendar.canMutateFromUI();
+```
+
+- `true`：自定义 UI 可以显示创建、编辑、删除等入口。
+- `false`：自定义 UI 应隐藏或禁用这些修改入口。

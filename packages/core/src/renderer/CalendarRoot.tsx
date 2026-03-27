@@ -219,7 +219,7 @@ export const CalendarRoot = ({
     onSearchClick: search.handleSearchClick,
     searchValue: search.searchKeyword,
     isSearchOpen: search.isSearchOpen,
-    isEditable: !app.state.readOnly,
+    isEditable: app.canMutateFromUI(),
     ...(safeAreaLeft > 0 ? { safeAreaLeft } : {}),
   };
 

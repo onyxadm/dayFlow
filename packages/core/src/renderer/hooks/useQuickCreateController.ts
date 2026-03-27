@@ -45,7 +45,7 @@ export function useQuickCreateController(
         | JSX.TargetedMouseEvent<HTMLElement>
         | JSX.TargetedTouchEvent<HTMLElement>
     ) => {
-      const isEditable = !app.state.readOnly;
+      const isEditable = app.canMutateFromUI();
       if (!isEditable) return;
 
       if (isMobile) {

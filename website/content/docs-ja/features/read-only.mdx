@@ -2,6 +2,8 @@
 
 カレンダーを簡単に読み取り専用にして、ユーザーによる変更を防ぐことができます。これは、公開カレンダーや表示専用のダッシュボードに役立ちます。
 
+読み取り専用モードは DayFlow 組み込みの変更 UI だけを無効にします。`calendar.addEvent()`、`calendar.updateEvent()`、`calendar.deleteEvent()`、`calendar.applyEventsChanges()` のようなプログラムからの API は引き続き利用できます。
+
 ## 基本的な使い方
 
 読み取り専用モードを有効にするには、カレンダーの設定に `readOnly: true` を渡します。
@@ -9,7 +11,7 @@
 ```tsx
 const calendar = useCalendarApp({
   views: [createMonthView()],
-  readOnly: true, // すべてのインタラクション（ドラッグ、作成、編集）を無効にします
+  readOnly: true, // 組み込みの変更 UI（ドラッグ、作成、編集）を無効にします
 });
 ```
 
@@ -35,3 +37,19 @@ const calendar = useCalendarApp({
 | `viewable`  | `boolean` | イベント詳細を表示できるかどうか（詳細パネル/ダイアログを開く）。 |
 
 `readOnly` が有効な場合、カレンダーは「作成」ボタンや、通常変更をトリガーするその他の UI 要素も非表示にします。
+
+## カスタム UI
+
+独自のボタン、メニュー、ダイアログを描画する場合は、`calendar.canMutateFromUI()` を使って変更系 UI を表示してよいか判定してください。
+
+```tsx
+const calendar = useCalendarApp({
+  views: [createMonthView()],
+  readOnly: true,
+});
+
+const canEdit = calendar.canMutateFromUI();
+```
+
+- `true`: 独自 UI で作成、編集、削除の操作を表示できます。
+- `false`: 独自 UI では変更系の操作を隠すか無効化してください。

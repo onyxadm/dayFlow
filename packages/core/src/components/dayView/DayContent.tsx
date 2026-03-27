@@ -1,5 +1,5 @@
 import { RefObject } from 'preact';
-import { useRef, useState, useMemo } from 'preact/hooks';
+import { useEffect, useRef, useState, useMemo } from 'preact/hooks';
 
 import CalendarEventComponent from '@/components/calendarEvent';
 import ViewHeader from '@/components/common/ViewHeader';
@@ -196,10 +196,16 @@ export const DayContent = ({
       (clientY - rect.top + scrollTop - getGridOffset()) / HOUR_HEIGHT
     );
   };
+  const isEditable = app.canMutateFromUI();
+
+  useEffect(() => {
+    if (isEditable) return;
+    setContextMenu(null);
+  }, [isEditable]);
 
   const handleContextMenu = (e: MouseEvent, isAllDay: boolean) => {
     e.preventDefault();
-    if (isMobile) return;
+    if (isMobile || !isEditable) return;
 
     const date = new Date(currentDate);
 
@@ -331,13 +337,13 @@ export const DayContent = ({
                     selectedEventId={selectedEventId}
                     onEventSelect={(eventId: string | null) => {
                       const isViewable = app.getReadOnlyConfig().viewable;
-                      const isReadOnly = app.state.readOnly;
+                      const canMutateFromUI = app.canMutateFromUI();
                       const evt = events.find(e => e.id === eventId);
                       if (
                         (isMobile || isTouch) &&
                         evt &&
                         isViewable &&
-                        !isReadOnly
+                        canMutateFromUI
                       ) {
                         setDraftEvent(evt);
                         setIsDrawerOpen(true);
@@ -633,7 +639,7 @@ export const DayContent = ({
           </div>
         </div>
       </div>
-      {contextMenu && (
+      {isEditable && contextMenu && (
         <GridContextMenu
           x={contextMenu.x}
           y={contextMenu.y}

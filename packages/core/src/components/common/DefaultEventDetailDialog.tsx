@@ -154,7 +154,7 @@ const DefaultEventDetailDialog = ({
     });
   };
 
-  const isEditable = !app?.state.readOnly;
+  const isEditable = app?.canMutateFromUI() ?? false;
   const isViewable = app?.getReadOnlyConfig().viewable !== false;
   const isPending = isSaving || isDeleting;
 

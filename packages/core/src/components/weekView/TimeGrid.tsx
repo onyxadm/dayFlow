@@ -1,5 +1,5 @@
 import { RefObject, CSSProperties, TargetedEvent } from 'preact';
-import { useState, useRef, useMemo } from 'preact/hooks';
+import { useEffect, useState, useRef, useMemo } from 'preact/hooks';
 
 import CalendarEventComponent from '@/components/calendarEvent';
 import { GridContextMenu } from '@/components/contextMenu';
@@ -148,6 +148,12 @@ export const TimeGrid = ({
     date: Date;
   } | null>(null);
   const hasScrollbarSpace = useMemo(() => scrollbarTakesSpace(), []);
+  const isEditable = app.canMutateFromUI();
+
+  useEffect(() => {
+    if (isEditable) return;
+    setContextMenu(null);
+  }, [isEditable]);
 
   /** Returns the fractional hour at the given clientY within the time grid. */
   const getGridHour = (clientY: number) => {
@@ -158,7 +164,7 @@ export const TimeGrid = ({
 
   const handleContextMenu = (e: MouseEvent, dayIndex: number, hour: number) => {
     e.preventDefault();
-    if (isMobile) return;
+    if (isMobile || !isEditable) return;
 
     const date = new Date(currentWeekStart);
     date.setDate(currentWeekStart.getDate() + dayIndex);
@@ -561,7 +567,7 @@ export const TimeGrid = ({
           </div>
         </div>
       </div>
-      {contextMenu && (
+      {isEditable && contextMenu && (
         <GridContextMenu
           x={contextMenu.x}
           y={contextMenu.y}

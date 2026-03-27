@@ -384,10 +384,16 @@ const WeekComponent = memo(
       y: number;
       date: Date;
     } | null>(null);
+    const isEditable = app.canMutateFromUI();
+
+    useEffect(() => {
+      if (isEditable) return;
+      setContextMenu(null);
+    }, [isEditable]);
 
     const handleContextMenu = (e: MouseEvent, date: Date) => {
       e.preventDefault();
-      if (screenSize === 'mobile') return;
+      if (screenSize === 'mobile' || !isEditable) return;
       setContextMenu({ x: e.clientX, y: e.clientY, date });
     };
 
@@ -1054,7 +1060,7 @@ const WeekComponent = memo(
             )}
           </div>
         </div>
-        {contextMenu && (
+        {isEditable && contextMenu && (
           <GridContextMenu
             x={contextMenu.x}
             y={contextMenu.y}

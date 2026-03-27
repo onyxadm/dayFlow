@@ -265,12 +265,19 @@ export const FixedWeekYearView = ({
     y: number;
     date: Date;
   } | null>(null);
+  const isEditable = app.canMutateFromUI();
 
   const handleContextMenu = (e: MouseEvent, date: Date) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isEditable) return;
     setContextMenu({ x: e.clientX, y: e.clientY, date });
   };
+
+  useEffect(() => {
+    if (isEditable) return;
+    setContextMenu(null);
+  }, [isEditable]);
 
   // Click outside handler
   useEffect(() => {
@@ -732,7 +739,7 @@ export const FixedWeekYearView = ({
           ))}
         </div>
       </div>
-      {contextMenu && (
+      {isEditable && contextMenu && (
         <GridContextMenu
           x={contextMenu.x}
           y={contextMenu.y}

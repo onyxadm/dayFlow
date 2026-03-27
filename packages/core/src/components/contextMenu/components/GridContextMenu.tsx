@@ -25,6 +25,8 @@ const GridContextMenu = ({
   viewType,
 }: GridContextMenuProps) => {
   const { t } = useLocale();
+  if (!app.canMutateFromUI()) return null;
+
   const hasCopiedEvent = clipboardStore.hasEvent();
 
   const handlePaste = async () => {

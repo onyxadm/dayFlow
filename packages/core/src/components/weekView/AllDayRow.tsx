@@ -1,5 +1,5 @@
 import { RefObject, JSX } from 'preact';
-import { useState, useMemo } from 'preact/hooks';
+import { useEffect, useState, useMemo } from 'preact/hooks';
 
 import CalendarEventComponent from '@/components/calendarEvent';
 import { GridContextMenu } from '@/components/contextMenu';
@@ -148,10 +148,16 @@ export const AllDayRow = ({
   const hasSecondaryTz = !!secondaryTimeSlots && secondaryTimeSlots.length > 0;
   // On mobile the time column is too narrow for dual labels — hide secondary TZ display
   const showSecondaryTz = hasSecondaryTz && !isMobile;
+  const isEditable = app.canMutateFromUI();
+
+  useEffect(() => {
+    if (isEditable) return;
+    setContextMenu(null);
+  }, [isEditable]);
 
   const handleContextMenu = (e: MouseEvent, dayIndex: number) => {
     e.preventDefault();
-    if (isMobile) return;
+    if (isMobile || !isEditable) return;
 
     const date = new Date(currentWeekStart);
     date.setDate(currentWeekStart.getDate() + dayIndex);
@@ -359,7 +365,7 @@ export const AllDayRow = ({
             )}
           </div>
         </div>
-        {contextMenu && (
+        {isEditable && contextMenu && (
           <GridContextMenu
             x={contextMenu.x}
             y={contextMenu.y}

@@ -125,6 +125,12 @@ export const DefaultYearView = ({
     y: number;
     date: Date;
   } | null>(null);
+  const isEditable = app.canMutateFromUI();
+
+  useEffect(() => {
+    if (isEditable) return;
+    setContextMenu(null);
+  }, [isEditable]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -424,12 +430,15 @@ export const DefaultYearView = ({
               onDetailPanelToggle={setDetailPanelEventId}
               customDetailPanelContent={customDetailPanelContent}
               customEventDetailDialog={customEventDetailDialog}
-              onContextMenu={setContextMenu}
+              onContextMenu={menu => {
+                if (!isEditable) return;
+                setContextMenu(menu);
+              }}
             />
           ))}
         </div>
       </div>
-      {contextMenu && (
+      {isEditable && contextMenu && (
         <GridContextMenu
           x={contextMenu.x}
           y={contextMenu.y}

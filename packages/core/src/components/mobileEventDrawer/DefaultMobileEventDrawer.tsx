@@ -30,7 +30,7 @@ export const MobileEventDrawer = ({
 }: MobileEventProps) => {
   const { locale, t } = useLocale();
   const readOnlyConfig = app.getReadOnlyConfig();
-  const isEditable = !app.state.readOnly;
+  const isEditable = app.canMutateFromUI();
   const isViewable = readOnlyConfig.viewable !== false;
 
   const [title, setTitle] = useState('');

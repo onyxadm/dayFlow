@@ -142,10 +142,11 @@ export const useEventActions = ({
       clearPendingClick();
       e.preventDefault();
       e.stopPropagation();
+      if (app && !app.canMutateFromUI()) return;
       if (onEventSelect) onEventSelect(event.id);
       setContextMenuPosition({ x: e.clientX, y: e.clientY });
     },
-    [clearPendingClick, event.id, onEventSelect, setContextMenuPosition]
+    [app, clearPendingClick, event.id, onEventSelect, setContextMenuPosition]
   );
 
   const performSingleClick = useCallback(

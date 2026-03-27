@@ -2,6 +2,8 @@
 
 You can easily make the calendar read-only to prevent user modifications. This is useful for public calendars or display-only dashboards.
 
+Read-only mode only disables DayFlow's built-in mutation UI. Programmatic APIs like `calendar.addEvent()`, `calendar.updateEvent()`, `calendar.deleteEvent()`, and `calendar.applyEventsChanges()` still work.
+
 ## Basic Usage
 
 To enable read-only mode, pass `readOnly: true` to the calendar configuration.
@@ -9,7 +11,7 @@ To enable read-only mode, pass `readOnly: true` to the calendar configuration.
 ```tsx
 const calendar = useCalendarApp({
   views: [createMonthView()],
-  readOnly: true, // Disables all interactions (dragging, creating, editing)
+  readOnly: true, // Disables built-in mutation UI (dragging, creating, editing)
 });
 ```
 
@@ -35,3 +37,19 @@ const calendar = useCalendarApp({
 | `viewable`  | `boolean` | Whether event details can be viewed (opens the detail panel/dialog). |
 
 When `readOnly` is active, the calendar will also hide "Create" buttons and other UI elements that would normally trigger changes.
+
+## Custom UI
+
+If you render your own buttons, menus, or dialogs, use `calendar.canMutateFromUI()` to decide whether mutation controls should be shown:
+
+```tsx
+const calendar = useCalendarApp({
+  views: [createMonthView()],
+  readOnly: true,
+});
+
+const canEdit = calendar.canMutateFromUI();
+```
+
+- `true`: your custom UI may show create/edit/delete controls.
+- `false`: your custom UI should hide or disable mutation controls.

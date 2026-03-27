@@ -445,8 +445,21 @@ const DefaultCalendarSidebar = ({
     : '';
 
   const readOnlyConfig = app.getReadOnlyConfig();
-  const isEditable = !app.state.readOnly;
+  const isEditable = app.canMutateFromUI();
   const isDraggable = readOnlyConfig.draggable !== false;
+
+  useEffect(() => {
+    if (isEditable) return;
+
+    setContextMenu(null);
+    setSidebarContextMenu(null);
+    setCustomColorPicker(null);
+    setMergeState(null);
+    setDeleteState(null);
+    setImportState(null);
+    setSubscribeDialogOpen(false);
+    setEditingCalendarId(null);
+  }, [isEditable, setEditingCalendarId]);
 
   return (
     <div
@@ -550,7 +563,7 @@ const DefaultCalendarSidebar = ({
         </>
       )}
 
-      {contextMenu && (
+      {isEditable && contextMenu && (
         <ContextMenu
           ref={contextMenuRef}
           x={contextMenu.x}
@@ -600,7 +613,8 @@ const DefaultCalendarSidebar = ({
         </ContextMenu>
       )}
 
-      {sidebarContextMenu &&
+      {isEditable &&
+        sidebarContextMenu &&
         createPortal(
           <ContextMenu
             x={sidebarContextMenu.x}
@@ -643,7 +657,8 @@ const DefaultCalendarSidebar = ({
         onChange={handleFileChange}
       />
 
-      {importState &&
+      {isEditable &&
+        importState &&
         createPortal(
           <ImportCalendarDialog
             calendars={calendars}
@@ -654,7 +669,8 @@ const DefaultCalendarSidebar = ({
           document.body
         )}
 
-      {subscribeDialogOpen &&
+      {isEditable &&
+        subscribeDialogOpen &&
         createPortal(
           <SubscribeCalendarDialog
             onSubscribe={handleSubscribeConfirm}
@@ -663,7 +679,8 @@ const DefaultCalendarSidebar = ({
           document.body
         )}
 
-      {mergeState &&
+      {isEditable &&
+        mergeState &&
         createPortal(
           <MergeCalendarDialog
             sourceName={sourceCalendarName}
@@ -676,7 +693,8 @@ const DefaultCalendarSidebar = ({
           document.body
         )}
 
-      {deleteState &&
+      {isEditable &&
+        deleteState &&
         createPortal(
           <DeleteCalendarDialog
             calendarId={deleteState.calendarId}
@@ -693,7 +711,8 @@ const DefaultCalendarSidebar = ({
           document.body
         )}
 
-      {customColorPicker &&
+      {isEditable &&
+        customColorPicker &&
         createPortal(
           <div
             className='fixed inset-0 z-50'

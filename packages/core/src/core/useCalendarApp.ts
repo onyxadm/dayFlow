@@ -345,6 +345,7 @@ export function useCalendarApp(
     setVisibleMonth: (date: Date) => app.setVisibleMonth(date),
     getVisibleMonth: () => app.getVisibleMonth(),
     emitVisibleRange,
+    canMutateFromUI: () => app.canMutateFromUI(),
     readOnlyConfig: app.getReadOnlyConfig(),
   };
 }

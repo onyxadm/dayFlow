@@ -210,14 +210,7 @@ export class CalendarApp implements ICalendarApp {
     };
   };
 
-  /**
-   * Helper to check if the calendar is in any form of read-only mode.
-   * If readOnly config is present, it's considered non-editable.
-   */
-  private isInternalEditable = (): boolean => {
-    if (this.state.readOnly === true) return false;
-    return typeof this.state.readOnly !== 'object';
-  };
+  canMutateFromUI = (): boolean => this.state.readOnly === false;
 
   // View management
   changeView = (view: CalendarViewType): void => {
@@ -402,8 +395,6 @@ export class CalendarApp implements ICalendarApp {
     isPending?: boolean,
     source?: 'drag' | 'resize'
   ): void => {
-    if (!this.isInternalEditable() && !isPending) return;
-
     if (isPending) {
       // Starting or continuing a multi-step operation (drag/resize)
       // Only capture the INITIAL state before the first change
@@ -481,11 +472,6 @@ export class CalendarApp implements ICalendarApp {
   };
 
   addEvent = (event: Event): void => {
-    if (!this.isInternalEditable()) {
-      logger.warn('Cannot add event in read-only mode');
-      return;
-    }
-
     this.pendingSnapshot = null; // New operation, clear any pending
     this.pushToUndo();
 
@@ -546,15 +532,6 @@ export class CalendarApp implements ICalendarApp {
     isPending?: boolean,
     source?: 'drag' | 'resize'
   ): Promise<void> => {
-    if (!this.isInternalEditable() && !isPending) {
-      logger.warn('Cannot update event in read-only mode');
-      return;
-    }
-
-    if (!this.isInternalEditable()) {
-      return;
-    }
-
     if (source) {
       this.pendingChangeSource = source;
     }
@@ -593,11 +570,6 @@ export class CalendarApp implements ICalendarApp {
   };
 
   deleteEvent = async (id: string): Promise<void> => {
-    if (!this.isInternalEditable()) {
-      logger.warn('Cannot delete event in read-only mode');
-      return;
-    }
-
     await this.callbacks.onEventDelete?.(id);
 
     this.pendingSnapshot = null;

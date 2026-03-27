@@ -102,6 +102,7 @@ export function createSidebarPlugin(
             string | null
           >(null);
           const [showCreateDialog, setShowCreateDialog] = useState(false);
+          const isEditable = app.canMutateFromUI();
 
           const refreshSidebar = useCallback(() => {
             setSidebarVersion(prev => prev + 1);
@@ -137,6 +138,8 @@ export function createSidebarPlugin(
           );
 
           const handleCreateCalendar = useCallback(() => {
+            if (!isEditable) return;
+
             const createMode = config.createCalendarMode || 'inline';
 
             if (createMode === 'modal') {
@@ -161,7 +164,14 @@ export function createSidebarPlugin(
             app.createCalendar(newCalendar);
             setEditingCalendarId(newId);
             refreshSidebar();
-          }, [app, t, refreshSidebar]);
+          }, [app, isEditable, t, refreshSidebar]);
+
+          useEffect(() => {
+            if (isEditable) return;
+
+            setShowCreateDialog(false);
+            setEditingCalendarId(null);
+          }, [isEditable]);
 
           const sidebarProps: CalendarSidebarRenderProps = useMemo(
             () => ({
@@ -206,7 +216,7 @@ export function createSidebarPlugin(
           };
 
           const renderExtraContent = () => {
-            if (!showCreateDialog) return null;
+            if (!isEditable || !showCreateDialog) return null;
 
             const onClose = () => setShowCreateDialog(false);
             const onCreate = async (newCalendar: unknown) => {

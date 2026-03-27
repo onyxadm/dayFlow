@@ -51,7 +51,7 @@ describe('CalendarApp', () => {
       expect(events[0].title).toBe('Updated Title');
     });
 
-    it('should delete an event', () => {
+    it('should delete an event', async () => {
       const app = new CalendarApp({
         views: [],
         plugins: [],
@@ -66,13 +66,13 @@ describe('CalendarApp', () => {
         defaultView: ViewType.WEEK,
       });
 
-      app.deleteEvent('test-1');
+      await app.deleteEvent('test-1');
       const events = app.getAllEvents();
 
       expect(events).toHaveLength(0);
     });
 
-    it('should throw error when updating non-existent event', () => {
+    it('should throw error when updating non-existent event', async () => {
       const app = new CalendarApp({
         views: [],
         plugins: [],
@@ -80,9 +80,86 @@ describe('CalendarApp', () => {
         defaultView: ViewType.WEEK,
       });
 
-      expect(() => {
-        app.updateEvent('non-existent', { title: 'New Title' });
-      }).toThrow('Event with id non-existent not found');
+      await expect(
+        app.updateEvent('non-existent', { title: 'New Title' })
+      ).rejects.toThrow('Event with id non-existent not found');
+    });
+
+    it('allows programmatic event changes while readOnly is true', async () => {
+      const app = new CalendarApp({
+        views: [],
+        plugins: [],
+        events: [],
+        defaultView: ViewType.WEEK,
+        readOnly: true,
+      });
+
+      const event = {
+        id: 'readonly-1',
+        title: 'Read-only Event',
+        start: Temporal.Now.plainDateISO(),
+        end: Temporal.Now.plainDateISO(),
+      };
+
+      app.addEvent(event);
+      await app.updateEvent(event.id, { title: 'Updated in Read-only' });
+      await app.deleteEvent(event.id);
+
+      expect(app.getAllEvents()).toHaveLength(0);
+    });
+
+    it('applies batched programmatic changes while readOnly is true', () => {
+      const app = new CalendarApp({
+        views: [],
+        plugins: [],
+        events: [],
+        defaultView: ViewType.WEEK,
+        readOnly: true,
+      });
+
+      const event = {
+        id: 'readonly-batch',
+        title: 'Batch Event',
+        start: Temporal.Now.plainDateISO(),
+        end: Temporal.Now.plainDateISO(),
+      };
+
+      app.applyEventsChanges({ add: [event] });
+      app.applyEventsChanges({
+        update: [{ id: event.id, updates: { title: 'Batch Updated' } }],
+      });
+
+      expect(app.getAllEvents()).toEqual([
+        { ...event, title: 'Batch Updated' },
+      ]);
+
+      app.applyEventsChanges({ delete: [event.id] });
+      expect(app.getAllEvents()).toHaveLength(0);
+    });
+
+    it('exposes a consistent canMutateFromUI helper', () => {
+      const editableApp = new CalendarApp({
+        views: [],
+        plugins: [],
+        events: [],
+        readOnly: false,
+      });
+      const readOnlyApp = new CalendarApp({
+        views: [],
+        plugins: [],
+        events: [],
+        readOnly: true,
+      });
+      const partialReadOnlyApp = new CalendarApp({
+        views: [],
+        plugins: [],
+        events: [],
+        readOnly: { draggable: false, viewable: true },
+      });
+
+      expect(editableApp.canMutateFromUI()).toBe(true);
+      expect(readOnlyApp.canMutateFromUI()).toBe(false);
+      expect(partialReadOnlyApp.canMutateFromUI()).toBe(false);
     });
   });
 

@@ -2,7 +2,7 @@
 
 DayFlow Calendar's appearance is controlled by a set of namespaced CSS custom properties (`--df-color-*`). All tokens are defined inside `@layer df-theme`, so host applications can override them without `!important` — regardless of whether they use Tailwind or plain CSS.
 
-Starting with the style refactor, the shared DayFlow foundation CSS is the single source of truth for theme tokens, component primitives, and semantic helper classes such as `df-fill-primary` and `df-focus-ring`.
+DayFlow's shared foundation CSS is the single source of truth for theme tokens, component primitives, and semantic helper classes such as `df-fill-primary` and `df-focus-ring`.
 
 ## Table of Contents
 
@@ -145,16 +145,25 @@ Prefer these `df-*` helpers or `--df-color-*` overrides when styling DayFlow. Av
 
 Set variables directly on `.df-calendar-container`. Because this rule is outside any `@layer`, it always wins over the library's defaults regardless of Tailwind version or CSS setup.
 
+In practice, you will often want to target both `.df-calendar-container` and `.df-portal`:
+
+- `.df-calendar-container` is the root container for the visible calendar surface
+- `.df-portal` is the root class DayFlow uses for floating UI rendered via portals into `document.body`, such as dialogs, dropdowns, and some picker panels
+
+If you only override `.df-calendar-container`, the main calendar can pick up your theme while portal-based overlays may still use the default tokens.
+
 ```css
 /* styles/globals.css */
-.df-calendar-container {
+.df-calendar-container,
+.df-portal {
   --df-color-primary: #6366f1;
   --df-color-background: #f9fafb;
   --df-color-border: #e0e7ff;
 }
 
 /* Dark mode — target the container when the .dark class is on an ancestor */
-.dark .df-calendar-container {
+.dark .df-calendar-container,
+.dark .df-portal {
   --df-color-primary: #a5b4fc;
   --df-color-background: #1e1e2e;
   --df-color-border: #312e81;

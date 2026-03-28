@@ -2,7 +2,7 @@
 
 DayFlow カレンダーの見た目は、`--df-color-*` という名前空間付き CSS カスタムプロパティで管理されています。すべてのトークンは `@layer df-theme` の内側で定義されているため、ホストアプリケーションは `!important` を使わずに上書きできます。Tailwind を使っていない環境でも同様です。
 
-今回のスタイル再構成以降、DayFlow の共有基盤 CSS がトークン、コンポーネント基礎スタイル、そして `df-fill-primary` や `df-focus-ring` などの `df-*` セマンティック補助クラスの単一ソースになっています。
+DayFlow の共有基盤 CSS は、トークン、コンポーネント基礎スタイル、そして `df-fill-primary` や `df-focus-ring` などの `df-*` セマンティック補助クラスの単一ソースです。
 
 ## 目次
 
@@ -137,16 +137,25 @@ CSS 変数に加えて、DayFlow はテーマ連動の `df-*` セマンティッ
 
 `.df-calendar-container` に変数を直接設定します。この規則はどの `@layer` にも属さないため、ライブラリのデフォルト値に対して常に優先されます。
 
+実際には、`.df-calendar-container` と `.df-portal` を一緒に対象にすることが多くなります。
+
+- `.df-calendar-container` はカレンダー本体のルートコンテナです
+- `.df-portal` は DayFlow が `document.body` 配下に portal 描画する浮動 UI のルートクラスで、ダイアログ、ドロップダウン、一部の picker パネルなどに使われます
+
+`.df-calendar-container` だけを上書きすると、本体は新しいテーマになっても portal ベースの浮動 UI はデフォルトのトークンを使い続けることがあります。
+
 ```css
 /* styles/globals.css */
-.df-calendar-container {
+.df-calendar-container,
+.df-portal {
   --df-color-primary: #6366f1;
   --df-color-background: #f9fafb;
   --df-color-border: #e0e7ff;
 }
 
 /* ダークモード — 祖先要素に .dark クラスがあるとき */
-.dark .df-calendar-container {
+.dark .df-calendar-container,
+.dark .df-portal {
   --df-color-primary: #a5b4fc;
   --df-color-background: #1e1e2e;
   --df-color-border: #312e81;

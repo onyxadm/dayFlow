@@ -2,7 +2,7 @@
 
 DayFlow Calendar 的外观由一组带命名空间的 CSS 自定义属性（`--df-color-*`）控制。所有 token 都定义在 `@layer df-theme` 内部，因此宿主应用无需使用 `!important` 即可覆盖它们——无论是否使用 Tailwind 都适用。
 
-这次样式重构之后，DayFlow 的共享基础样式已经成为 token、组件基础规则和 `df-*` 语义辅助类的唯一来源，例如 `df-fill-primary`、`df-tint-primary`、`df-focus-ring` 等。
+DayFlow 的共享基础样式是 token、组件基础规则和 `df-*` 语义辅助类的统一来源，例如 `df-fill-primary`、`df-tint-primary`、`df-focus-ring` 等。
 
 ## 目录
 
@@ -244,6 +244,88 @@ Tailwind v4 默认将 `dark:` 工具类编译为 `@media (prefers-color-scheme: 
 1. 在 `.df-calendar-container`、`.df-portal` 或你的包裹层上覆盖 `--df-color-*`。
 2. 在自定义 slot / 插件 UI 中复用 `df-fill-primary`、`df-focus-ring` 等 `df-*` 语义类。
 3. 只有在你要改布局而不是主题时，才去覆盖更底层的 utility 行为。
+
+下面是 3 个对应的常见示例：
+
+#### 示例 1：优先覆盖 `--df-color-*` token
+
+适合品牌色替换、浅色/深色主题统一、整套日历换肤。
+
+这里同时覆盖 `.df-calendar-container` 和 `.df-portal`：
+
+- `.df-calendar-container` 是日历主体根容器
+- `.df-portal` 是 DayFlow 通过 portal 渲染到 `document.body` 下的浮层根类，例如详情弹窗、下拉层、部分选择器面板
+
+如果你只覆盖 `.df-calendar-container`，主体区域会换肤，但这类浮层可能仍然使用默认 token。
+
+```css
+/* .my-calendar-shell 是你自己项目里的包裹层类名，不是 DayFlow 内置类 */
+.my-calendar-shell .df-calendar-container,
+.my-calendar-shell .df-portal {
+  --df-color-primary: #0f766e;
+  --df-color-primary-foreground: #ffffff;
+  --df-color-background: #f8fafc;
+  --df-color-border: #cbd5e1;
+}
+
+.dark .my-calendar-shell .df-calendar-container,
+.dark .my-calendar-shell .df-portal {
+  --df-color-primary: #5eead4;
+  --df-color-primary-foreground: #042f2e;
+  --df-color-background: #0f172a;
+  --df-color-border: #334155;
+}
+```
+
+```tsx
+<div className='my-calendar-shell'>
+  <DayFlowCalendar calendar={calendar} />
+</div>
+```
+
+#### 示例 2：在自定义 UI 中复用 `df-*` 语义类
+
+适合 content slot、自定义弹层、插件按钮，让它们和 DayFlow 内置按钮保持一致。
+
+```tsx
+function CustomToolbar() {
+  return (
+    <div className='flex items-center gap-2'>
+      <button className='df-fill-primary rounded-md px-3 py-1.5 text-sm font-medium df-hover-primary-solid'>
+        新建事件
+      </button>
+      <button className='rounded-md border px-3 py-1.5 text-sm df-focus-ring'>
+        聚焦搜索
+      </button>
+      <span className='df-tint-primary rounded-full px-2 py-0.5 text-xs font-medium'>
+        已连接
+      </span>
+    </div>
+  );
+}
+```
+
+#### 示例 3：只改布局时再覆盖低层样式
+
+适合调节间距、圆角、尺寸，不改变主题语义本身。
+
+```css
+/* .my-compact-calendar 同样是你自己定义的包裹层类名 */
+.my-compact-calendar .df-header {
+  padding-block: 0.25rem;
+}
+
+.my-compact-calendar .df-event {
+  border-radius: 6px;
+}
+
+.my-compact-calendar .df-mini-calendar-day {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+```
+
+如果你的目标是“换色”，优先用示例 1；如果是“让自定义内容看起来像 DayFlow 内置控件”，优先用示例 2；如果只是“调整尺寸和间距”，再使用示例 3。
 
 ### 使用 Tailwind 工具类包裹日历
 

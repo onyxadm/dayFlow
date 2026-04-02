@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { createDragPlugin } from '@dayflow/plugin-drag';
@@ -22,6 +21,7 @@ import {
   ViewType,
   createYearView,
   UseCalendarAppReturn,
+  TimeZone,
 } from '@dayflow/react';
 import { CircleAlert } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -70,7 +70,7 @@ const VIEW_OPTIONS = [
 ];
 
 interface CalendarViewerProps {
-  config: any;
+  config: unknown;
   calendarRef: React.MutableRefObject<UseCalendarAppReturn | null>;
 }
 
@@ -111,12 +111,27 @@ export function InteractiveCalendar() {
 
   // States for selections
   const [locale, setLocale] = useState('en');
+  const [secondaryTimeZone, setSecondaryTimeZone] = useState<
+    string | undefined
+  >();
+  const [searchTz, setSearchTz] = useState('');
   const [selectedViews, setSelectedViews] = useState<string[]>([
     ViewType.DAY,
     ViewType.WEEK,
     ViewType.MONTH,
     ViewType.YEAR,
   ]);
+
+  const filteredTimeZones = useMemo(() => {
+    const entries = Object.entries(TimeZone);
+    if (!searchTz) return entries;
+    const lowerSearch = searchTz.toLowerCase();
+    return entries.filter(
+      ([key, value]) =>
+        key.toLowerCase().includes(lowerSearch) ||
+        value.toLowerCase().includes(lowerSearch)
+    );
+  }, [searchTz]);
   const [activeView, setActiveView] = useState<ViewType>(ViewType.MONTH);
   const [yearMode, setYearMode] = useState<'fixed-week' | 'canvas' | 'grid'>(
     'fixed-week'
@@ -151,8 +166,12 @@ export function InteractiveCalendar() {
     }
 
     const v = [];
-    if (selectedViews.includes(ViewType.DAY)) v.push(createDayView());
-    if (selectedViews.includes(ViewType.WEEK)) v.push(createWeekView());
+    if (selectedViews.includes(ViewType.DAY)) {
+      v.push(createDayView({ secondaryTimeZone: secondaryTimeZone as never }));
+    }
+    if (selectedViews.includes(ViewType.WEEK)) {
+      v.push(createWeekView({ secondaryTimeZone: secondaryTimeZone as never }));
+    }
     if (selectedViews.includes(ViewType.MONTH))
       v.push(
         createMonthView({
@@ -198,6 +217,7 @@ export function InteractiveCalendar() {
     showSidebar,
     enableShortcuts,
     locale,
+    secondaryTimeZone,
     showHeader,
     selectedViews,
     yearMode,
@@ -441,6 +461,65 @@ export function InteractiveCalendar() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Timezone Column */}
+            <div className='space-y-1'>
+              <h3 className='text-xs font-semibold tracking-tight text-slate-900 uppercase dark:text-slate-100'>
+                Timezone
+              </h3>
+              <Select
+                value={secondaryTimeZone || 'none'}
+                onValueChange={val => {
+                  setSecondaryTimeZone(val === 'none' ? undefined : val);
+                  setSearchTz('');
+                }}
+                onOpenChange={open => {
+                  if (!open) setSearchTz('');
+                }}
+              >
+                <SelectTrigger className='h-7 w-35 text-xs'>
+                  <SelectValue placeholder='Select TZ' />
+                </SelectTrigger>
+                <SelectContent className='max-h-80 w-56 overflow-hidden p-0'>
+                  {/* Search Input */}
+                  <div className='flex items-center border-b border-slate-100 px-2 dark:border-slate-800'>
+                    <input
+                      placeholder='Search timezone...'
+                      className='h-9 w-full bg-transparent py-2 text-xs outline-none placeholder:text-slate-400'
+                      value={searchTz}
+                      onChange={e => setSearchTz(e.target.value)}
+                      onKeyDown={e => {
+                        // Prevent the space from closing the select
+                        if (e.key === ' ') {
+                          e.stopPropagation();
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className='max-h-60 overflow-x-hidden overflow-y-auto p-1'>
+                    <SelectItem value='none' className='cursor-pointer text-xs'>
+                      None
+                    </SelectItem>
+                    {filteredTimeZones.map(([key, value]) => (
+                      <SelectItem
+                        key={key}
+                        value={value}
+                        className='cursor-pointer text-xs focus:bg-slate-100 dark:focus:bg-slate-800'
+                      >
+                        <div className='flex max-w-full items-center overflow-hidden'>
+                          <span className='truncate font-medium'>{value}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                    {filteredTimeZones.length === 0 && (
+                      <div className='py-4 text-center text-xs text-slate-500'>
+                        No results found.
+                      </div>
+                    )}
+                  </div>
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 
@@ -450,7 +529,7 @@ export function InteractiveCalendar() {
           This ensures all internal translated strings and plugin states are reset correctly.
         */}
           <CalendarViewer
-            key={`${locale}-${selectedViews.join(',')}-${yearMode}-${showSidebar}-${showHeader}-${enableDrag}-${enableShortcuts}-${themeMode}`}
+            key={`${locale}-${secondaryTimeZone || 'none'}-${selectedViews.join(',')}-${yearMode}-${showSidebar}-${showHeader}-${enableDrag}-${enableShortcuts}-${themeMode}`}
             config={config}
             calendarRef={calendarRef}
           />

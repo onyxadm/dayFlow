@@ -24,12 +24,6 @@ export enum TimeZone {
   ST_JOHNS = 'America/St_Johns',
   DETROIT = 'America/Detroit',
   MIAMI = 'America/Miami',
-  SEATTLE = 'America/Los_Angeles',
-  ATLANTA = 'America/New_York',
-  DALLAS = 'America/Chicago',
-  HOUSTON = 'America/Chicago',
-  LAS_VEGAS = 'America/Los_Angeles',
-  SAN_FRANCISCO = 'America/Los_Angeles',
 
   // Europe
   LONDON = 'Europe/London',
@@ -63,7 +57,6 @@ export enum TimeZone {
   // Asia
   TOKYO = 'Asia/Tokyo',
   SHANGHAI = 'Asia/Shanghai',
-  BEIJING = 'Asia/Shanghai',
   HONG_KONG = 'Asia/Hong_Kong',
   TAIPEI = 'Asia/Taipei',
   SEOUL = 'Asia/Seoul',
@@ -75,14 +68,13 @@ export enum TimeZone {
   MANILA = 'Asia/Manila',
   DUBAI = 'Asia/Dubai',
   KOLKATA = 'Asia/Kolkata',
-  MUMBAI = 'Asia/Kolkata',
   RIYADH = 'Asia/Riyadh',
   TEHRAN = 'Asia/Tehran',
   JERUSALEM = 'Asia/Jerusalem',
   TEL_AVIV = 'Asia/Tel_Aviv',
   BAGHDAD = 'Asia/Baghdad',
   DHAKA = 'Asia/Dhaka',
-  KARA_CHI = 'Asia/Karachi',
+  KARACHI = 'Asia/Karachi',
   KABUL = 'Asia/Kabul',
   KATHMANDU = 'Asia/Kathmandu',
   COLOMBO = 'Asia/Colombo',
@@ -109,7 +101,6 @@ export enum TimeZone {
 
   // South America
   SAO_PAULO = 'America/Sao_Paulo',
-  RIO_DE_JANEIRO = 'America/Sao_Paulo',
   BUENOS_AIRES = 'America/Argentina/Buenos_Aires',
   SANTIAGO = 'America/Santiago',
   LIMA = 'America/Lima',

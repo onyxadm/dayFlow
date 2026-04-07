@@ -34,12 +34,24 @@ import '@dayflow/core/dist/styles.css';
 @import '@dayflow/core/dist/styles.css';
 ```
 
-**使用 Tailwind CSS？** 改为导入 `styles.components.css`，避免 CSS Reset 与你现有样式冲突：
+<Callout title="正在使用 Tailwind CSS？" type="warn">
+  请改为导入 `styles.components.css`，以避免 CSS Reset 与你现有样式的冲突：
 
-```tsx
-// Tailwind CSS 项目专用 — 不含 CSS Reset，不影响宿主样式
-import '@dayflow/core/dist/styles.components.css';
+```css
+@import '@dayflow/core/dist/styles.components.css';
+@import 'tailwindcss';
+
+/* DayFlow: 扫描已编译的 JS，以便 Tailwind 生成 DayFlow 组件中使用的工具类 */
+@source '../node_modules/@dayflow/core/dist/**/*.js';
+@source '../node_modules/@dayflow/plugin-drag/dist/**/*.js'; /* 如果使用了拖放插件 */
+@source '../node_modules/@dayflow/plugin-sidebar/dist/**/*.js'; /* 如果使用了侧边栏插件 */
 ```
+
+查看 [Tailwind V4 integration](https://calendar.dayflow.studio/docs/guides/theme-customization#tailwind-v4-integration) 了解更多详情。
+
+> **提示：** 如果你使用 `create-dayflow` 安装向导并在 Tailwind CSS 选项中选择“是”，这些配置将自动添加到你的根 CSS 文件中。
+
+</Callout>
 
 ### 基础用法
 

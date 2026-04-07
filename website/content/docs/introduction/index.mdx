@@ -39,12 +39,24 @@ Alternatively, you can import it in your CSS file:
 @import '@dayflow/core/dist/styles.css';
 ```
 
-**Using Tailwind CSS?** Import `styles.components.css` instead to avoid CSS reset conflicts with your existing styles:
+<Callout title="Using Tailwind CSS? " type="warn">
+Import `styles.components.css` instead to avoid CSS reset conflicts with your existing styles:
 
-```tsx
-// For Tailwind CSS projects — no CSS reset, no conflicts
-import '@dayflow/core/dist/styles.components.css';
+```css
+@import '@dayflow/core/dist/styles.components.css';
+@import 'tailwindcss';
+
+/* DayFlow: scan compiled JS so Tailwind generates utility classes used inside DayFlow components */
+@source '../node_modules/@dayflow/core/dist/**/*.js';
+@source '../node_modules/@dayflow/plugin-drag/dist/**/*.js'; /* if using drag plugin */
+@source '../node_modules/@dayflow/plugin-sidebar/dist/**/*.js'; /* if using sidebar plugin */
 ```
+
+See [Tailwind V4 integration](https://calendar.dayflow.studio/docs/guides/theme-customization#tailwind-v4-integration) for more details.
+
+> **Tip:** If you use the `create-dayflow` setup wizard and choose "Yes" for Tailwind CSS, these configurations will be added to your root CSS file automatically.
+
+</Callout>
 
 ## Basic Usage
 

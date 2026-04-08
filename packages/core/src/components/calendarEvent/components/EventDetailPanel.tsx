@@ -18,7 +18,12 @@ interface EventDetailPanelProps {
   event: Event;
   detailPanelRef: RefObject<HTMLDivElement>;
   isAllDay: boolean;
-  eventVisibility: 'visible' | 'sticky-top' | 'sticky-bottom';
+  eventVisibility:
+    | 'visible'
+    | 'sticky-top'
+    | 'sticky-bottom'
+    | 'sticky-left'
+    | 'sticky-right';
   calendarRef: RefObject<HTMLDivElement>;
   selectedEventElementRef: RefObject<HTMLElement | null>;
   onEventUpdate: (event: Event) => void;

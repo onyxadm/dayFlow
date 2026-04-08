@@ -1,6 +1,7 @@
 import { RefObject } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 
+import { getCalendarContentElement } from '@/components/calendarEvent/utils';
 import { MultiDayEventSegment } from '@/components/monthView/WeekComponent';
 import { Event, ViewType, ICalendarApp, EventDetailPosition } from '@/types';
 import { extractHourFromDate, getEventEndHour } from '@/utils';
@@ -64,6 +65,7 @@ export const useEventActions = ({
 }: UseEventActionsProps) => {
   const isMonthView = viewType === ViewType.MONTH;
   const isYearView = viewType === ViewType.YEAR;
+  const isResourceView = viewType === ViewType.RESOURCE;
   const eventForTiming = timingEvent ?? event;
   const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hasPendingSelection, setHasPendingSelection] = useState(false);
@@ -77,6 +79,46 @@ export const useEventActions = ({
 
   useEffect(() => () => clearPendingClick(), [clearPendingClick]);
 
+  const waitForScrollSettled = useCallback(
+    (
+      scrollContainer: HTMLElement,
+      initialScrollLeft: number,
+      initialScrollTop: number
+    ): Promise<void> =>
+      new Promise(resolve => {
+        const sampleIntervalMs = 40;
+        const quietWindowMs = 120;
+        const timeoutMs = 600;
+        let quietForMs = 0;
+        let elapsedMs = 0;
+        let lastScrollLeft = initialScrollLeft;
+        let lastScrollTop = initialScrollTop;
+
+        const checkScrollState = () => {
+          const nextScrollLeft = scrollContainer.scrollLeft;
+          const nextScrollTop = scrollContainer.scrollTop;
+          const didMove =
+            Math.abs(nextScrollLeft - lastScrollLeft) > 1 ||
+            Math.abs(nextScrollTop - lastScrollTop) > 1;
+
+          quietForMs = didMove ? 0 : quietForMs + sampleIntervalMs;
+          elapsedMs += sampleIntervalMs;
+          lastScrollLeft = nextScrollLeft;
+          lastScrollTop = nextScrollTop;
+
+          if (quietForMs >= quietWindowMs || elapsedMs >= timeoutMs) {
+            resolve();
+            return;
+          }
+
+          setTimeout(checkScrollState, sampleIntervalMs);
+        };
+
+        setTimeout(checkScrollState, sampleIntervalMs);
+      }),
+    []
+  );
+
   const scrollEventToCenter = useCallback(
     (): Promise<void> =>
       new Promise(resolve => {
@@ -84,11 +126,73 @@ export const useEventActions = ({
           resolve();
           return;
         }
-        const calendarContent = calendarRef.current.querySelector(
-          '.df-calendar-content'
-        );
+        const calendarContent = getCalendarContentElement(calendarRef);
         if (!calendarContent) {
           resolve();
+          return;
+        }
+
+        if (isResourceView && selectedEventElementRef.current) {
+          const eventRect =
+            selectedEventElementRef.current.getBoundingClientRect();
+          const contentRect = calendarContent.getBoundingClientRect();
+          const isFullyVisibleInViewport =
+            eventRect.left >= contentRect.left &&
+            eventRect.right <= contentRect.right &&
+            eventRect.top >= contentRect.top &&
+            eventRect.bottom <= contentRect.bottom;
+
+          if (isFullyVisibleInViewport) {
+            resolve();
+            return;
+          }
+
+          const initialScrollLeft = calendarContent.scrollLeft;
+          const initialScrollTop = calendarContent.scrollTop;
+          const targetScrollLeft =
+            initialScrollLeft +
+            (eventRect.left - contentRect.left) -
+            (calendarContent.clientWidth - eventRect.width) / 2;
+          const targetScrollTop =
+            initialScrollTop +
+            (eventRect.top - contentRect.top) -
+            (calendarContent.clientHeight - eventRect.height) / 2;
+          const maxScrollLeft = Math.max(
+            0,
+            calendarContent.scrollWidth - calendarContent.clientWidth
+          );
+          const maxScrollTop = Math.max(
+            0,
+            calendarContent.scrollHeight - calendarContent.clientHeight
+          );
+          const nextScrollLeft = Math.max(
+            0,
+            Math.min(maxScrollLeft, targetScrollLeft)
+          );
+          const nextScrollTop = Math.max(
+            0,
+            Math.min(maxScrollTop, targetScrollTop)
+          );
+          const needsScroll =
+            Math.abs(nextScrollLeft - initialScrollLeft) > 1 ||
+            Math.abs(nextScrollTop - initialScrollTop) > 1;
+
+          if (!needsScroll) {
+            resolve();
+            return;
+          }
+
+          calendarContent.scrollTo({
+            left: nextScrollLeft,
+            top: nextScrollTop,
+            behavior: 'smooth',
+          });
+
+          waitForScrollSettled(
+            calendarContent,
+            initialScrollLeft,
+            initialScrollTop
+          ).then(resolve);
           return;
         }
 
@@ -119,24 +223,40 @@ export const useEventActions = ({
         const targetScrollTop =
           (eventMiddleHour - firstHour) * hourHeight - viewportHeight / 2;
         const maxScrollTop = calendarContent.scrollHeight - viewportHeight;
+        const nextScrollTop = Math.max(
+          0,
+          Math.min(maxScrollTop, targetScrollTop)
+        );
+
+        if (Math.abs(nextScrollTop - scrollTop) <= 1) {
+          resolve();
+          return;
+        }
 
         calendarContent.scrollTo({
-          top: Math.max(0, Math.min(maxScrollTop, targetScrollTop)),
+          top: nextScrollTop,
           behavior: 'smooth',
         });
 
-        setTimeout(() => resolve(), 300);
+        waitForScrollSettled(
+          calendarContent,
+          calendarContent.scrollLeft,
+          scrollTop
+        ).then(resolve);
       }),
     [
       calendarRef,
       isAllDay,
       isMonthView,
       isYearView,
+      isResourceView,
       multiDaySegmentInfo,
       eventForTiming.start,
       eventForTiming.end,
       firstHour,
       hourHeight,
+      selectedEventElementRef,
+      waitForScrollSettled,
     ]
   );
 
@@ -227,9 +347,11 @@ export const useEventActions = ({
         setActiveDayIndex(event.day ?? null);
       }
 
+      if (app) app.onEventClick(event);
+      setIsSelected(true);
+      onEventSelect?.(event.id);
+
       scrollEventToCenter().then(() => {
-        setIsSelected(true);
-        onEventSelect?.(event.id);
         if (!isMobile) {
           onDetailPanelToggle?.(detailPanelKey);
           setDetailPanelPosition({
@@ -253,10 +375,13 @@ export const useEventActions = ({
       segment?.startDayIndex,
       segment?.endDayIndex,
       event.day,
+      app,
+      event,
       scrollEventToCenter,
       setIsSelected,
       isYearView,
       isMobile,
+      onEventSelect,
       onDetailPanelToggle,
       detailPanelKey,
       setDetailPanelPosition,
@@ -269,7 +394,7 @@ export const useEventActions = ({
       e.preventDefault();
       e.stopPropagation();
       const clientX = e.clientX;
-      if (isYearView && !isMobile) {
+      if ((isYearView || isResourceView) && !isMobile) {
         clearPendingClick();
         setHasPendingSelection(true);
         clickTimeoutRef.current = setTimeout(() => {
@@ -282,7 +407,13 @@ export const useEventActions = ({
 
       performSingleClick(clientX);
     },
-    [clearPendingClick, isYearView, isMobile, performSingleClick]
+    [
+      clearPendingClick,
+      isYearView,
+      isResourceView,
+      isMobile,
+      performSingleClick,
+    ]
   );
 
   return {

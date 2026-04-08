@@ -23,6 +23,23 @@ export const getTimeColumnWidth = (
       : 80;
 };
 
+export const getCalendarContentElement = (
+  calendarRef: RefObject<HTMLElement>
+): HTMLElement | null => {
+  const element = calendarRef.current;
+  if (!element) return null;
+
+  const ownMatch = element.matches('.df-calendar-content') ? element : null;
+  const descendantMatch = element.querySelector(
+    '.df-calendar-content'
+  ) as HTMLElement | null;
+  const ancestorMatch = element.closest(
+    '.df-calendar-content'
+  ) as HTMLElement | null;
+
+  return ownMatch ?? descendantMatch ?? ancestorMatch;
+};
+
 /**
  * Calculates the horizontal metrics (left and width) for a day column
  */

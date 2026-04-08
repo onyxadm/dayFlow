@@ -1,6 +1,7 @@
 import { JSX } from 'preact';
 import { createPortal } from 'preact/compat';
 
+import { getCalendarContentElement } from '@/components/calendarEvent/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { eventDetailPanel } from '@/styles/classNames';
 import {
@@ -41,9 +42,7 @@ export const EventDetailPanelWithContent = ({
     let arrowStyle: JSX.CSSProperties = {};
 
     if (eventVisibility === 'sticky-top') {
-      const calendarContent = calendarRef.current?.querySelector(
-        '.df-calendar-content'
-      );
+      const calendarContent = getCalendarContentElement(calendarRef);
       if (calendarContent) {
         const contentRect = calendarContent.getBoundingClientRect();
         const stickyEventCenterY = contentRect.top + 3;
@@ -98,9 +97,7 @@ export const EventDetailPanelWithContent = ({
       if (position && selectedEventElementRef.current && calendarRef.current) {
         const eventRect =
           selectedEventElementRef.current.getBoundingClientRect();
-        const calendarContent = calendarRef.current.querySelector(
-          '.df-calendar-content'
-        );
+        const calendarContent = getCalendarContentElement(calendarRef);
 
         if (calendarContent) {
           const viewportRect = calendarContent.getBoundingClientRect();

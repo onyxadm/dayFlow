@@ -9,6 +9,7 @@ import {
 } from 'preact/hooks';
 import { Temporal } from 'temporal-polyfill';
 
+import { getCalendarContentElement } from '@/components/calendarEvent/utils';
 import RangePicker from '@/components/rangePicker';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getDefaultCalendarRegistry } from '@/core/calendarRegistry';
@@ -260,9 +261,7 @@ const DefaultEventDetailPanel = ({
     let arrowStyle: JSX.CSSProperties = {};
 
     if (eventVisibility === 'sticky-top') {
-      const calendarContent = calendarRef.current?.querySelector(
-        '.df-calendar-content'
-      );
+      const calendarContent = getCalendarContentElement(calendarRef);
       if (calendarContent) {
         const contentRect = calendarContent.getBoundingClientRect();
         const stickyEventCenterY = contentRect.top + 3;
@@ -317,9 +316,7 @@ const DefaultEventDetailPanel = ({
       if (position && selectedEventElementRef.current && calendarRef.current) {
         const eventRect =
           selectedEventElementRef.current.getBoundingClientRect();
-        const calendarContent = calendarRef.current.querySelector(
-          '.df-calendar-content'
-        );
+        const calendarContent = getCalendarContentElement(calendarRef);
 
         if (calendarContent) {
           const viewportRect = calendarContent.getBoundingClientRect();

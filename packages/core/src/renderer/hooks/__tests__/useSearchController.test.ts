@@ -110,7 +110,7 @@ describe('useSearchController', () => {
     });
 
     expect(result.current.isSearchOpen).toBe(false);
-    expect(mockApp.highlightEvent).toHaveBeenCalledWith(null);
+    expect(mockApp.highlightEvent).not.toHaveBeenCalledWith(null);
 
     // Test mobile close
     act(() => {
@@ -122,6 +122,35 @@ describe('useSearchController', () => {
       result.current.handleSearchResultClick(event, 'mobile');
     });
     expect(result.current.isMobileSearchOpen).toBe(false);
+  });
+
+  it('keeps highlight when custom navigation calls defaultAction and closeSearch', () => {
+    const onResultClick = jest.fn(({ defaultAction, closeSearch }) => {
+      defaultAction();
+      closeSearch();
+    });
+    const searchConfig = { onResultClick };
+    const { result } = renderHook(() =>
+      useSearchController(mockApp, searchConfig)
+    );
+
+    act(() => {
+      result.current.setIsSearchOpen(true);
+    });
+
+    const event = {
+      id: 'focus-event',
+      title: 'Focus Event',
+      start: new Date(),
+    } as unknown as CalendarSearchEvent;
+
+    act(() => {
+      result.current.handleSearchResultClick(event, 'desktop');
+    });
+
+    expect(mockApp.highlightEvent).toHaveBeenCalledWith('focus-event');
+    expect(mockApp.highlightEvent).not.toHaveBeenCalledWith(null);
+    expect(result.current.isSearchOpen).toBe(false);
   });
 
   it('does not clear highlight when config identity changes while search is empty', () => {

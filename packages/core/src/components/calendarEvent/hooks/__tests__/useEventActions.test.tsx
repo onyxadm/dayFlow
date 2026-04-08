@@ -171,4 +171,252 @@ describe('useEventActions', () => {
     expect(onDetailPanelToggle).toHaveBeenCalledWith('event-1');
     expect(setIsSelected).toHaveBeenCalledWith(true);
   });
+
+  it('waits for resource-view scrolling to settle before opening the detail panel', async () => {
+    const app = {
+      onEventClick: jest.fn(),
+    } as unknown as import('@/types').ICalendarApp;
+    const onEventSelect = jest.fn();
+    const onDetailPanelToggle = jest.fn();
+    const setIsSelected = jest.fn();
+    const setDetailPanelPosition = jest.fn();
+    const selectedEventElementRef = { current: null as HTMLElement | null };
+    const calendarContent = document.createElement('div');
+    calendarContent.className = 'df-calendar-content';
+    calendarContent.scrollLeft = 0;
+    calendarContent.scrollTop = 0;
+    Object.defineProperty(calendarContent, 'clientWidth', {
+      value: 320,
+      configurable: true,
+    });
+    Object.defineProperty(calendarContent, 'clientHeight', {
+      value: 240,
+      configurable: true,
+    });
+    Object.defineProperty(calendarContent, 'scrollWidth', {
+      value: 1200,
+      configurable: true,
+    });
+    Object.defineProperty(calendarContent, 'scrollHeight', {
+      value: 1400,
+      configurable: true,
+    });
+    calendarContent.getBoundingClientRect = jest.fn(() => ({
+      left: 0,
+      top: 0,
+      right: 320,
+      bottom: 240,
+      width: 320,
+      height: 240,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })) as unknown as typeof calendarContent.getBoundingClientRect;
+    const scrollToMock = jest.fn((left: number, top: number) => {
+      calendarContent.scrollLeft = left;
+      calendarContent.scrollTop = top;
+    });
+    calendarContent.scrollTo =
+      scrollToMock as unknown as typeof calendarContent.scrollTo;
+
+    const timedEvent: Event = {
+      ...baseEvent,
+      allDay: false,
+      start: Temporal.ZonedDateTime.from(
+        '2026-03-24T10:00:00+11:00[Australia/Sydney]'
+      ),
+      end: Temporal.ZonedDateTime.from(
+        '2026-03-24T11:00:00+11:00[Australia/Sydney]'
+      ),
+    };
+
+    const ResourceHarness = () => {
+      const handlers = useEventActions({
+        event: timedEvent,
+        viewType: ViewType.RESOURCE,
+        isAllDay: false,
+        isMultiDay: false,
+        app,
+        calendarRef: { current: calendarContent },
+        firstHour: 0,
+        hourHeight: 56,
+        isMobile: false,
+        canOpenDetail: true,
+        detailPanelKey: 'event-1::resource',
+        onEventSelect,
+        onDetailPanelToggle,
+        setIsSelected,
+        setDetailPanelPosition,
+        setContextMenuPosition: jest.fn(),
+        setActiveDayIndex: jest.fn(),
+        getClickedDayIdx: jest.fn(),
+        updatePanelPosition: jest.fn(),
+        selectedEventElementRef,
+      });
+
+      return (
+        <button
+          type='button'
+          data-testid='resource-event'
+          onDblClick={handlers.handleDoubleClick}
+          ref={element => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions, jest/no-conditional-in-test
+            element &&
+              (element.getBoundingClientRect = jest.fn(() => ({
+                left: 680,
+                top: 420,
+                right: 780,
+                bottom: 480,
+                width: 100,
+                height: 60,
+                x: 680,
+                y: 420,
+                toJSON: () => ({}),
+              })) as unknown as typeof element.getBoundingClientRect);
+          }}
+        >
+          Event
+        </button>
+      );
+    };
+
+    const { getByTestId } = render(<ResourceHarness />);
+
+    await act(async () => {
+      fireEvent.dblClick(getByTestId('resource-event'), { clientX: 720 });
+      await Promise.resolve();
+    });
+
+    expect(scrollToMock).toHaveBeenCalled();
+    expect(app.onEventClick).toHaveBeenCalledWith(timedEvent);
+    expect(onEventSelect).toHaveBeenCalledWith('event-1');
+    expect(setIsSelected).toHaveBeenCalledWith(true);
+    expect(onDetailPanelToggle).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(159);
+    });
+    expect(onDetailPanelToggle).not.toHaveBeenCalled();
+
+    await act(async () => {
+      jest.advanceTimersByTime(1);
+      await Promise.resolve();
+    });
+
+    expect(onDetailPanelToggle).toHaveBeenCalledWith('event-1::resource');
+    expect(setDetailPanelPosition).toHaveBeenCalledWith(
+      expect.objectContaining({ left: -9999, top: -9999 })
+    );
+  });
+
+  it('does not auto-scroll resource-view events that are already fully visible', async () => {
+    const app = {
+      onEventClick: jest.fn(),
+    } as unknown as import('@/types').ICalendarApp;
+    const onEventSelect = jest.fn();
+    const onDetailPanelToggle = jest.fn();
+    const setIsSelected = jest.fn();
+    const setDetailPanelPosition = jest.fn();
+    const selectedEventElementRef = { current: null as HTMLElement | null };
+    const calendarContent = document.createElement('div');
+    calendarContent.className = 'df-calendar-content';
+    Object.defineProperty(calendarContent, 'clientWidth', {
+      value: 320,
+      configurable: true,
+    });
+    Object.defineProperty(calendarContent, 'clientHeight', {
+      value: 240,
+      configurable: true,
+    });
+    calendarContent.getBoundingClientRect = jest.fn(() => ({
+      left: 0,
+      top: 0,
+      right: 320,
+      bottom: 240,
+      width: 320,
+      height: 240,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })) as unknown as typeof calendarContent.getBoundingClientRect;
+    const scrollToMock = jest.fn();
+    calendarContent.scrollTo =
+      scrollToMock as unknown as typeof calendarContent.scrollTo;
+
+    const timedEvent: Event = {
+      ...baseEvent,
+      allDay: false,
+      start: Temporal.ZonedDateTime.from(
+        '2026-03-24T10:00:00+11:00[Australia/Sydney]'
+      ),
+      end: Temporal.ZonedDateTime.from(
+        '2026-03-24T11:00:00+11:00[Australia/Sydney]'
+      ),
+    };
+
+    const ResourceHarness = () => {
+      const handlers = useEventActions({
+        event: timedEvent,
+        viewType: ViewType.RESOURCE,
+        isAllDay: false,
+        isMultiDay: false,
+        app,
+        calendarRef: { current: calendarContent },
+        firstHour: 0,
+        hourHeight: 56,
+        isMobile: false,
+        canOpenDetail: true,
+        detailPanelKey: 'event-1::resource',
+        onEventSelect,
+        onDetailPanelToggle,
+        setIsSelected,
+        setDetailPanelPosition,
+        setContextMenuPosition: jest.fn(),
+        setActiveDayIndex: jest.fn(),
+        getClickedDayIdx: jest.fn(),
+        updatePanelPosition: jest.fn(),
+        selectedEventElementRef,
+      });
+
+      return (
+        <button
+          type='button'
+          data-testid='resource-visible-event'
+          onDblClick={handlers.handleDoubleClick}
+          ref={element => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions, jest/no-conditional-in-test
+            element &&
+              (element.getBoundingClientRect = jest.fn(() => ({
+                left: 80,
+                top: 60,
+                right: 180,
+                bottom: 120,
+                width: 100,
+                height: 60,
+                x: 80,
+                y: 60,
+                toJSON: () => ({}),
+              })) as unknown as typeof element.getBoundingClientRect);
+          }}
+        >
+          Event
+        </button>
+      );
+    };
+
+    const { getByTestId } = render(<ResourceHarness />);
+
+    await act(async () => {
+      fireEvent.dblClick(getByTestId('resource-visible-event'), {
+        clientX: 120,
+      });
+      await Promise.resolve();
+    });
+
+    expect(scrollToMock).not.toHaveBeenCalled();
+    expect(app.onEventClick).toHaveBeenCalledWith(timedEvent);
+    expect(onEventSelect).toHaveBeenCalledWith('event-1');
+    expect(setIsSelected).toHaveBeenCalledWith(true);
+    expect(onDetailPanelToggle).toHaveBeenCalledWith('event-1::resource');
+  });
 });

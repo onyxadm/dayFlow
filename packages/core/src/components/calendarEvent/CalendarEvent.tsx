@@ -151,7 +151,7 @@ const CalendarEvent = ({
   });
 
   const [eventVisibility, setEventVisibility] = useState<
-    'visible' | 'sticky-top' | 'sticky-bottom'
+    'visible' | 'sticky-top' | 'sticky-bottom' | 'sticky-left' | 'sticky-right'
   >('visible');
 
   // Utility Wrappers
@@ -288,6 +288,7 @@ const CalendarEvent = ({
     calendarRef,
     isAllDay,
     viewType,
+    isMobile,
     multiDaySegmentInfo,
     firstHour,
     hourHeight,

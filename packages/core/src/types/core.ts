@@ -1,6 +1,6 @@
 // oxlint-disable typescript/no-explicit-any
 // Core type definitions
-import { h, AnyComponent, ComponentChildren } from 'preact';
+import { AnyComponent, ComponentChildren } from 'preact';
 
 import { ViewSwitcherMode } from '@/components/common/ViewHeader';
 import { CalendarRegistry } from '@/core/calendarRegistry';
@@ -103,11 +103,7 @@ export interface CalendarCallbacks {
 export interface CalendarHeaderProps {
   calendar: ICalendarApp;
   switcherMode?: ViewSwitcherMode;
-  onAddCalendar?: (
-    e:
-      | h.JSX.TargetedMouseEvent<HTMLElement>
-      | h.JSX.TargetedTouchEvent<HTMLElement>
-  ) => void;
+  onAddCalendar?: (e: MouseEvent | TouchEvent | any) => void;
   onSearchChange?: (value: string) => void;
   /** Triggered when search icon is clicked (typically on mobile) */
   onSearchClick?: () => void;

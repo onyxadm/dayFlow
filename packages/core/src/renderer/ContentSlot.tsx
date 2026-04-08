@@ -31,13 +31,15 @@ export function ContentSlot({
   const contextStore = useContext(CustomRenderingContext);
   const store = propStore || contextStore;
   const idRef = useRef<string | null>(null);
-  const [, setTick] = useState(0);
+  const [isOverridden, setIsOverridden] = useState(() =>
+    generatorName ? (store?.isOverridden(generatorName) ?? false) : false
+  );
 
   if (!idRef.current) {
     idRef.current = generateId();
   }
 
-  // Register/Unregister the container once
+  // Register/Unregister the container once, and subscribe only to override changes
   useEffect(() => {
     if (!containerRef.current || !store || !generatorName) return;
 
@@ -49,9 +51,11 @@ export function ContentSlot({
       generatorArgs, // Initial args
     });
 
-    // Subscribe to store updates to re-render when overrides change
-    const unsubscribe = store.subscribe(() => {
-      setTick(t => t + 1);
+    // Subscribe only to override changes — not to every register/unregister.
+    // This avoids the O(N²) cascade where each slot registration forces all
+    // N ContentSlots to re-render.
+    const unsubscribe = store.subscribeToOverrides(() => {
+      setIsOverridden(store.isOverridden(generatorName));
     });
 
     return () => {
@@ -64,7 +68,6 @@ export function ContentSlot({
   useEffect(() => {
     if (!store || !idRef.current || !generatorName) return;
 
-    // Check if actually different to avoid redundant notifications
     const id = idRef.current;
     store.register({
       id,
@@ -76,9 +79,6 @@ export function ContentSlot({
 
   const isEventSlot = generatorName?.startsWith('eventContent');
   const isSidebarSlot = generatorName === 'sidebar';
-  const isOverridden = generatorName
-    ? store?.isOverridden(generatorName)
-    : false;
 
   return (
     <div

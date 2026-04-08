@@ -24,7 +24,12 @@ interface UseDetailPanelPositionProps {
   detailPanelRef: RefObject<HTMLElement>;
   selectedEventElementRef: RefObject<HTMLElement>;
   isMobile: boolean;
-  eventVisibility: 'visible' | 'sticky-top' | 'sticky-bottom';
+  eventVisibility:
+    | 'visible'
+    | 'sticky-top'
+    | 'sticky-bottom'
+    | 'sticky-left'
+    | 'sticky-right';
   firstHour: number;
   hourHeight: number;
   columnsPerRow?: number;
@@ -65,6 +70,7 @@ export const useDetailPanelPosition = ({
   const isDayView = viewType === ViewType.DAY;
   const isMonthView = viewType === ViewType.MONTH;
   const isYearView = viewType === ViewType.YEAR;
+  const isResourceView = viewType === ViewType.RESOURCE;
 
   const updatePanelPosition = useCallback(() => {
     if (
@@ -111,7 +117,9 @@ export const useDetailPanelPosition = ({
 
       if (
         eventVisibility === 'sticky-top' ||
-        eventVisibility === 'sticky-bottom'
+        eventVisibility === 'sticky-bottom' ||
+        eventVisibility === 'sticky-left' ||
+        eventVisibility === 'sticky-right'
       ) {
         const actualEventRect = eventRef.current?.getBoundingClientRect();
         if (!actualEventRect) return;
@@ -168,7 +176,7 @@ export const useDetailPanelPosition = ({
       setDetailPanelPosition(prev => {
         if (!prev) return null;
         let isSunday = left < dayStartX;
-        if (isYearView) {
+        if (isYearView || isResourceView) {
           isSunday = left < eventRect.left;
         }
         return { ...prev, top, left, isSunday };

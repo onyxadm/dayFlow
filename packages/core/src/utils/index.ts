@@ -74,3 +74,4 @@ export * from './allDaySort';
 // Cross-region drag helpers
 export * from './crossRegionDrag';
 export * from './timeZoneUtils';
+export * from './calendarApp';

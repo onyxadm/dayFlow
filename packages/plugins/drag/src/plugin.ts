@@ -26,6 +26,7 @@ export function createDragPlugin(
       ViewType.WEEK,
       ViewType.MONTH,
       ViewType.YEAR,
+      ViewType.RESOURCE,
     ],
     ...config,
   };
@@ -143,6 +144,7 @@ export function createDragConfig(
       ViewType.WEEK,
       ViewType.MONTH,
       ViewType.YEAR,
+      ViewType.RESOURCE,
     ],
     ...overrides,
   };

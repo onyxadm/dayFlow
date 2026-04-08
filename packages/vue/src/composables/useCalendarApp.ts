@@ -1,11 +1,21 @@
+import {
+  CalendarApp,
+  createConfigSyncSnapshot,
+  createNormalizedCalendarAppConfigGetter,
+  syncCalendarAppConfig,
+} from '@dayflow/core';
 import type { CalendarAppConfig, UseCalendarAppReturn } from '@dayflow/core';
-import { CalendarApp } from '@dayflow/core';
-import { onUnmounted, reactive } from 'vue';
+import { onUnmounted, reactive, watchEffect } from 'vue';
 
 export function useCalendarApp(
   config: CalendarAppConfig
 ): UseCalendarAppReturn {
-  const app = new CalendarApp(config);
+  const getNormalizedConfig = createNormalizedCalendarAppConfigGetter(
+    () => config
+  );
+
+  const app = new CalendarApp(getNormalizedConfig());
+  let syncSnapshot = createConfigSyncSnapshot(getNormalizedConfig());
 
   // Use reactive state to trigger Vue re-renders
   const state = reactive({
@@ -18,6 +28,14 @@ export function useCalendarApp(
     state.currentView = updatedApp.state.currentView;
     state.currentDate = updatedApp.state.currentDate;
     state.events = updatedApp.getEvents();
+  });
+
+  watchEffect(() => {
+    syncSnapshot = syncCalendarAppConfig(
+      app,
+      syncSnapshot,
+      getNormalizedConfig()
+    );
   });
 
   onUnmounted(() => {

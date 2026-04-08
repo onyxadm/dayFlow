@@ -1,6 +1,10 @@
 import { RefObject } from 'preact';
 
-import { getTimeColumnWidth } from '@/components/calendarEvent/utils';
+import type { EventVisibility } from '@/components/calendarEvent/hooks/useEventVisibility';
+import {
+  getCalendarContentElement,
+  getTimeColumnWidth,
+} from '@/components/calendarEvent/utils';
 import { MultiDayEventSegment } from '@/components/monthView/WeekComponent';
 import { YearMultiDaySegment } from '@/components/yearView/utils';
 import { ViewType, Event, EventLayout } from '@/types';
@@ -27,7 +31,7 @@ interface UseEventStylesProps {
   isPopping: boolean;
   isDraggable: boolean;
   canOpenDetail: boolean;
-  eventVisibility: 'visible' | 'sticky-top' | 'sticky-bottom';
+  eventVisibility: EventVisibility;
   calendarRef: RefObject<HTMLElement>;
   isMobile: boolean;
   eventRef: RefObject<HTMLElement>;
@@ -193,6 +197,52 @@ export const useEventStyles = ({
       cursor: isDraggable ? 'pointer' : canOpenDetail ? 'pointer' : 'default',
     };
 
+    // Sticky-left/right: event's column has scrolled out of the visible horizontal area
+    if (
+      isEventSelected &&
+      showDetailPanel &&
+      (eventVisibility === 'sticky-left' || eventVisibility === 'sticky-right')
+    ) {
+      const calendarContent = getCalendarContentElement(calendarRef);
+      const contentRect = calendarContent?.getBoundingClientRect();
+      if (contentRect) {
+        const timeColumnWidth = getTimeColumnWidth(calendarRef, isMobile);
+        const gridLeft = contentRect.left + timeColumnWidth;
+        const gridRight = contentRect.right;
+
+        const parentRect =
+          eventRef.current?.parentElement?.getBoundingClientRect();
+
+        // Compute event's natural vertical viewport position using the column container's top
+        const gridRefTop = parentRect?.top ?? contentRect.top;
+        const eventNaturalTop =
+          gridRefTop + (startHour - firstHour) * hourHeight + 3;
+        const clampedTop = Math.max(eventNaturalTop, contentRect.top);
+        const clampedBottom = Math.min(
+          eventNaturalTop + height - 4,
+          contentRect.bottom
+        );
+
+        if (clampedBottom <= clampedTop) {
+          return { display: 'none' as const };
+        }
+
+        const stickyStyle = {
+          position: 'fixed' as const,
+          top: `${clampedTop}px`,
+          height: `${clampedBottom - clampedTop}px`,
+          width: '6px',
+          zIndex: 1000,
+          overflow: 'hidden',
+        };
+
+        if (eventVisibility === 'sticky-left') {
+          return { ...stickyStyle, left: `${gridLeft}px` };
+        }
+        return { ...stickyStyle, left: `${gridRight - 6}px` };
+      }
+    }
+
     if (
       isEventSelected &&
       showDetailPanel &&
@@ -221,12 +271,12 @@ export const useEventStyles = ({
           dayColumnWidth = overrideMetrics.width;
         }
 
-        let scrollContainer = calendarRef.current?.querySelector(
-          '.df-calendar-content'
-        );
+        let scrollContainer = getCalendarContentElement(calendarRef);
         if (!scrollContainer) {
           scrollContainer =
-            calendarRef.current?.querySelector('.calendar-renderer');
+            (calendarRef.current?.querySelector(
+              '.calendar-renderer'
+            ) as HTMLElement | null) ?? null;
         }
         const contentRect = scrollContainer?.getBoundingClientRect();
         const parentRect =
@@ -260,6 +310,20 @@ export const useEventStyles = ({
               ? (layout.width / 100) * currentDayColumnWidth
               : ((layout.width - 1) / 100) * currentDayColumnWidth;
           }
+        }
+
+        // Clamp the sticky bar to stay within the grid content area (right of time column)
+        const gridContentLeft = calendarRect.left + timeColumnWidth;
+        if (stickyLeft < gridContentLeft) {
+          stickyWidth = Math.max(
+            0,
+            stickyWidth - (gridContentLeft - stickyLeft)
+          );
+          stickyLeft = gridContentLeft;
+        }
+        // Also clamp right edge
+        if (stickyLeft + stickyWidth > calendarRect.right) {
+          stickyWidth = Math.max(0, calendarRect.right - stickyLeft);
         }
 
         if (eventVisibility === 'sticky-top') {

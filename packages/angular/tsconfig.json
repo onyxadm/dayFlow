@@ -4,14 +4,8 @@
     "outDir": "./dist/out-tsc",
     "baseUrl": ".",
     "types": [],
-    "jsx": "react-jsx",
-    "jsxImportSource": "preact",
     "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "paths": {
-      "@dayflow/core": ["../core/src/index.ts"],
-      "@/*": ["../core/src/*"]
-    }
+    "noUnusedParameters": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

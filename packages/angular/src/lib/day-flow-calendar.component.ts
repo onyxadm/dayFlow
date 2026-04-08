@@ -14,6 +14,7 @@ import {
 import type {
   ICalendarApp,
   CalendarAppConfig,
+  CalendarAppConfigSyncSnapshot,
   UseCalendarAppReturn,
   CustomRendering,
   EventDetailContentProps,
@@ -25,7 +26,13 @@ import type {
   CreateCalendarDialogColorPickerProps,
   CalendarHeaderProps,
 } from '@dayflow/core';
-import { CalendarRenderer, CalendarApp } from '@dayflow/core';
+import {
+  CalendarRenderer,
+  CalendarApp,
+  createConfigSyncSnapshot,
+  createNormalizedCalendarAppConfigGetter,
+  syncCalendarAppConfig,
+} from '@dayflow/core';
 
 @Component({
   selector: 'dayflow-calendar',
@@ -80,7 +87,9 @@ export class DayFlowCalendarComponent
   customRenderings: CustomRendering[] = [];
   private renderer?: CalendarRenderer;
   private unsubscribe?: () => void;
-  private internalApp?: ICalendarApp;
+  private internalApp?: CalendarApp;
+  private getNormalizedInternalConfig?: () => CalendarAppConfig;
+  private internalConfigSyncSnapshot?: CalendarAppConfigSyncSnapshot;
 
   constructor(private cdr: ChangeDetectorRef) {}
 
@@ -98,12 +107,8 @@ export class DayFlowCalendarComponent
     }
 
     // If it's a config object, we create an internal instance
-    if (
-      (this.calendar as { app?: ICalendarApp; views?: unknown[] }).views !==
-      undefined
-    ) {
-      this.internalApp = new CalendarApp(this.calendar as CalendarAppConfig);
-      return this.internalApp;
+    if (DayFlowCalendarComponent.isCalendarConfig(this.calendar)) {
+      return this.getOrCreateInternalApp();
     }
 
     return this.calendar as ICalendarApp;
@@ -115,9 +120,13 @@ export class DayFlowCalendarComponent
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['calendar'] && !changes['calendar'].firstChange) {
-      this.internalApp = undefined;
-      this.destroyCalendar();
-      this.initCalendar();
+      if (this.canSyncInternalCalendarConfig(changes['calendar'])) {
+        this.syncInternalCalendarConfig();
+      } else {
+        this.resetInternalCalendarState();
+        this.destroyCalendar();
+        this.initCalendar();
+      }
     } else if (this.renderer) {
       if (changes['collapsedSafeAreaLeft']) {
         this.renderer.setProps({
@@ -158,11 +167,13 @@ export class DayFlowCalendarComponent
       return;
     }
 
-    this.renderer = new CalendarRenderer(this.app, this.getActiveOverrides());
+    const activeOverrides = this.getActiveOverrides();
+    this.renderer = new CalendarRenderer(this.app, activeOverrides);
     this.renderer.setProps({
       collapsedSafeAreaLeft: this.collapsedSafeAreaLeft,
     });
     this.renderer.mount(this.container.nativeElement);
+    this.app.setOverrides(activeOverrides);
 
     this.unsubscribe = this.renderer
       .getCustomRenderingStore()
@@ -204,6 +215,64 @@ export class DayFlowCalendarComponent
     }
     this.unsubscribe = undefined;
     this.renderer = undefined;
+  }
+
+  private static isCalendarConfig(value: unknown): value is CalendarAppConfig {
+    return (
+      !!value &&
+      typeof value === 'object' &&
+      'views' in value &&
+      !('app' in value)
+    );
+  }
+
+  private getOrCreateInternalApp(): CalendarApp {
+    if (!this.internalApp) {
+      this.getNormalizedInternalConfig =
+        createNormalizedCalendarAppConfigGetter(
+          () => this.calendar as CalendarAppConfig
+        );
+      const normalizedConfig = this.getNormalizedInternalConfig();
+      this.internalApp = new CalendarApp(normalizedConfig);
+      this.internalConfigSyncSnapshot =
+        createConfigSyncSnapshot(normalizedConfig);
+    }
+
+    return this.internalApp;
+  }
+
+  private canSyncInternalCalendarConfig(
+    change: SimpleChanges['calendar']
+  ): boolean {
+    return (
+      DayFlowCalendarComponent.isCalendarConfig(change.currentValue) &&
+      DayFlowCalendarComponent.isCalendarConfig(change.previousValue) &&
+      !!this.internalApp &&
+      !!this.getNormalizedInternalConfig &&
+      !!this.internalConfigSyncSnapshot
+    );
+  }
+
+  private syncInternalCalendarConfig() {
+    if (
+      !this.internalApp ||
+      !this.getNormalizedInternalConfig ||
+      !this.internalConfigSyncSnapshot
+    ) {
+      return;
+    }
+
+    this.internalConfigSyncSnapshot = syncCalendarAppConfig(
+      this.internalApp,
+      this.internalConfigSyncSnapshot,
+      this.getNormalizedInternalConfig()
+    );
+  }
+
+  private resetInternalCalendarState() {
+    this.internalApp = undefined;
+    this.getNormalizedInternalConfig = undefined;
+    this.internalConfigSyncSnapshot = undefined;
   }
 
   getTemplate(name: string): TemplateRef<unknown> | null {

@@ -7,7 +7,6 @@ import {
 } from 'preact/hooks';
 
 import {
-  AllDaySortComparator,
   CalendarAppConfig,
   CalendarViewType,
   UseCalendarAppReturn,
@@ -15,31 +14,26 @@ import {
   RangeChangeReason,
   Event,
 } from '@/types';
-import { isDeepEqual } from '@/utils/helpers';
+import {
+  createConfigSyncSnapshot,
+  createNormalizedCalendarAppConfigGetter,
+  syncCalendarAppConfig,
+} from '@/utils/calendarApp';
 
 import { CalendarApp } from './CalendarApp';
 
 export function useCalendarApp(
   config: CalendarAppConfig
 ): UseCalendarAppReturn {
-  const comparatorRef = useRef<AllDaySortComparator | undefined>(
-    config.allDaySortComparator
-  );
-  comparatorRef.current = config.allDaySortComparator;
-
-  const stableAllDaySortComparator = useMemo<AllDaySortComparator>(
-    () => (a, b) => comparatorRef.current?.(a, b) ?? 0,
+  const configRef = useRef(config);
+  configRef.current = config;
+  const getNormalizedConfig = useMemo(
+    () => createNormalizedCalendarAppConfigGetter(() => configRef.current),
     []
   );
-
   const normalizedConfig = useMemo(
-    () => ({
-      ...config,
-      allDaySortComparator: config.allDaySortComparator
-        ? stableAllDaySortComparator
-        : undefined,
-    }),
-    [config, stableAllDaySortComparator]
+    () => getNormalizedConfig(),
+    [config, getNormalizedConfig]
   );
 
   // Create calendar application instance
@@ -195,12 +189,13 @@ export function useCalendarApp(
   }, [app]);
 
   // Synchronize configuration updates
-  const lastConfigRef = useRef(normalizedConfig);
+  const syncSnapshotRef = useRef(createConfigSyncSnapshot(normalizedConfig));
   useEffect(() => {
-    if (!isDeepEqual(lastConfigRef.current, normalizedConfig)) {
-      app.updateConfig(normalizedConfig);
-      lastConfigRef.current = normalizedConfig;
-    }
+    syncSnapshotRef.current = syncCalendarAppConfig(
+      app,
+      syncSnapshotRef.current,
+      normalizedConfig
+    );
   }, [app, normalizedConfig]);
 
   // Wrapped methods to ensure state synchronization

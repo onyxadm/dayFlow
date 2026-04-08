@@ -13,6 +13,7 @@ export class CustomRenderingStore {
   private renderings = new Map<string, CustomRendering>();
   private overrides = new Set<string>();
   private listeners = new Set<CustomRenderingListener>();
+  private overrideListeners = new Set<() => void>();
 
   constructor(initialOverrides?: string[]) {
     if (initialOverrides && initialOverrides.length > 0) {
@@ -45,6 +46,7 @@ export class CustomRenderingStore {
   setOverrides(names: string[]): void {
     this.overrides = new Set(names);
     this.notify();
+    this.notifyOverrides();
   }
 
   /**
@@ -67,7 +69,23 @@ export class CustomRenderingStore {
     };
   }
 
+  /**
+   * Subscribe only to override changes (setOverrides calls).
+   * Used by ContentSlot components to avoid re-rendering on every register/unregister.
+   */
+  subscribeToOverrides(listener: () => void): () => void {
+    this.overrideListeners.add(listener);
+    listener();
+    return () => {
+      this.overrideListeners.delete(listener);
+    };
+  }
+
   private notify(): void {
     this.listeners.forEach(fn => fn(this.renderings));
+  }
+
+  private notifyOverrides(): void {
+    this.overrideListeners.forEach(fn => fn());
   }
 }

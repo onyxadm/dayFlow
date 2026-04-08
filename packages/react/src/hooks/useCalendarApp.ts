@@ -1,33 +1,25 @@
-import type {
-  AllDaySortComparator,
-  CalendarAppConfig,
-  UseCalendarAppReturn,
+import type { CalendarAppConfig, UseCalendarAppReturn } from '@dayflow/core';
+import {
+  CalendarApp,
+  createConfigSyncSnapshot,
+  createNormalizedCalendarAppConfigGetter,
+  syncCalendarAppConfig,
 } from '@dayflow/core';
-import { CalendarApp, isDeepEqual } from '@dayflow/core';
 import { useState, useEffect, useMemo, useRef } from 'react';
 
 export function useCalendarApp(
   config: CalendarAppConfig,
   version?: string | number
 ): UseCalendarAppReturn {
-  const comparatorRef = useRef<AllDaySortComparator | undefined>(
-    config.allDaySortComparator
-  );
-  comparatorRef.current = config.allDaySortComparator;
-
-  const stableAllDaySortComparator = useMemo<AllDaySortComparator>(
-    () => (a, b) => comparatorRef.current?.(a, b) ?? 0,
+  const configRef = useRef(config);
+  configRef.current = config;
+  const getNormalizedConfig = useMemo(
+    () => createNormalizedCalendarAppConfigGetter(() => configRef.current),
     []
   );
-
   const normalizedConfig = useMemo(
-    () => ({
-      ...config,
-      allDaySortComparator: config.allDaySortComparator
-        ? stableAllDaySortComparator
-        : undefined,
-    }),
-    [config, stableAllDaySortComparator]
+    () => getNormalizedConfig(),
+    [config, getNormalizedConfig]
   );
 
   // `version` lets callers recreate the app (e.g. when plugins change) without
@@ -37,7 +29,7 @@ export function useCalendarApp(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const app = useMemo(() => new CalendarApp(normalizedConfig), [version]);
   const [, setTick] = useState(0);
-  const configRef = useRef(normalizedConfig);
+  const syncSnapshotRef = useRef(createConfigSyncSnapshot(normalizedConfig));
 
   useEffect(() => {
     if (!app) {
@@ -53,12 +45,23 @@ export function useCalendarApp(
     };
   }, [app]);
 
-  // Sync config changes to the app instance
+  // Reset sync baselines whenever we recreate the app via `version`.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (app && !isDeepEqual(normalizedConfig, configRef.current)) {
-      app.updateConfig(normalizedConfig);
-      configRef.current = normalizedConfig;
+    syncSnapshotRef.current = createConfigSyncSnapshot(normalizedConfig);
+  }, [app]);
+
+  // Sync callbacks and live-updatable config in one pass.
+  useEffect(() => {
+    if (!app) {
+      return;
     }
+
+    syncSnapshotRef.current = syncCalendarAppConfig(
+      app,
+      syncSnapshotRef.current,
+      normalizedConfig
+    );
   }, [app, normalizedConfig]);
 
   // Map app to the UseCalendarAppReturn interface

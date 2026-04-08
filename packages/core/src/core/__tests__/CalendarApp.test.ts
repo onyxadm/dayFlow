@@ -7,6 +7,8 @@ import { createWeekView } from '@/factories/createWeekView';
 import { createYearView } from '@/factories/createYearView';
 import { ViewType } from '@/types';
 
+const component = () => null;
+
 describe('CalendarApp', () => {
   describe('Event Management', () => {
     it('should add an event', () => {
@@ -461,6 +463,66 @@ describe('CalendarApp', () => {
 
       expect(onRender).toHaveBeenCalledTimes(1);
       expect(app.state.allDaySortComparator).toBe(comparatorB);
+    });
+
+    it('updates view config function references without forcing a render', () => {
+      const onRender = jest.fn();
+      const resolverA = jest.fn(() => 'a');
+      const resolverB = jest.fn(() => 'b');
+      const app = new CalendarApp({
+        views: [
+          {
+            type: 'resource-grid',
+            component,
+            config: { getResourceId: resolverA },
+          },
+        ],
+        plugins: [],
+        events: [],
+        callbacks: { onRender },
+      });
+
+      onRender.mockClear();
+      app.updateConfig({
+        views: [
+          {
+            type: 'resource-grid',
+            component,
+            config: { getResourceId: resolverB },
+          },
+        ],
+      });
+
+      expect(onRender).not.toHaveBeenCalled();
+      expect(
+        (
+          app.getViewConfig('resource-grid') as {
+            getResourceId?: typeof resolverB;
+          }
+        ).getResourceId
+      ).toBe(resolverB);
+    });
+
+    it('replaces callbacks instead of retaining removed handlers', () => {
+      const onEventClick = jest.fn();
+      const app = new CalendarApp({
+        views: [],
+        plugins: [],
+        events: [],
+        callbacks: { onEventClick },
+      });
+      const event = {
+        id: 'callback-event',
+        title: 'Callback Event',
+        start: Temporal.Now.plainDateISO(),
+        end: Temporal.Now.plainDateISO(),
+      };
+
+      app.onEventClick(event);
+      app.updateConfig({ callbacks: {} });
+      app.onEventClick(event);
+
+      expect(onEventClick).toHaveBeenCalledTimes(1);
     });
   });
 });

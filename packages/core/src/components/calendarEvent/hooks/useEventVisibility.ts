@@ -1,8 +1,19 @@
 import { RefObject } from 'preact';
 import { useEffect, useCallback } from 'preact/hooks';
 
+import {
+  getCalendarContentElement,
+  getTimeColumnWidth,
+} from '@/components/calendarEvent/utils';
 import { Event, ViewType } from '@/types';
 import { extractHourFromDate, getEventEndHour } from '@/utils';
+
+export type EventVisibility =
+  | 'visible'
+  | 'sticky-top'
+  | 'sticky-bottom'
+  | 'sticky-left'
+  | 'sticky-right';
 
 interface UseEventVisibilityProps {
   event: Event;
@@ -13,6 +24,7 @@ interface UseEventVisibilityProps {
   calendarRef: RefObject<HTMLElement>;
   isAllDay: boolean;
   viewType: ViewType;
+  isMobile?: boolean;
   multiDaySegmentInfo?: {
     startHour: number;
     endHour: number;
@@ -23,10 +35,8 @@ interface UseEventVisibilityProps {
   firstHour: number;
   hourHeight: number;
   updatePanelPosition: () => void;
-  eventVisibility: 'visible' | 'sticky-top' | 'sticky-bottom';
-  setEventVisibility: (
-    visibility: 'visible' | 'sticky-top' | 'sticky-bottom'
-  ) => void;
+  eventVisibility: EventVisibility;
+  setEventVisibility: (visibility: EventVisibility) => void;
 }
 
 export const useEventVisibility = ({
@@ -38,6 +48,7 @@ export const useEventVisibility = ({
   calendarRef,
   isAllDay,
   viewType,
+  isMobile = false,
   multiDaySegmentInfo,
   firstHour,
   hourHeight,
@@ -47,6 +58,7 @@ export const useEventVisibility = ({
 }: UseEventVisibilityProps) => {
   const isMonthView = viewType === ViewType.MONTH;
   const isYearView = viewType === ViewType.YEAR;
+  const isResourceView = viewType === ViewType.RESOURCE;
   const eventForTiming = timingEvent ?? event;
 
   const checkEventVisibility = useCallback(() => {
@@ -61,9 +73,7 @@ export const useEventVisibility = ({
     )
       return;
 
-    const calendarContent = calendarRef.current.querySelector(
-      '.df-calendar-content'
-    );
+    const calendarContent = getCalendarContentElement(calendarRef);
     if (!calendarContent) return;
 
     const segmentStartHour = multiDaySegmentInfo
@@ -90,42 +100,77 @@ export const useEventVisibility = ({
 
     const STICKY_THRESHOLD = 20;
 
-    let nextVisibility = eventVisibility;
+    let nextVisibility: EventVisibility = eventVisibility;
 
     if (isContentAboveViewport) {
       nextVisibility = 'sticky-top';
     } else if (isContentBelowViewport) {
       nextVisibility = 'sticky-bottom';
     } else {
-      if (eventVisibility === 'visible') {
-        if (originalBottom < scrollTop) {
-          nextVisibility = 'sticky-top';
-        } else if (originalTop > scrollBottom - STICKY_THRESHOLD) {
-          nextVisibility = 'sticky-bottom';
-        }
-      } else if (eventVisibility === 'sticky-top') {
-        if (originalBottom >= scrollTop) {
+      // Determine vertical state, treating horizontal sticky as 'visible' for transition purposes
+      const isCurrentlyHorizontallySticky =
+        eventVisibility === 'sticky-left' || eventVisibility === 'sticky-right';
+      const currentVerticalState: EventVisibility =
+        isCurrentlyHorizontallySticky ? 'visible' : eventVisibility;
+
+      let newVerticalState: EventVisibility;
+      if (currentVerticalState === 'visible') {
+        if (originalBottom < scrollTop) newVerticalState = 'sticky-top';
+        else if (originalTop > scrollBottom - STICKY_THRESHOLD)
+          newVerticalState = 'sticky-bottom';
+        else newVerticalState = 'visible';
+      } else if (currentVerticalState === 'sticky-top') {
+        newVerticalState =
+          originalBottom >= scrollTop ? 'visible' : 'sticky-top';
+      } else {
+        // sticky-bottom
+        newVerticalState =
+          originalTop <= scrollBottom - STICKY_THRESHOLD
+            ? 'visible'
+            : 'sticky-bottom';
+      }
+
+      if (newVerticalState !== 'visible') {
+        nextVisibility = newVerticalState;
+      } else if (isResourceView) {
+        // Vertically visible — check horizontal visibility
+        const parentRect =
+          eventRef.current?.parentElement?.getBoundingClientRect();
+        if (parentRect) {
+          const timeColumnWidth = getTimeColumnWidth(calendarRef, isMobile);
+          const gridLeft = contentRect.left + timeColumnWidth;
+          const gridRight = contentRect.right;
+
+          if (parentRect.right <= gridLeft) {
+            nextVisibility = 'sticky-left';
+          } else if (parentRect.left >= gridRight) {
+            nextVisibility = 'sticky-right';
+          } else {
+            nextVisibility = 'visible';
+          }
+        } else {
           nextVisibility = 'visible';
         }
-      } else if (
-        eventVisibility === 'sticky-bottom' &&
-        originalTop <= scrollBottom - STICKY_THRESHOLD
-      ) {
+      } else {
         nextVisibility = 'visible';
       }
     }
 
-    if (nextVisibility !== eventVisibility) {
+    if (nextVisibility === eventVisibility) {
+      updatePanelPosition();
+    } else {
       setEventVisibility(nextVisibility);
+      // Defer panel update until after the re-render commits the new sticky styles
+      setTimeout(updatePanelPosition, 0);
     }
-
-    updatePanelPosition();
   }, [
     isEventSelected,
     showDetailPanel,
     calendarRef,
     isAllDay,
     isMonthView,
+    isResourceView,
+    isMobile,
     eventForTiming.start,
     eventForTiming.end,
     firstHour,
@@ -139,9 +184,7 @@ export const useEventVisibility = ({
   useEffect(() => {
     if (!isEventSelected || !showDetailPanel || isAllDay) return;
 
-    const calendarContent = calendarRef.current?.querySelector(
-      '.df-calendar-content'
-    );
+    const calendarContent = getCalendarContentElement(calendarRef);
     if (!calendarContent) return;
 
     const handleScroll = () => checkEventVisibility();

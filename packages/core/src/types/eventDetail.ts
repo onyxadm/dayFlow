@@ -22,7 +22,12 @@ export interface EventDetailPanelProps {
   /** Whether the event is all-day */
   isAllDay: boolean;
   /** Event visibility state */
-  eventVisibility: 'visible' | 'sticky-top' | 'sticky-bottom';
+  eventVisibility:
+    | 'visible'
+    | 'sticky-top'
+    | 'sticky-bottom'
+    | 'sticky-left'
+    | 'sticky-right';
   /** Calendar container reference */
   calendarRef: RefObject<HTMLDivElement>;
   /** Selected event element reference */

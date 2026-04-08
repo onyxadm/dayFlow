@@ -17,6 +17,7 @@ import {
   ViewType,
 } from '@/types';
 import { ThemeMode } from '@/types/calendarTypes';
+import { compareViews } from '@/utils/calendarApp';
 import { isDeepEqual } from '@/utils/helpers';
 import { normalizeTimeZoneValue } from '@/utils/timeZoneUtils';
 
@@ -391,8 +392,8 @@ export class CalendarApp implements ICalendarApp {
       this.state.readOnly = config.readOnly;
       hasChanged = true;
     }
-    if (config.callbacks) {
-      this.callbacks = { ...this.callbacks, ...config.callbacks };
+    if (config.callbacks !== undefined) {
+      this.callbacks = config.callbacks;
     }
     if (
       config.theme?.mode !== undefined &&
@@ -434,15 +435,24 @@ export class CalendarApp implements ICalendarApp {
     if (config.views !== undefined) {
       const newViews = new Map(this.state.views);
       let viewsChanged = false;
+      let viewsUpdated = false;
       config.views.forEach(view => {
         const existingView = newViews.get(view.type);
-        if (!existingView || !isDeepEqual(view.config, existingView.config)) {
+        const diff = compareViews(existingView, view);
+
+        if (diff.hasChanges) {
           newViews.set(view.type, view);
-          viewsChanged = true;
+          viewsUpdated = true;
         }
+
+        viewsChanged = viewsChanged || diff.requiresRender;
       });
-      if (viewsChanged) {
+
+      if (viewsUpdated) {
         this.state.views = newViews;
+      }
+
+      if (viewsChanged) {
         hasChanged = true;
       }
     }

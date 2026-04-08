@@ -165,7 +165,6 @@ export function useSearchController(
         } else {
           setIsSearchOpen(false);
         }
-        app.highlightEvent(null);
       };
 
       if (searchConfig?.onResultClick) {

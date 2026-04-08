@@ -7,7 +7,7 @@ import { sourceZh } from '@/lib/source';
 
 export default function Layout({ children }: LayoutProps<'/docs-zh'>) {
   const tabs = sidebarTabs.map(tab =>
-    tab.title === 'Calendar' ? { ...tab, url: '/docs-zh/introduction' } : tab
+    tab.title === 'Calendar' ? { ...tab, url: '/docs-zh' } : tab
   );
 
   return (

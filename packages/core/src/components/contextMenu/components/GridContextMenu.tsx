@@ -1,5 +1,6 @@
 import { handlePasteEvent } from '@/components/contextMenu/utils';
 import { useLocale } from '@/locale';
+import { ContentSlot } from '@/renderer/ContentSlot';
 import { ICalendarApp, ViewType } from '@/types';
 import { clipboardStore } from '@/utils/clipboardStore';
 
@@ -34,8 +35,8 @@ const GridContextMenu = ({
     onClose();
   };
 
-  return (
-    <ContextMenu x={x} y={y} onClose={onClose} className='df-context-menu'>
+  const defaultContent = (
+    <>
       <ContextMenuItem
         onClick={() => {
           onCreateEvent();
@@ -47,6 +48,16 @@ const GridContextMenu = ({
       <ContextMenuItem onClick={handlePaste} disabled={!hasCopiedEvent}>
         {t('pasteHere') || 'Paste Here'}
       </ContextMenuItem>
+    </>
+  );
+
+  return (
+    <ContextMenu x={x} y={y} onClose={onClose} className='df-context-menu'>
+      <ContentSlot
+        generatorName='gridContextMenu'
+        generatorArgs={{ date, viewType, onClose }}
+        defaultContent={defaultContent}
+      />
     </ContextMenu>
   );
 };

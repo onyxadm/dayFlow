@@ -2,6 +2,7 @@ import { EventContentShowcase } from '@/components/showcase/EventContentShowcase
 import { CustomDetailPanelShowcase } from '@/components/showcase/CustomDetailPanelShowcase';
 import { ColorPickerShowcase } from '@/components/showcase/ColorPickerShowcase';
 import { CustomDetailDialogShowcase } from '@/components/showcase/CustomDetailDialogShowcase';
+import { ContextMenuShowcase } from '@/components/showcase/ContextMenuShowcase';
 
 # Content Slots
 
@@ -18,12 +19,14 @@ This is powered by the `ContentSlot` mechanism. While the core engine provides d
 
 | Generator Name                    | Description                                                      | Arguments                                                                 |
 | :-------------------------------- | :--------------------------------------------------------------- | :------------------------------------------------------------------------ |
+| `colorPicker`                     | A small color picker used for event colors.                      | `{ color, onChange, onChangeComplete }`                                   |
+| `createCalendarDialogColorPicker` | A full-featured color picker used in dialogs.                    | `{ color, onChange, onAccept, onCancel, styles }`                         |
 | `eventContent*`                   | Custom rendering for event cards (e.g. `eventContentDay`).       | `{ event, viewType, isAllDay, isMobile, isSelected, isDragging, layout }` |
+| `eventContextMenu`                | Custom right-click context menu for events.                      | `{ event, onClose }`                                                      |
 | `eventDetailContent`              | The content shown in the popover/panel when an event is clicked. | `{ event, isAllDay, onEventDelete, onEventUpdate, onClose, app }`         |
 | `eventDetailDialog`               | Custom dialog shown when an event is clicked.                    | `{ event, isOpen, isAllDay, onEventDelete, onEventUpdate, onClose, app }` |
-| `colorPicker`                     | A small color picker used for event colors.                      | `{ color, onChange, onChangeComplete }`                                   |
+| `gridContextMenu`                 | Custom right-click context menu for calendar cells/grid.         | `{ date, viewType, onClose }`                                             |
 | `sidebarCalendarColorPicker`      | A color picker used for calendar colors in the sidebar.          | `{ color, onChange, onChangeComplete }`                                   |
-| `createCalendarDialogColorPicker` | A full-featured color picker used in dialogs.                    | `{ color, onChange, onAccept, onCancel, styles }`                         |
 | `titleBarSlot`                    | Extra content in the sidebar title bar.                          | `{ isCollapsed, toggleCollapsed }`                                        |
 
 ## Event Content
@@ -197,6 +200,93 @@ function MyCalendar() {
           onCancel={args.onCancel}
         />
       )}
+    />
+  );
+}
+```
+
+</details>
+
+## Context Menu Slots
+
+The `eventContextMenu` and `gridContextMenu` slots let you replace the default right-click menus with fully custom React components. Both slots receive an `onClose` callback to dismiss the menu.
+
+- **`eventContextMenu`** — triggered when the user right-clicks an event. Receives `{ event, onClose }`.
+- **`gridContextMenu`** — triggered when the user right-clicks an empty area of the calendar grid. Receives `{ date, viewType, onClose }`.
+
+Right-click on any event or empty cell to see the custom menus in action:
+
+<ContextMenuShowcase />
+
+<details>
+<summary>View Source Code</summary>
+
+```tsx
+import { DayFlowCalendar } from '@dayflow/react';
+import type {
+  EventContextMenuSlotArgs,
+  GridContextMenuSlotArgs,
+} from '@dayflow/core';
+import { useCallback } from 'react';
+
+function MyCalendar() {
+  const eventContextMenu = useCallback(
+    ({ event, onClose }: EventContextMenuSlotArgs) => (
+      <div className='custom-menu'>
+        <button
+          onClick={() => {
+            /* duplicate */ onClose();
+          }}
+        >
+          Duplicate
+        </button>
+        <button
+          onClick={() => {
+            /* share */ onClose();
+          }}
+        >
+          Share
+        </button>
+        <button
+          onClick={() => {
+            calendar.deleteEvent(event.id);
+            onClose();
+          }}
+        >
+          Delete
+        </button>
+      </div>
+    ),
+    []
+  );
+
+  const gridContextMenu = useCallback(
+    ({ date, onClose }: GridContextMenuSlotArgs) => (
+      <div className='custom-menu'>
+        <button
+          onClick={() => {
+            /* create event at date */ onClose();
+          }}
+        >
+          New Event
+        </button>
+        <button
+          onClick={() => {
+            /* set reminder */ onClose();
+          }}
+        >
+          Remind me
+        </button>
+      </div>
+    ),
+    []
+  );
+
+  return (
+    <DayFlowCalendar
+      calendar={calendar}
+      eventContextMenu={eventContextMenu}
+      gridContextMenu={gridContextMenu}
     />
   );
 }

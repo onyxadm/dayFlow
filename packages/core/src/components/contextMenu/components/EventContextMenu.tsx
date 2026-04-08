@@ -1,6 +1,7 @@
 import { Check } from '@/components/common/Icons';
 import { useLocale } from '@/locale';
-import { Event, ICalendarApp, TNode } from '@/types';
+import { ContentSlot } from '@/renderer/ContentSlot';
+import { Event, ICalendarApp } from '@/types';
 import { clipboardStore } from '@/utils/clipboardStore';
 
 import {
@@ -67,17 +68,9 @@ const EventContextMenu = ({
     onClose();
   };
 
-  // Custom user slot
-  // oxlint-disable-next-line typescript/no-explicit-any
-  const callbacks = (app as any).callbacks;
-  const customContent = callbacks?.renderEventContextMenu?.(
-    event,
-    onClose
-  ) as TNode;
-
-  return (
-    <ContextMenu x={x} y={y} onClose={onClose}>
-      {/* Group 2: Calendar Submenu */}
+  const defaultContent = (
+    <>
+      {/* Group 1: Calendar Submenu */}
       <ContextMenuSub>
         <ContextMenuSubTrigger>
           {t('calendars') || 'Calendars'}
@@ -116,7 +109,7 @@ const EventContextMenu = ({
 
       <ContextMenuSeparator />
 
-      {/* Group 3: Delete, Cut, Copy */}
+      {/* Group 2: Delete, Cut, Copy */}
       <ContextMenuItem onClick={handleDelete} danger>
         {t('delete') || 'Delete'}
       </ContextMenuItem>
@@ -124,14 +117,16 @@ const EventContextMenu = ({
       <ContextMenuItem onClick={handleCopy}>
         {t('copy') || 'Copy'}
       </ContextMenuItem>
+    </>
+  );
 
-      {/* Group 4: Custom Slot */}
-      {customContent && (
-        <>
-          <ContextMenuSeparator />
-          {customContent}
-        </>
-      )}
+  return (
+    <ContextMenu x={x} y={y} onClose={onClose}>
+      <ContentSlot
+        generatorName='eventContextMenu'
+        generatorArgs={{ event, onClose }}
+        defaultContent={defaultContent}
+      />
     </ContextMenu>
   );
 };

@@ -2,6 +2,7 @@ import { EventContentShowcase } from '@/components/showcase/EventContentShowcase
 import { CustomDetailPanelShowcase } from '@/components/showcase/CustomDetailPanelShowcase';
 import { CustomDetailDialogShowcase } from '@/components/showcase/CustomDetailDialogShowcase';
 import { ColorPickerShowcase } from '@/components/showcase/ColorPickerShowcase';
+import { ContextMenuShowcase } from '@/components/showcase/ContextMenuShowcase';
 
 # 内容插槽
 
@@ -18,12 +19,14 @@ DayFlow 采用了基于插槽的架构，允许您直接从所使用的框架（
 
 | 生成器名称                        | 描述                                             | 参数                                                                      |
 | :-------------------------------- | :----------------------------------------------- | :------------------------------------------------------------------------ |
+| `colorPicker`                     | 用于事件颜色的迷你颜色选择器。                   | `{ color, onChange, onChangeComplete }`                                   |
+| `createCalendarDialogColorPicker` | 对话框中使用功能完整的颜色选择器。               | `{ color, onChange, onAccept, onCancel, styles }`                         |
 | `eventContent*`                   | 事件卡片的自定义渲染（例如 `eventContentDay`）。 | `{ event, viewType, isAllDay, isMobile, isSelected, isDragging, layout }` |
+| `eventContextMenu`                | 自定义事件右键菜单。                             | `{ event, onClose }`                                                      |
 | `eventDetailContent`              | 点击事件时在弹出框/面板中显示的内容。            | `{ event, isAllDay, onEventDelete, onEventUpdate, onClose, app }`         |
 | `eventDetailDialog`               | 点击事件时显示的自定义对话框。                   | `{ event, isOpen, isAllDay, onEventDelete, onEventUpdate, onClose, app }` |
-| `colorPicker`                     | 用于事件颜色的迷你颜色选择器。                   | `{ color, onChange, onChangeComplete }`                                   |
+| `gridContextMenu`                 | 自定义日历格子/网格的右键菜单。                  | `{ date, viewType, onClose }`                                             |
 | `sidebarCalendarColorPicker`      | 用于侧边栏日历颜色的颜色选择器。                 | `{ color, onChange, onChangeComplete }`                                   |
-| `createCalendarDialogColorPicker` | 对话框中使用功能完整的颜色选择器。               | `{ color, onChange, onAccept, onCancel, styles }`                         |
 | `titleBarSlot`                    | 侧边栏标题栏中的额外内容。                       | `{ isCollapsed, toggleCollapsed }`                                        |
 
 ## 事件内容
@@ -197,6 +200,93 @@ function MyCalendar() {
           onCancel={args.onCancel}
         />
       )}
+    />
+  );
+}
+```
+
+</details>
+
+## 右键菜单插槽
+
+`eventContextMenu` 和 `gridContextMenu` 插槽允许您用完全自定义的 React 组件替换默认的右键菜单。两个插槽都接收 `onClose` 回调以关闭菜单。
+
+- **`eventContextMenu`** — 当用户右键点击事件时触发，接收 `{ event, onClose }`。
+- **`gridContextMenu`** — 当用户右键点击日历网格空白区域时触发，接收 `{ date, viewType, onClose }`。
+
+右键点击任意事件或空白格子，查看自定义菜单效果：
+
+<ContextMenuShowcase />
+
+<details>
+<summary>查看源代码</summary>
+
+```tsx
+import { DayFlowCalendar } from '@dayflow/react';
+import type {
+  EventContextMenuSlotArgs,
+  GridContextMenuSlotArgs,
+} from '@dayflow/core';
+import { useCallback } from 'react';
+
+function MyCalendar() {
+  const eventContextMenu = useCallback(
+    ({ event, onClose }: EventContextMenuSlotArgs) => (
+      <div className='custom-menu'>
+        <button
+          onClick={() => {
+            /* 复制 */ onClose();
+          }}
+        >
+          复制
+        </button>
+        <button
+          onClick={() => {
+            /* 分享 */ onClose();
+          }}
+        >
+          分享
+        </button>
+        <button
+          onClick={() => {
+            calendar.deleteEvent(event.id);
+            onClose();
+          }}
+        >
+          删除
+        </button>
+      </div>
+    ),
+    []
+  );
+
+  const gridContextMenu = useCallback(
+    ({ date, onClose }: GridContextMenuSlotArgs) => (
+      <div className='custom-menu'>
+        <button
+          onClick={() => {
+            /* 在此创建事件 */ onClose();
+          }}
+        >
+          新建事件
+        </button>
+        <button
+          onClick={() => {
+            /* 设置提醒 */ onClose();
+          }}
+        >
+          设置提醒
+        </button>
+      </div>
+    ),
+    []
+  );
+
+  return (
+    <DayFlowCalendar
+      calendar={calendar}
+      eventContextMenu={eventContextMenu}
+      gridContextMenu={gridContextMenu}
     />
   );
 }

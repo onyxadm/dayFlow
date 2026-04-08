@@ -4,6 +4,8 @@ import type {
   CustomRendering,
   UseCalendarAppReturn,
   EventContentSlotArgs,
+  EventContextMenuSlotArgs,
+  GridContextMenuSlotArgs,
   EventDetailContentProps,
   EventDetailDialogProps,
   CreateCalendarDialogProps,
@@ -57,6 +59,10 @@ export interface DayFlowCalendarProps {
   ) => ReactNode;
   /** Custom calendar header renderer (React) */
   calendarHeader?: (args: CalendarHeaderProps) => ReactNode;
+  /** Custom event right-click context menu renderer (React) */
+  eventContextMenu?: (args: EventContextMenuSlotArgs) => ReactNode;
+  /** Custom grid/cell right-click context menu renderer (React) */
+  gridContextMenu?: (args: GridContextMenuSlotArgs) => ReactNode;
 }
 
 /** Compute active override names from props and installed plugins. */

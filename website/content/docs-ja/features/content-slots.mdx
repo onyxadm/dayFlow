@@ -2,6 +2,7 @@ import { EventContentShowcase } from '@/components/showcase/EventContentShowcase
 import { CustomDetailPanelShowcase } from '@/components/showcase/CustomDetailPanelShowcase';
 import { ColorPickerShowcase } from '@/components/showcase/ColorPickerShowcase';
 import { CustomDetailDialogShowcase } from '@/components/showcase/CustomDetailDialogShowcase';
+import { ContextMenuShowcase } from '@/components/showcase/ContextMenuShowcase';
 
 # コンテンツスロット
 
@@ -18,12 +19,14 @@ DayFlow はスロットベースのアーキテクチャを採用しており、
 
 | ジェネレーター名                  | 説明                                                                  | 引数                                                                      |
 | :-------------------------------- | :-------------------------------------------------------------------- | :------------------------------------------------------------------------ |
+| `colorPicker`                     | イベントの色に使用される小さなカラーピッカー。                        | `{ color, onChange, onChangeComplete }`                                   |
+| `createCalendarDialogColorPicker` | ダイアログで使用されるフル機能のカラーピッカー。                      | `{ color, onChange, onAccept, onCancel, styles }`                         |
 | `eventContent*`                   | イベントカードのカスタムレンダリング（例：`eventContentDay`）。       | `{ event, viewType, isAllDay, isMobile, isSelected, isDragging, layout }` |
+| `eventContextMenu`                | イベントの右クリックコンテキストメニューのカスタム実装。              | `{ event, onClose }`                                                      |
 | `eventDetailContent`              | イベントがクリックされたときにポップオーバー/パネルに表示される内容。 | `{ event, isAllDay, onEventDelete, onEventUpdate, onClose, app }`         |
 | `eventDetailDialog`               | イベントがクリックされたときに表示されるカスタムダイアログ。          | `{ event, isOpen, isAllDay, onEventDelete, onEventUpdate, onClose, app }` |
-| `colorPicker`                     | イベントの色に使用される小さなカラーピッカー。                        | `{ color, onChange, onChangeComplete }`                                   |
+| `gridContextMenu`                 | カレンダーのセル/グリッドの右クリックメニューのカスタム実装。         | `{ date, viewType, onClose }`                                             |
 | `sidebarCalendarColorPicker`      | サイドバーのカレンダーの色に使用されるカラーピッカー。                | `{ color, onChange, onChangeComplete }`                                   |
-| `createCalendarDialogColorPicker` | ダイアログで使用されるフル機能のカラーピッカー。                      | `{ color, onChange, onAccept, onCancel, styles }`                         |
 | `titleBarSlot`                    | サイドバーのタイトルバー内の追加コンテンツ。                          | `{ isCollapsed, toggleCollapsed }`                                        |
 
 ## イベントコンテンツ
@@ -197,6 +200,93 @@ function MyCalendar() {
           onCancel={args.onCancel}
         />
       )}
+    />
+  );
+}
+```
+
+</details>
+
+## コンテキストメニュースロット
+
+`eventContextMenu` と `gridContextMenu` スロットを使用すると、デフォルトの右クリックメニューを完全なカスタム React コンポーネントで置き換えられます。どちらのスロットも、メニューを閉じるための `onClose` コールバックを受け取ります。
+
+- **`eventContextMenu`** — ユーザーがイベントを右クリックしたときに発火します。`{ event, onClose }` を受け取ります。
+- **`gridContextMenu`** — ユーザーがカレンダーグリッドの空白領域を右クリックしたときに発火します。`{ date, viewType, onClose }` を受け取ります。
+
+任意のイベントまたは空のセルを右クリックして、カスタムメニューを確認してください：
+
+<ContextMenuShowcase />
+
+<details>
+<summary>ソースコードを表示</summary>
+
+```tsx
+import { DayFlowCalendar } from '@dayflow/react';
+import type {
+  EventContextMenuSlotArgs,
+  GridContextMenuSlotArgs,
+} from '@dayflow/core';
+import { useCallback } from 'react';
+
+function MyCalendar() {
+  const eventContextMenu = useCallback(
+    ({ event, onClose }: EventContextMenuSlotArgs) => (
+      <div className='custom-menu'>
+        <button
+          onClick={() => {
+            /* 複製 */ onClose();
+          }}
+        >
+          複製
+        </button>
+        <button
+          onClick={() => {
+            /* 共有 */ onClose();
+          }}
+        >
+          共有
+        </button>
+        <button
+          onClick={() => {
+            calendar.deleteEvent(event.id);
+            onClose();
+          }}
+        >
+          削除
+        </button>
+      </div>
+    ),
+    []
+  );
+
+  const gridContextMenu = useCallback(
+    ({ date, onClose }: GridContextMenuSlotArgs) => (
+      <div className='custom-menu'>
+        <button
+          onClick={() => {
+            /* ここにイベントを作成 */ onClose();
+          }}
+        >
+          新しいイベント
+        </button>
+        <button
+          onClick={() => {
+            /* リマインダーを設定 */ onClose();
+          }}
+        >
+          リマインダー
+        </button>
+      </div>
+    ),
+    []
+  );
+
+  return (
+    <DayFlowCalendar
+      calendar={calendar}
+      eventContextMenu={eventContextMenu}
+      gridContextMenu={gridContextMenu}
     />
   );
 }

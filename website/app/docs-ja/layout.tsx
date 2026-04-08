@@ -7,7 +7,7 @@ import { sourceJa } from '@/lib/source';
 
 export default function Layout({ children }: LayoutProps<'/docs-ja'>) {
   const tabs = sidebarTabs.map(tab =>
-    tab.title === 'Calendar' ? { ...tab, url: '/docs-ja/introduction' } : tab
+    tab.title === 'Calendar' ? { ...tab, url: '/docs-ja' } : tab
   );
 
   return (

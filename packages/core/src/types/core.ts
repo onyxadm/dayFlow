@@ -125,6 +125,19 @@ export interface EventContentSlotArgs {
   layout?: EventLayout;
 }
 
+/** Args passed to the eventContextMenu slot renderer. */
+export interface EventContextMenuSlotArgs {
+  event: Event;
+  onClose: () => void;
+}
+
+/** Args passed to the gridContextMenu slot renderer. */
+export interface GridContextMenuSlotArgs {
+  date: Date;
+  viewType?: ViewType;
+  onClose: () => void;
+}
+
 /**
  * Calendar application configuration
  * Used to initialize CalendarApp

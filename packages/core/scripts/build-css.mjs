@@ -14,10 +14,6 @@ function stripCascadeLayers(css) {
   const rootNode = parse(css);
 
   rootNode.walkAtRules('layer', atRule => {
-    // Keep preflight in @layer base so it remains low-priority (layered).
-    // Stripping it would promote the * reset above unlayered app CSS,
-    if (atRule.params === 'base') return;
-
     if (!atRule.nodes?.length) {
       atRule.remove();
       return;
@@ -38,7 +34,7 @@ async function buildCss(inputFile, outputFile) {
   const result = await postcss([
     tailwindcss,
     autoprefixer,
-    cssnano({ preset: 'default' }),
+    cssnano({ preset: ['default', { uniqueSelectors: false }] }),
   ]).process(css, {
     from: input,
     to: output,

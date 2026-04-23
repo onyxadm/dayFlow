@@ -33,4 +33,8 @@ export interface Event {
 
   // Internal use fields (for rendering and layout calculation)
   day?: number;
+  /** Original start hour (used for stable cross-day layout) */
+  _originalStartHour?: number;
+  /** Original end hour (used for stable cross-day layout) */
+  _originalEndHour?: number;
 }

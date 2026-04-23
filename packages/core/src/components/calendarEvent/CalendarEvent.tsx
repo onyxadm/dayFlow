@@ -76,6 +76,7 @@ const CalendarEvent = ({
   onDetailPanelToggle,
   customDetailPanelContent,
   customEventDetailDialog,
+  useEventDetailPanel,
   multiDaySegmentInfo,
   app,
   isMobile = false,
@@ -127,8 +128,9 @@ const CalendarEvent = ({
         : `${event.id}::day-${multiDaySegmentInfo.dayIndex}`;
 
   const showDetailPanel = detailPanelEventId === detailPanelKey;
+  const panelEnabled = useEventDetailPanel !== false;
   const showDetailPanelForClickOutside =
-    showDetailPanel && !customEventDetailDialog;
+    showDetailPanel && !customEventDetailDialog && panelEnabled;
 
   const readOnlyConfig = app?.getReadOnlyConfig(event.id) as ReadOnlyConfig;
   const isEditable = app?.canMutateFromUI(event.id) ?? false;
@@ -153,6 +155,7 @@ const CalendarEvent = ({
     onEventSelect,
     onDetailPanelToggle,
     canOpenDetail,
+    useEventDetailPanel,
     app,
     multiDaySegmentInfo,
     isMultiDay,
@@ -238,6 +241,7 @@ const CalendarEvent = ({
     hourHeight,
     isMobile,
     canOpenDetail,
+    useEventDetailPanel,
     detailPanelKey,
     app,
     onEventSelect,
@@ -394,7 +398,12 @@ const CalendarEvent = ({
       (isYearView && yearSegment?.isFirstSegment) ||
       (!isMultiDay && !isYearView);
 
-    if (newlyCreatedEventId === event.id && !showDetailPanel && isFirst) {
+    if (
+      newlyCreatedEventId === event.id &&
+      !showDetailPanel &&
+      isFirst &&
+      useEventDetailPanel !== false
+    ) {
       setTimeout(() => {
         onDetailPanelToggle?.(detailPanelKey);
         onDetailPanelOpen?.();
@@ -546,7 +555,7 @@ const CalendarEvent = ({
         />
       </div>
 
-      {showDetailPanel && !customEventDetailDialog && (
+      {showDetailPanel && !customEventDetailDialog && panelEnabled && (
         <div
           style={{
             position: 'fixed',
@@ -561,7 +570,7 @@ const CalendarEvent = ({
       )}
 
       <EventDetailPanel
-        showDetailPanel={showDetailPanel}
+        showDetailPanel={showDetailPanel && panelEnabled}
         customEventDetailDialog={customEventDetailDialog}
         detailPanelPosition={detailPanelPosition}
         event={event}

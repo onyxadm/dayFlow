@@ -108,7 +108,7 @@ function isDayFlowSelector(sel: string): boolean {
 }
 
 const SCOPE_BLOCK_SELECTOR =
-  /\.df-calendar-container,\s*\n?\s*\.df-portal,\s*\n?\s*\.df-event-detail-panel,\s*\n?\s*\.df-dialog-container,\s*\n?\s*\.df-range-picker/;
+  /\.df-calendar-container,\s*\n?\s*\.df-dialog-container,\s*\n?\s*\.df-event-detail-panel,\s*\n?\s*\.df-portal,\s*\n?\s*\.df-range-picker/;
 
 // ─── tests ─────────────────────────────────────────────────────────────────
 

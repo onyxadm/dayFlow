@@ -52,118 +52,58 @@ export function useCalendarApp(
   // Proxy the state properties
   const result = {
     get app() {
-      ensureConfigSync();
       return app;
     },
     get currentView() {
-      ensureConfigSync();
       return get(stateStore).currentView;
     },
     get currentDate() {
-      ensureConfigSync();
       return get(stateStore).currentDate;
     },
     get events() {
-      ensureConfigSync();
       return get(stateStore).events;
     },
 
-    applyEventsChanges: (
-      ...args: Parameters<typeof app.applyEventsChanges>
-    ) => {
-      ensureConfigSync();
-      return app.applyEventsChanges(...args);
-    },
-    changeView: (...args: Parameters<typeof app.changeView>) => {
-      ensureConfigSync();
-      return app.changeView(...args);
-    },
-    setCurrentDate: (...args: Parameters<typeof app.setCurrentDate>) => {
-      ensureConfigSync();
-      return app.setCurrentDate(...args);
-    },
-    addEvent: (...args: Parameters<typeof app.addEvent>) => {
-      ensureConfigSync();
-      return app.addEvent(...args);
-    },
-    updateEvent: (...args: Parameters<typeof app.updateEvent>) => {
-      ensureConfigSync();
-      return app.updateEvent(...args);
-    },
-    deleteEvent: (...args: Parameters<typeof app.deleteEvent>) => {
-      ensureConfigSync();
-      return app.deleteEvent(...args);
-    },
-    undo: () => {
-      ensureConfigSync();
-      return app.undo();
-    },
-    goToToday: () => {
-      ensureConfigSync();
-      return app.goToToday();
-    },
-    goToPrevious: () => {
-      ensureConfigSync();
-      return app.goToPrevious();
-    },
-    goToNext: () => {
-      ensureConfigSync();
-      return app.goToNext();
-    },
-    selectDate: (...args: Parameters<typeof app.selectDate>) => {
-      ensureConfigSync();
-      return app.selectDate(...args);
-    },
-    getCalendars: () => {
-      ensureConfigSync();
-      return app.getCalendars();
-    },
-    createCalendar: (...args: Parameters<typeof app.createCalendar>) => {
-      ensureConfigSync();
-      return app.createCalendar(...args);
-    },
-    mergeCalendars: (...args: Parameters<typeof app.mergeCalendars>) => {
-      ensureConfigSync();
-      return app.mergeCalendars(...args);
-    },
+    applyEventsChanges: (...args: Parameters<typeof app.applyEventsChanges>) =>
+      app.applyEventsChanges(...args),
+    changeView: (...args: Parameters<typeof app.changeView>) =>
+      app.changeView(...args),
+    setCurrentDate: (...args: Parameters<typeof app.setCurrentDate>) =>
+      app.setCurrentDate(...args),
+    addEvent: (...args: Parameters<typeof app.addEvent>) =>
+      app.addEvent(...args),
+    updateEvent: (...args: Parameters<typeof app.updateEvent>) =>
+      app.updateEvent(...args),
+    deleteEvent: (...args: Parameters<typeof app.deleteEvent>) =>
+      app.deleteEvent(...args),
+    undo: () => app.undo(),
+    goToToday: () => app.goToToday(),
+    goToPrevious: () => app.goToPrevious(),
+    goToNext: () => app.goToNext(),
+    selectDate: (...args: Parameters<typeof app.selectDate>) =>
+      app.selectDate(...args),
+    getCalendars: () => app.getCalendars(),
+    createCalendar: (...args: Parameters<typeof app.createCalendar>) =>
+      app.createCalendar(...args),
+    mergeCalendars: (...args: Parameters<typeof app.mergeCalendars>) =>
+      app.mergeCalendars(...args),
     setCalendarVisibility: (
       ...args: Parameters<typeof app.setCalendarVisibility>
-    ) => {
-      ensureConfigSync();
-      return app.setCalendarVisibility(...args);
-    },
+    ) => app.setCalendarVisibility(...args),
     setAllCalendarsVisibility: (
       ...args: Parameters<typeof app.setAllCalendarsVisibility>
-    ) => {
-      ensureConfigSync();
-      return app.setAllCalendarsVisibility(...args);
-    },
-    getAllEvents: () => {
-      ensureConfigSync();
-      return app.getAllEvents();
-    },
-    highlightEvent: (...args: Parameters<typeof app.highlightEvent>) => {
-      ensureConfigSync();
-      return app.highlightEvent(...args);
-    },
-    setVisibleMonth: (...args: Parameters<typeof app.setVisibleMonth>) => {
-      ensureConfigSync();
-      return app.setVisibleMonth(...args);
-    },
-    getVisibleMonth: () => {
-      ensureConfigSync();
-      return app.getVisibleMonth();
-    },
-    emitVisibleRange: (...args: Parameters<typeof app.emitVisibleRange>) => {
-      ensureConfigSync();
-      return app.emitVisibleRange(...args);
-    },
-    canMutateFromUI: (...args: Parameters<typeof app.canMutateFromUI>) => {
-      ensureConfigSync();
-      return app.canMutateFromUI(...args);
-    },
+    ) => app.setAllCalendarsVisibility(...args),
+    getAllEvents: () => app.getAllEvents(),
+    highlightEvent: (...args: Parameters<typeof app.highlightEvent>) =>
+      app.highlightEvent(...args),
+    setVisibleMonth: (...args: Parameters<typeof app.setVisibleMonth>) =>
+      app.setVisibleMonth(...args),
+    getVisibleMonth: () => app.getVisibleMonth(),
+    emitVisibleRange: (...args: Parameters<typeof app.emitVisibleRange>) =>
+      app.emitVisibleRange(...args),
+    canMutateFromUI: (...args: Parameters<typeof app.canMutateFromUI>) =>
+      app.canMutateFromUI(...args),
     get readOnlyConfig() {
-      ensureConfigSync();
       return app.getReadOnlyConfig();
     },
   } as unknown as UseCalendarAppReturn;

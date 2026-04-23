@@ -1,6 +1,6 @@
 {
   "name": "@dayflow/core",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "description": "A flexible and feature-rich calendar engine powered by Preact with drag-and-drop support, multiple views (Day, Week, Month, Year), and plugin architecture",
   "keywords": [
     "calendar",
@@ -85,6 +85,7 @@
     "@types/lodash": "catalog:",
     "@types/node": "catalog:",
     "autoprefixer": "catalog:",
+    "cssnano": "catalog:",
     "identity-obj-proxy": "^3.0.0",
     "jest": "catalog:",
     "jest-environment-jsdom": "catalog:",

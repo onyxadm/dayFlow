@@ -58,13 +58,10 @@ function calculateNodeLayoutWithVirtualParallel(
   }
 
   const isDayView = params.viewType === 'day';
-  let leftAdjustment = 0;
-  if (node.depth === 1) leftAdjustment = isDayView ? 0.5 : 1.5;
-  else if (node.depth === 2) leftAdjustment = isDayView ? -0.01 : -1.0;
-  else if (node.depth >= 3) leftAdjustment = isDayView ? 0.55 : -3.5;
-
-  const nodeLeft = baseLeft + finalIndentOffset + leftAdjustment;
-  const usedLeftSpace = finalIndentOffset + leftAdjustment;
+  // Standard indentation for nested events, but remove the "magic" offsets
+  // that cause inconsistent alignment across days.
+  const nodeLeft = baseLeft + finalIndentOffset;
+  const usedLeftSpace = finalIndentOffset;
   let nodeWidth = availableWidth - usedLeftSpace;
 
   if (nodeLeft + nodeWidth > baseLeft + availableWidth) {
@@ -134,22 +131,8 @@ function calculateParallelChildrenLayout(
   const childIndentOffset = firstChildDepth * indentStep;
 
   const isDayView = params.viewType === 'day';
-  let baseIndentAdjustment =
-    firstChildDepth === 1
-      ? isDayView
-        ? 0.5
-        : 1.5
-      : firstChildDepth === 2
-        ? isDayView
-          ? -0.01
-          : -1.0
-        : isDayView
-          ? 0.55
-          : -3.5;
-
-  const childrenStartLeft =
-    parentLeft + childIndentOffset + baseIndentAdjustment;
-  const usedLeftSpace = childIndentOffset + baseIndentAdjustment;
+  const childrenStartLeft = parentLeft + childIndentOffset;
+  const usedLeftSpace = childIndentOffset;
   const childrenAvailableWidth = parentWidth - usedLeftSpace;
 
   if (childrenAvailableWidth <= 0) {
@@ -165,9 +148,7 @@ function calculateParallelChildrenLayout(
     return;
   }
 
-  let adjustedMargin =
-    LAYOUT_CONFIG.MARGIN_BETWEEN *
-    (firstChildDepth === 1 ? (isDayView ? 0.15 : 0.3) : isDayView ? 0.1 : 0.2);
+  let adjustedMargin = LAYOUT_CONFIG.MARGIN_BETWEEN;
   const childWidth =
     (childrenAvailableWidth - adjustedMargin * (childCount - 1)) / childCount;
 

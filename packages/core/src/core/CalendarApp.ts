@@ -43,6 +43,7 @@ export class CalendarApp implements ICalendarApp {
   private navigation: NavigationController;
   private pluginManager: PluginManager;
   private useEventDetailDialog: boolean;
+  private useEventDetailPanel: boolean;
   private useCalendarHeader: boolean;
   private customMobileEventRenderer?: MobileEventRenderer;
 
@@ -100,6 +101,7 @@ export class CalendarApp implements ICalendarApp {
     this.pluginManager = new PluginManager(this.state, this.notify);
 
     this.useEventDetailDialog = config.useEventDetailDialog ?? false;
+    this.useEventDetailPanel = config.useEventDetailPanel ?? true;
     this.useCalendarHeader = config.useCalendarHeader ?? true;
     this.customMobileEventRenderer = config.customMobileEventRenderer;
 
@@ -358,6 +360,7 @@ export class CalendarApp implements ICalendarApp {
 
   getCalendarRegistry = (): CalendarRegistry => this.calendarRegistry;
   getUseEventDetailDialog = (): boolean => this.useEventDetailDialog;
+  getUseEventDetailPanel = (): boolean => this.useEventDetailPanel;
   getCustomMobileEventRenderer = (): MobileEventRenderer | undefined =>
     this.customMobileEventRenderer;
   getCalendarHeaderConfig = (): boolean => this.useCalendarHeader;
@@ -386,6 +389,13 @@ export class CalendarApp implements ICalendarApp {
       config.useEventDetailDialog !== this.useEventDetailDialog
     ) {
       this.useEventDetailDialog = config.useEventDetailDialog;
+      hasChanged = true;
+    }
+    if (
+      config.useEventDetailPanel !== undefined &&
+      config.useEventDetailPanel !== this.useEventDetailPanel
+    ) {
+      this.useEventDetailPanel = config.useEventDetailPanel;
       hasChanged = true;
     }
     if (

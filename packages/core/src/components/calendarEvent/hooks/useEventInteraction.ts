@@ -11,6 +11,7 @@ interface UseEventInteractionProps {
   onEventSelect?: (eventId: string | null) => void;
   onDetailPanelToggle?: (key: string | null) => void;
   canOpenDetail: boolean;
+  useEventDetailPanel?: boolean;
   app?: ICalendarApp;
   multiDaySegmentInfo?: {
     startHour?: number;
@@ -32,6 +33,7 @@ export const useEventInteraction = ({
   onEventSelect,
   onDetailPanelToggle,
   canOpenDetail,
+  useEventDetailPanel,
   app,
   multiDaySegmentInfo,
   isMultiDay,
@@ -144,10 +146,15 @@ export const useEventInteraction = ({
         } else {
           setIsSelected(true);
         }
-        onDetailPanelToggle?.(null);
+
+        if (useEventDetailPanel !== false) {
+          onDetailPanelToggle?.(null);
+        }
       } else {
         onEventSelect?.(null);
-        onDetailPanelToggle?.(null);
+        if (useEventDetailPanel !== false) {
+          onDetailPanelToggle?.(null);
+        }
       }
     }
 

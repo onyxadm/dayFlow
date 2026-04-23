@@ -103,6 +103,9 @@ export const CalendarRoot = ({
     effectiveEventDetailDialog,
     tick
   );
+
+  const useEventDetailPanel = app.getUseEventDetailPanel();
+
   // Sidebar
   const sidebar = useSidebarBridge(app);
   // Quick-create (desktop popup + mobile drawer)
@@ -193,6 +196,7 @@ export const CalendarRoot = ({
     config: app.getCurrentView().config || {},
     customDetailPanelContent,
     customEventDetailDialog: effectiveEventDetailDialog,
+    useEventDetailPanel,
     switcherMode: app.state.switcherMode,
     calendarRef,
     meta,

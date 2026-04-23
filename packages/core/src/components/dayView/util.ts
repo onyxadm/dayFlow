@@ -1,6 +1,7 @@
 import { EventLayoutCalculator } from '@/components/eventLayout';
 import { Event, EventLayout } from '@/types';
 import { createAllDayDisplayComparator } from '@/utils/allDaySort';
+import { extractHourFromDate, getEventEndHour } from '@/utils/helpers';
 import {
   dateToZonedDateTime,
   temporalToDate,
@@ -89,6 +90,8 @@ export const normalizeLayoutEvents = (
         start: newStart,
         end: newEnd,
         day: 0, // Force all events to same day index for collision detection
+        _originalStartHour: extractHourFromDate(event.start),
+        _originalEndHour: getEventEndHour(event),
       };
     });
 };

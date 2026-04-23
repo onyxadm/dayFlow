@@ -169,6 +169,7 @@ export interface CalendarAppConfig {
   defaultCalendar?: string;
   theme?: ThemeConfig;
   useEventDetailDialog?: boolean;
+  useEventDetailPanel?: boolean;
   useCalendarHeader?: boolean;
   customMobileEventRenderer?: MobileEventRenderer;
   locale?: string | Locale;
@@ -312,6 +313,9 @@ export interface ICalendarApp {
 
   // Get whether to use event detail dialog
   getUseEventDetailDialog: () => boolean;
+
+  // Get whether to use event detail panel
+  getUseEventDetailPanel: () => boolean;
 
   // Get custom mobile event renderer
   getCustomMobileEventRenderer: () => MobileEventRenderer | undefined;

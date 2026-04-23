@@ -125,9 +125,9 @@
     overflow: hidden;
   }
   .df-calendar-container,
-  .df-portal,
-  .df-event-detail-panel,
   .df-dialog-container,
+  .df-event-detail-panel,
+  .df-portal,
   .df-range-picker {
     --color-background: var(--df-color-background);
     --color-foreground: var(--df-color-foreground);

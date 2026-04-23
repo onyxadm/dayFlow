@@ -7,6 +7,7 @@ import {
 import { Event, EventLayout } from '@/types';
 import { createDateWithHour, getDateByDayIndex } from '@/utils';
 import { createAllDayDisplayComparator } from '@/utils/allDaySort';
+import { extractHourFromDate, getEventEndHour } from '@/utils/helpers';
 import {
   dateToZonedDateTime,
   temporalToDate,
@@ -58,6 +59,8 @@ export const calculateEventLayouts = (
               ) as Date
             ),
             day: day,
+            _originalStartHour: extractHourFromDate(event.start),
+            _originalEndHour: getEventEndHour(event),
           };
           dayEventsForLayout.push(virtualEvent);
         }
@@ -74,6 +77,8 @@ export const calculateEventLayouts = (
             appTimeZone
           ),
           day,
+          _originalStartHour: extractHourFromDate(event.start),
+          _originalEndHour: getEventEndHour(event),
         });
       }
     });

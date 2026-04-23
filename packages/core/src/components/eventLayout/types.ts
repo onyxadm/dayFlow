@@ -20,6 +20,8 @@ export interface ParallelGroup {
   events: LayoutWeekEvent[];
   startHour: number;
   endHour: number;
+  originalStartHour?: number;
+  originalEndHour?: number;
 }
 
 export interface LayoutCalculationParams {

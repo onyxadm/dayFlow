@@ -12,9 +12,6 @@
  * so the host's own --color-primary is never touched.
  */
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-
   --color-background: var(--df-color-background);
   --color-foreground: var(--df-color-foreground);
   --color-hover: var(--df-color-hover);

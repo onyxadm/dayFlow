@@ -39,7 +39,6 @@ export function CalendarDemo() {
 | ----------------------- | ---------------------- | ---- | -------------------------------------------------------------------------------------- |
 | `calendar`              | `UseCalendarAppReturn` | 必須 | `useCalendarApp` の戻り値。状態やビュー、アクションを内包。                            |
 | `collapsedSafeAreaLeft` | `number`               | 任意 | サイドバー折りたたみ時の左パディング（px）。Mac のトラフィックライト領域の考慮に使用。 |
-| `useEventDetailPanel`   | `boolean`              | 任意 | `false` を渡すと組み込みのイベント詳細フローティングパネルを非表示にします。           |
 | `search`                | `CalendarSearchProps`  | 任意 | 組み込み検索機能の設定。                                                               |
 
 ## 検索設定
@@ -100,11 +99,16 @@ DayFlow には 3 つのイベント詳細表示オプションがあります。
 
 1. **デフォルトパネルモード** — `useEventDetailDialog` が `false`（デフォルト）の場合、イベントをクリックすると組み込みのフローティングパネル `DefaultEventDetailPanel` が開きます。`eventDetailContent` スロットを使用すると、パネルの外枠を維持しながら中身だけを置き換えられます。
 2. **ダイアログモード** — `useCalendarApp` で `useEventDetailDialog: true` を設定すると組み込みのモーダルが有効になります。`eventDetailDialog` スロットで独自のダイアログ UI に置き換えられます。
-3. **完全に無効化** — アプリ側のコールバックで独自のモーダルを管理している場合は、`DayFlowCalendar` に `useEventDetailPanel={false}` を渡すとフローティングパネルを完全に非表示にできます。
+3. **完全に無効化** — アプリ側のコールバックで独自のモーダルを管理している場合は、`useCalendarApp` で `useEventDetailPanel: false` を設定するとフローティングパネルを完全に非表示にできます。
 
 ```tsx
 // 組み込みパネルを非表示にする — 別の場所でモーダルを管理
-<DayFlowCalendar calendar={calendar} useEventDetailPanel={false} />
+const calendar = useCalendarApp({
+  ...
+  useEventDetailPanel: false,
+});
+
+return <DayFlowCalendar calendar={calendar} />;
 ```
 
 ```tsx

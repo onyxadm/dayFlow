@@ -13,7 +13,7 @@ DayFlow 自带的事件对话框涵盖了大多数团队需要的 CRUD 流程：
 ```tsx
 import { DayFlowCalendar } from '@dayflow/core';
 
-<DayFlowCalendar calendar={calendar} useEventDetailDialog={true} />;
+<DayFlowCalendar calendar={calendar} />;
 ```
 
 ## 自定义
@@ -42,10 +42,15 @@ const calendar = useCalendarApp({
 
 ### 完全关闭内置面板
 
-如果您的应用通过回调或全局状态管理事件详情，可以完全隐藏内置浮动面板，无需提供替代组件：
+如果您的应用通过回调或全局状态管理事件详情，可以通过在 `useCalendarApp` 中设置 `useEventDetailPanel: false` 来完全隐藏内置浮动面板，无需提供替代组件：
 
 ```tsx
-<DayFlowCalendar calendar={calendar} useEventDetailPanel={false} />
+const calendar = useCalendarApp({
+  // ...
+  useEventDetailPanel: false,
+});
+
+<DayFlowCalendar calendar={calendar} />;
 ```
 
 适用于 React、Vue、Svelte 和 Angular 适配器。

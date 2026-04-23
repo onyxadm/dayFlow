@@ -29,12 +29,6 @@ export const DayFlowCalendar = defineComponent({
       type: Number as PropType<number>,
       default: undefined,
     },
-    useEventDetailPanel: {
-      // Avoid Vue's Boolean-casting: absent prop stays undefined (panel enabled),
-      // explicit false disables the panel.
-      type: null as unknown as PropType<boolean>,
-      default: undefined,
-    },
     search: {
       type: Object as PropType<CalendarSearchProps>,
       default: undefined,
@@ -58,7 +52,8 @@ export const DayFlowCalendar = defineComponent({
     // All renderer-level props in one object so a single watcher handles them all.
     const extraProps = computed(() => ({
       collapsedSafeAreaLeft: props.collapsedSafeAreaLeft,
-      useEventDetailPanel: props.useEventDetailPanel,
+      useEventDetailPanel: (props.calendar as UseCalendarAppReturn)
+        .useEventDetailPanel,
       search: props.search,
     }));
 

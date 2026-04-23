@@ -565,6 +565,7 @@ const WeekComponent = memo(
                             onDetailPanelToggle={onDetailPanelToggle}
                             customDetailPanelContent={customDetailPanelContent}
                             customEventDetailDialog={customEventDetailDialog}
+                            useEventDetailPanel={useEventDetailPanel}
                             app={app}
                             isMobile={screenSize !== 'desktop'}
                             enableTouch={enableTouch}

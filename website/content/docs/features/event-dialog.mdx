@@ -42,10 +42,15 @@ const calendar = useCalendarApp({
 
 ### Opt out of the built-in panel
 
-If your application manages event detail in its own modals (driven by callbacks or global state), you can suppress the built-in floating panel entirely without providing a replacement:
+If your application manages event detail in its own modals (driven by callbacks or global state), you can suppress the built-in floating panel entirely by setting `useEventDetailPanel: false` in your `useCalendarApp` configuration:
 
 ```tsx
-<DayFlowCalendar calendar={calendar} useEventDetailPanel={false} />
+const calendar = useCalendarApp({
+  // ...
+  useEventDetailPanel: false,
+});
+
+<DayFlowCalendar calendar={calendar} />;
 ```
 
 This works across React, Vue, Svelte, and Angular adapters.

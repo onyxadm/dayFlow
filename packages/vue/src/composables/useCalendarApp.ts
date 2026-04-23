@@ -81,5 +81,8 @@ export function useCalendarApp(
     get readOnlyConfig() {
       return app.getReadOnlyConfig();
     },
+    get useEventDetailPanel() {
+      return app.getUseEventDetailPanel();
+    },
   } as UseCalendarAppReturn;
 }

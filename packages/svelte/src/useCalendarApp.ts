@@ -166,6 +166,10 @@ export function useCalendarApp(
       ensureConfigSync();
       return app.getReadOnlyConfig();
     },
+    get useEventDetailPanel() {
+      ensureConfigSync();
+      return app.getUseEventDetailPanel();
+    },
   } as unknown as UseCalendarAppReturn;
 
   return result;

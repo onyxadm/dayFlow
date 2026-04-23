@@ -43,7 +43,6 @@ The component receives the `calendar` object from `useCalendarApp`, reads the ac
 | ----------------------- | ---------------------- | -------- | --------------------------------------------------------------------------------------------------- |
 | `calendar`              | `UseCalendarAppReturn` | Required | Result of `useCalendarApp`. Provides state, registered views, sidebar config, and calendar actions. |
 | `collapsedSafeAreaLeft` | `number`               | Optional | Left padding (px) when the sidebar is collapsed, e.g. to account for a Mac traffic-light area.      |
-| `useEventDetailPanel`   | `boolean`              | Optional | Set to `false` to suppress the built-in floating event detail panel entirely.                       |
 | `search`                | `CalendarSearchProps`  | Optional | Configuration for the built-in search functionality.                                                |
 
 > **Slot-based customisation** (event content, detail panel content, detail dialog, color picker, etc.) is handled through framework-native slots rather than props. See [Content Slots](/docs/features/content-slots) for the full list.
@@ -106,11 +105,16 @@ DayFlow ships with three options for event details:
 
 1. **Default panel mode** – when `useEventDetailDialog` is `false` (the default), clicking an event opens the built-in floating `DefaultEventDetailPanel`. Use the `eventDetailContent` slot to replace the panel body while keeping the default chrome.
 2. **Dialog mode** – set `useEventDetailDialog: true` in `useCalendarApp` to enable the built-in centered modal. Use the `eventDetailDialog` slot to replace it with your own dialog UI.
-3. **Opt out entirely** – set `useEventDetailPanel={false}` on `DayFlowCalendar` to suppress the floating panel when you have your own event modals driven by app callbacks.
+3. **Opt out entirely** – set `useEventDetailPanel: false` in `useCalendarApp` to suppress the floating panel when you have your own event modals driven by app callbacks.
 
 ```tsx
 // Suppress the built-in panel — use your own modal triggered elsewhere
-<DayFlowCalendar calendar={calendar} useEventDetailPanel={false} />
+const calendar = useCalendarApp({
+  ...
+  useEventDetailPanel: false,
+});
+
+return <DayFlowCalendar calendar={calendar} />;
 ```
 
 ```tsx

@@ -86,7 +86,6 @@ export class DayFlowCalendarComponent
   @Input() eventContextMenu?: TemplateRef<EventContextMenuSlotArgs>;
   @Input() gridContextMenu?: TemplateRef<GridContextMenuSlotArgs>;
   @Input() collapsedSafeAreaLeft?: number;
-  @Input() useEventDetailPanel?: boolean;
   @Input() search?: CalendarSearchProps;
 
   @ViewChild('container') container!: ElementRef<HTMLElement>;
@@ -135,11 +134,7 @@ export class DayFlowCalendarComponent
         this.initCalendar();
       }
     } else if (this.renderer) {
-      if (
-        changes['collapsedSafeAreaLeft'] ||
-        changes['useEventDetailPanel'] ||
-        changes['search']
-      ) {
+      if (changes['collapsedSafeAreaLeft'] || changes['search']) {
         this.renderer.setProps(this.getRendererProps());
       }
       const slotKeys = [
@@ -176,7 +171,7 @@ export class DayFlowCalendarComponent
   private getRendererProps(): Record<string, unknown> {
     return {
       collapsedSafeAreaLeft: this.collapsedSafeAreaLeft,
-      useEventDetailPanel: this.useEventDetailPanel,
+      useEventDetailPanel: this.app.getUseEventDetailPanel(),
       search: this.search,
     };
   }

@@ -652,6 +652,7 @@ export const DayContent = ({
                           }}
                           customDetailPanelContent={customDetailPanelContent}
                           customEventDetailDialog={customEventDetailDialog}
+                          useEventDetailPanel={useEventDetailPanel}
                           app={app}
                           isMobile={isMobile}
                           enableTouch={isTouch}

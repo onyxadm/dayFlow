@@ -1,5 +1,4 @@
 @import '@dayflow/blossom-color-picker/styles.css';
-@import '../../../plugins/print/src/styles/print.css';
 @import '../../../plugins/drag/src/styles/drag.css';
 @import './shared-foundation.css';
 @import './core-components.css';

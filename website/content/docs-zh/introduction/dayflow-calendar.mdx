@@ -39,7 +39,6 @@ export function CalendarDemo() {
 | ----------------------- | ---------------------- | --------------------------------------------------------------------- | -------- |
 | `calendar`              | `UseCalendarAppReturn` | `useCalendarApp` 的返回结果，提供状态管理、视图注册、侧边栏配置等能力 | 必填     |
 | `collapsedSafeAreaLeft` | `number`               | 侧边栏折叠时的左内边距（px），用于兼容 Mac 红绿灯按钮区域             | 可选     |
-| `useEventDetailPanel`   | `boolean`              | 设为 `false` 可完全隐藏内置的浮动事件详情面板                         | 可选     |
 | `search`                | `CalendarSearchProps`  | 内置搜索功能的配置项                                                  | 可选     |
 
 ## 搜索配置
@@ -100,11 +99,16 @@ DayFlow 提供三种事件详情展示方式：
 
 1. **默认面板模式** — `useEventDetailDialog` 为 `false`（默认值）时，点击事件会打开内置的浮动面板 `DefaultEventDetailPanel`。使用 `eventDetailContent` 插槽可在保留默认面板框架的同时替换面板内容。
 2. **弹窗模式** — 在 `useCalendarApp` 中设置 `useEventDetailDialog: true` 可启用内置居中模态框。使用 `eventDetailDialog` 插槽可替换为您自定义的弹窗 UI。
-3. **完全关闭** — 若您的应用通过回调或全局状态管理事件详情，可在 `DayFlowCalendar` 上传入 `useEventDetailPanel={false}` 来完全隐藏浮动面板。
+3. **完全关闭** — 若您的应用通过回调或全局状态管理事件详情，可在 `useCalendarApp` 中设置 `useEventDetailPanel: false` 来完全隐藏浮动面板。
 
 ```tsx
 // 隐藏内置面板 — 在其他地方使用自定义模态框
-<DayFlowCalendar calendar={calendar} useEventDetailPanel={false} />
+const calendar = useCalendarApp({
+  ...
+  useEventDetailPanel: false,
+});
+
+return <DayFlowCalendar calendar={calendar} />;
 ```
 
 ```tsx

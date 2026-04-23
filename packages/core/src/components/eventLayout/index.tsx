@@ -60,6 +60,20 @@ export const EventLayoutCalculator = {
       } else {
         // Complex layout
         const sortedEvents = [...group].toSorted((a, b) => {
+          // Use original start hour if available for cross-day stability,
+          // otherwise fall back to the segment's start hour.
+          const startA = a._originalStartHour ?? a._startHour!;
+          const startB = b._originalStartHour ?? b._startHour!;
+
+          if (startA !== startB) return startA - startB;
+
+          // Tie-breaker: use original duration if available
+          const durA = (a._originalEndHour ?? a._endHour!) - startA;
+          const durB = (b._originalEndHour ?? b._endHour!) - startB;
+
+          if (durA !== durB) return durB - durA;
+
+          // Final fallback to segment start/end if still tied (e.g. same original times)
           if (a._startHour! !== b._startHour!)
             return a._startHour! - b._startHour!;
           return b._endHour! - b._startHour! - (a._endHour! - a._startHour!);

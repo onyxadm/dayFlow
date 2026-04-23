@@ -948,6 +948,7 @@ const MonthView = ({
                 onDetailPanelToggle={setDetailPanelEventId}
                 customDetailPanelContent={customDetailPanelContent}
                 customEventDetailDialog={customEventDetailDialog}
+                useEventDetailPanel={useEventDetailPanel}
                 onCalendarDrop={handleDrop}
                 onCalendarDragOver={handleDragOver}
                 calendarSignature={calendarSignature}

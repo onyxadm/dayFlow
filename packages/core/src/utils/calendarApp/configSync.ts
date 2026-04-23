@@ -13,6 +13,7 @@ export type SyncableCalendarAppConfig = Pick<
   | 'timeZone'
   | 'useCalendarHeader'
   | 'useEventDetailDialog'
+  | 'useEventDetailPanel'
   | 'views'
 >;
 
@@ -39,6 +40,7 @@ export function pickSyncableConfig(
     timeZone: config.timeZone,
     useCalendarHeader: config.useCalendarHeader,
     useEventDetailDialog: config.useEventDetailDialog,
+    useEventDetailPanel: config.useEventDetailPanel,
     views: config.views,
   };
 }
@@ -76,6 +78,9 @@ export function getSyncConfigUpdates(
   if (!isDeepEqual(previous.theme, next.theme)) updates.theme = next.theme;
   if (previous.useEventDetailDialog !== next.useEventDetailDialog) {
     updates.useEventDetailDialog = next.useEventDetailDialog;
+  }
+  if (previous.useEventDetailPanel !== next.useEventDetailPanel) {
+    updates.useEventDetailPanel = next.useEventDetailPanel;
   }
   if (previous.useCalendarHeader !== next.useCalendarHeader) {
     updates.useCalendarHeader = next.useCalendarHeader;

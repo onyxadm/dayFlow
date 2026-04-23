@@ -482,6 +482,7 @@ export const YearRowComponent = memo(
       prevProps.customDetailPanelContent ===
         nextProps.customDetailPanelContent &&
       prevProps.customEventDetailDialog === nextProps.customEventDetailDialog &&
+      prevProps.useEventDetailPanel === nextProps.useEventDetailPanel &&
       prevProps.onContextMenu === nextProps.onContextMenu &&
       prevProps.appTimeZone === nextProps.appTimeZone
     );

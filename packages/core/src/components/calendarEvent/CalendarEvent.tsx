@@ -155,6 +155,7 @@ const CalendarEvent = ({
     onEventSelect,
     onDetailPanelToggle,
     canOpenDetail,
+    useEventDetailPanel,
     app,
     multiDaySegmentInfo,
     isMultiDay,
@@ -240,6 +241,7 @@ const CalendarEvent = ({
     hourHeight,
     isMobile,
     canOpenDetail,
+    useEventDetailPanel,
     detailPanelKey,
     app,
     onEventSelect,
@@ -396,7 +398,12 @@ const CalendarEvent = ({
       (isYearView && yearSegment?.isFirstSegment) ||
       (!isMultiDay && !isYearView);
 
-    if (newlyCreatedEventId === event.id && !showDetailPanel && isFirst) {
+    if (
+      newlyCreatedEventId === event.id &&
+      !showDetailPanel &&
+      isFirst &&
+      useEventDetailPanel !== false
+    ) {
       setTimeout(() => {
         onDetailPanelToggle?.(detailPanelKey);
         onDetailPanelOpen?.();

@@ -60,14 +60,6 @@ export default defineConfig({
         ),
       },
       {
-        find: '@dayflow/plugin-print',
-        replacement: resolve(__dirname, '../plugins/print/src/index.ts'),
-      },
-      {
-        find: '@print',
-        replacement: resolve(__dirname, '../plugins/print/src'),
-      },
-      {
         find: '@dayflow/plugin-drag',
         replacement: resolve(__dirname, '../plugins/drag/src/index.ts'),
       },

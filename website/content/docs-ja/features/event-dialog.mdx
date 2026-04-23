@@ -14,7 +14,7 @@ DayFlow には、イベントの作成・編集・削除をまとめて行える
 ```tsx
 import { DayFlowCalendar } from '@dayflow/core';
 
-<DayFlowCalendar calendar={calendar} useEventDetailDialog={true} />;
+<DayFlowCalendar calendar={calendar} />;
 ```
 
 ## カスタマイズ
@@ -43,10 +43,15 @@ const calendar = useCalendarApp({
 
 ### 組み込みパネルを無効にする
 
-アプリケーション側でコールバックやグローバルな状態からイベント詳細を管理している場合は、代替コンポーネントを提供せずに組み込みのフローティングパネルを完全に非表示にできます。
+アプリケーション側でコールバックやグローバルな状態からイベント詳細を管理している場合は、`useCalendarApp` の設定で `useEventDetailPanel: false` を設定することで、組み込みのフローティングパネルを完全に非表示にできます。
 
 ```tsx
-<DayFlowCalendar calendar={calendar} useEventDetailPanel={false} />
+const calendar = useCalendarApp({
+  // ...
+  useEventDetailPanel: false,
+});
+
+<DayFlowCalendar calendar={calendar} />;
 ```
 
 React、Vue、Svelte、Angular の各アダプターで利用できます。

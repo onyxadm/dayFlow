@@ -4,6 +4,8 @@ import {
   eventsOverlap,
   getStartHour,
   getEndHour,
+  getOriginalStartHour,
+  getOriginalEndHour,
 } from '@/components/eventLayout/utils';
 
 /**
@@ -62,24 +64,36 @@ export function analyzeParallelGroups(
     for (const otherEvent of sortedEvents) {
       if (processed.has(otherEvent.id)) continue;
 
-      const timeDiff = Math.abs(getStartHour(event) - getStartHour(otherEvent));
+      const timeDiff = Math.abs(
+        getOriginalStartHour(event) - getOriginalStartHour(otherEvent)
+      );
       if (timeDiff <= LAYOUT_CONFIG.PARALLEL_THRESHOLD) {
         groupEvents.push(otherEvent);
         processed.add(otherEvent.id);
       }
     }
 
-    groupEvents.sort((a, b) => getStartHour(a) - getStartHour(b));
+    groupEvents.sort(
+      (a, b) => getOriginalStartHour(a) - getOriginalStartHour(b)
+    );
 
     const group: ParallelGroup = {
       events: groupEvents,
       startHour: Math.min(...groupEvents.map(e => getStartHour(e))),
       endHour: Math.max(...groupEvents.map(e => getEndHour(e))),
+      originalStartHour: Math.min(
+        ...groupEvents.map(e => getOriginalStartHour(e))
+      ),
+      originalEndHour: Math.max(...groupEvents.map(e => getOriginalEndHour(e))),
     };
 
     groups.push(group);
   }
-  groups.sort((a, b) => a.startHour - b.startHour);
+  groups.sort((a, b) => {
+    const startA = a.originalStartHour ?? a.startHour;
+    const startB = b.originalStartHour ?? b.startHour;
+    return startA - startB;
+  });
 
   return groups;
 }

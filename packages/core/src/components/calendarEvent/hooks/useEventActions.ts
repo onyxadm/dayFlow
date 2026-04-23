@@ -28,6 +28,7 @@ interface UseEventActionsProps {
   hourHeight: number;
   isMobile: boolean;
   canOpenDetail: boolean;
+  useEventDetailPanel?: boolean;
   detailPanelKey: string;
   app?: ICalendarApp;
   onEventSelect?: (eventId: string | null) => void;
@@ -54,6 +55,7 @@ export const useEventActions = ({
   hourHeight,
   isMobile,
   canOpenDetail,
+  useEventDetailPanel,
   detailPanelKey,
   app,
   onEventSelect,
@@ -304,8 +306,11 @@ export const useEventActions = ({
       } else if (canOpenDetail) {
         setIsSelected(true);
       }
-      onDetailPanelToggle?.(null);
-      setDetailPanelPosition(null);
+
+      if (useEventDetailPanel !== false) {
+        onDetailPanelToggle?.(null);
+        setDetailPanelPosition(null);
+      }
     },
     [
       isMultiDay,
@@ -370,6 +375,8 @@ export const useEventActions = ({
 
       const openDetailPanel = () => {
         scrollEventToCenter().then(() => {
+          if (useEventDetailPanel === false) return;
+
           if (!isMobile) {
             onDetailPanelToggle?.(detailPanelKey);
             setDetailPanelPosition({

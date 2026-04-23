@@ -342,5 +342,6 @@ export function useCalendarApp(
     emitVisibleRange,
     canMutateFromUI: () => app.canMutateFromUI(),
     readOnlyConfig: app.getReadOnlyConfig(),
+    useEventDetailPanel: app.getUseEventDetailPanel(),
   };
 }

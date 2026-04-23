@@ -22,6 +22,14 @@ export function getEndHour(event: LayoutWeekEvent): number {
   return event._endHour ?? getEventEndHour(event);
 }
 
+export function getOriginalStartHour(event: LayoutWeekEvent): number {
+  return event._originalStartHour ?? getStartHour(event);
+}
+
+export function getOriginalEndHour(event: LayoutWeekEvent): number {
+  return event._originalEndHour ?? getEndHour(event);
+}
+
 /**
  * Check if two events overlap
  */
@@ -95,7 +103,9 @@ export function shouldBeParallel(
 ): boolean {
   if (!eventsOverlap(event1, event2)) return false;
 
-  const startTimeDiff = Math.abs(getStartHour(event1) - getStartHour(event2));
+  const startTimeDiff = Math.abs(
+    getOriginalStartHour(event1) - getOriginalStartHour(event2)
+  );
 
   // Strictly within threshold, directly parallel
   if (startTimeDiff <= config.PARALLEL_THRESHOLD) {
@@ -122,11 +132,11 @@ export function canEventContain(
   child: LayoutWeekEvent
 ): boolean {
   const strictContain =
-    getStartHour(parent) <= getStartHour(child) &&
-    getEndHour(parent) >= getEndHour(child);
+    getOriginalStartHour(parent) <= getOriginalStartHour(child) &&
+    getOriginalEndHour(parent) >= getOriginalEndHour(child);
   const overlapNesting =
-    getStartHour(parent) <= getStartHour(child) &&
-    getStartHour(child) < getEndHour(parent) &&
+    getOriginalStartHour(parent) <= getOriginalStartHour(child) &&
+    getOriginalStartHour(child) < getOriginalEndHour(parent) &&
     eventsOverlap(parent, child);
 
   return strictContain || overlapNesting;

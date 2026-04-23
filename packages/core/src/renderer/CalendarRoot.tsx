@@ -44,7 +44,6 @@ interface CalendarRootProps {
   app: ICalendarApp;
   customDetailPanelContent?: EventDetailContentRenderer;
   customEventDetailDialog?: EventDetailDialogRenderer;
-  useEventDetailPanel?: boolean;
   meta?: Record<string, unknown>;
   customMessages?: LocaleMessages;
   search?: CalendarSearchProps;
@@ -81,7 +80,6 @@ export const CalendarRoot = ({
   app,
   customDetailPanelContent,
   customEventDetailDialog,
-  useEventDetailPanel,
   meta,
   customMessages,
   search: searchConfig,
@@ -105,6 +103,9 @@ export const CalendarRoot = ({
     effectiveEventDetailDialog,
     tick
   );
+
+  const useEventDetailPanel = app.getUseEventDetailPanel();
+
   // Sidebar
   const sidebar = useSidebarBridge(app);
   // Quick-create (desktop popup + mobile drawer)

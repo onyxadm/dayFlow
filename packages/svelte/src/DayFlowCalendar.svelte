@@ -39,9 +39,8 @@
     eventContextMenu = null,
     gridContextMenu = null,
     collapsedSafeAreaLeft = null,
-    useEventDetailPanel = null,
     search = null,
-  } = $props<{
+    } = $props<{
     calendar: ICalendarApp | UseCalendarAppReturn;
     eventContentDay?: Component<EventContentSlotArgs>;
     eventContentWeek?: Component<EventContentSlotArgs>;
@@ -61,9 +60,8 @@
     eventContextMenu?: Component<EventContextMenuSlotArgs>;
     gridContextMenu?: Component<GridContextMenuSlotArgs>;
     collapsedSafeAreaLeft?: number | null;
-    useEventDetailPanel?: boolean | null;
     search?: CalendarSearchProps | null;
-  }>();
+    }>();
 
   let container: HTMLElement | undefined = $state();
   let renderer: CalendarRenderer | undefined;
@@ -97,7 +95,7 @@
     eventContextMenu,
     gridContextMenu,
     collapsedSafeAreaLeft,
-    useEventDetailPanel,
+    useEventDetailPanel: (calendar as UseCalendarAppReturn).useEventDetailPanel,
     search,
   } as Record<string, unknown>);
 

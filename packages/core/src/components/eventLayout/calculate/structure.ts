@@ -9,6 +9,8 @@ import {
   eventsOverlap,
   getStartHour,
   getEndHour,
+  getOriginalStartHour,
+  getOriginalEndHour,
   shouldBeParallel,
 } from '@/components/eventLayout/utils';
 
@@ -23,7 +25,7 @@ function checkLoadBalanceParallel(
       if (!eventsOverlap(parentEvent, childEvent)) continue;
 
       const timeDiff = Math.abs(
-        getStartHour(childEvent) - getStartHour(parentEvent)
+        getOriginalStartHour(childEvent) - getOriginalStartHour(parentEvent)
       );
       if (timeDiff < LAYOUT_CONFIG.NESTED_THRESHOLD) return true;
     }
@@ -35,7 +37,9 @@ export function canGroupContain(
   parentGroup: ParallelGroup,
   childGroup: ParallelGroup
 ): boolean {
-  const timeDiff = childGroup.startHour - parentGroup.startHour;
+  const timeDiff =
+    (childGroup.originalStartHour ?? childGroup.startHour) -
+    (parentGroup.originalStartHour ?? parentGroup.startHour);
 
   // Check load balance parallel
   if (checkLoadBalanceParallel(parentGroup, childGroup)) {
@@ -82,8 +86,12 @@ export function findBestParentInGroup(
     if (a.hasParallelSibling !== b.hasParallelSibling)
       return a.hasParallelSibling ? -1 : 1;
     return (
-      Math.abs(getStartHour(childEvent) - getStartHour(a.parent)) -
-      Math.abs(getStartHour(childEvent) - getStartHour(b.parent))
+      Math.abs(
+        getOriginalStartHour(childEvent) - getOriginalStartHour(a.parent)
+      ) -
+      Math.abs(
+        getOriginalStartHour(childEvent) - getOriginalStartHour(b.parent)
+      )
     );
   });
 
@@ -109,7 +117,8 @@ function findParentWithMinLoad(
     }
   }
 
-  const currentDuration = getEndHour(currentChild) - getStartHour(currentChild);
+  const currentDuration =
+    getOriginalEndHour(currentChild) - getOriginalStartHour(currentChild);
   const loadedChildrenIds = candidates.flatMap(p => p.children);
 
   const isLongest =
@@ -117,7 +126,9 @@ function findParentWithMinLoad(
     Math.max(
       ...loadedChildrenIds.map(id => {
         const child = children.find(e => e.id === id);
-        return child ? getEndHour(child) - getStartHour(child) : 0;
+        return child
+          ? getOriginalEndHour(child) - getOriginalStartHour(child)
+          : 0;
       }),
       0
     );
@@ -263,7 +274,9 @@ export function optimizeChildAssignments(
 
   const sortedChildren = [...childEvents].toSorted(
     (a, b) =>
-      getEndHour(b) - getStartHour(b) - (getEndHour(a) - getStartHour(a))
+      getOriginalEndHour(b) -
+      getOriginalStartHour(b) -
+      (getOriginalEndHour(a) - getOriginalStartHour(a))
   );
 
   if (sortedChildren.length % validParents.length === 0) {

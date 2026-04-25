@@ -57,7 +57,6 @@ function calculateNodeLayoutWithVirtualParallel(
     if (branchRootIndent !== null) finalIndentOffset = branchRootIndent;
   }
 
-  const isDayView = params.viewType === 'day';
   // Standard indentation for nested events, but remove the "magic" offsets
   // that cause inconsistent alignment across days.
   const nodeLeft = baseLeft + finalIndentOffset;
@@ -130,7 +129,6 @@ function calculateParallelChildrenLayout(
   const indentStep = getIndentStepPercent(params.viewType);
   const childIndentOffset = firstChildDepth * indentStep;
 
-  const isDayView = params.viewType === 'day';
   const childrenStartLeft = parentLeft + childIndentOffset;
   const usedLeftSpace = childIndentOffset;
   const childrenAvailableWidth = parentWidth - usedLeftSpace;

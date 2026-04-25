@@ -1,8 +1,6 @@
 import {
   CalendarApp,
-  createConfigSyncSnapshot,
   createNormalizedCalendarAppConfigGetter,
-  syncCalendarAppConfig,
 } from '@dayflow/core';
 import type { CalendarAppConfig, UseCalendarAppReturn } from '@dayflow/core';
 import { onDestroy } from 'svelte';
@@ -16,7 +14,6 @@ export function useCalendarApp(
   );
 
   const app = new CalendarApp(getNormalizedConfig());
-  let syncSnapshot = createConfigSyncSnapshot(getNormalizedConfig());
 
   // Create a store for the parts of state we want to be reactive in Svelte
   const stateStore = writable({
@@ -31,14 +28,6 @@ export function useCalendarApp(
       currentDate: app.state.currentDate,
       events: app.getEvents(),
     });
-  };
-
-  const ensureConfigSync = () => {
-    syncSnapshot = syncCalendarAppConfig(
-      app,
-      syncSnapshot,
-      getNormalizedConfig()
-    );
   };
 
   const unsubscribe = app.subscribe(() => {

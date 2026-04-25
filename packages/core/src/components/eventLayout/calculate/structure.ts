@@ -7,8 +7,6 @@ import {
 import {
   canEventContain,
   eventsOverlap,
-  getStartHour,
-  getEndHour,
   getOriginalStartHour,
   getOriginalEndHour,
   shouldBeParallel,

@@ -67,7 +67,61 @@ fi
 # Trim any whitespace
 BUMP_TYPE=$(echo "$BUMP_TYPE" | xargs)
 
-echo "Updating versions to $BUMP_TYPE..."
+# Selection for scope
+SCOPE=$(node -e '
+const readline = require("readline");
+const { stdin, stderr } = process;
+
+const options = ["all", "partial"];
+let index = 0;
+
+// Prepare UI area
+stderr.write("\n".repeat(options.length + 1));
+
+function render() {
+  readline.moveCursor(stderr, 0, -(options.length + 1));
+  readline.clearScreenDown(stderr);
+  
+  stderr.write("Select update scope (Partial excludes create-dayflow):\n");
+  options.forEach((opt, i) => {
+    if (i === index) {
+      stderr.write(`\x1b[36m> ${opt.toUpperCase()}\x1b[0m\n`); // Cyan color for selected
+    } else {
+      stderr.write(`  ${opt.toUpperCase()}\n`);
+    }
+  });
+}
+
+readline.emitKeypressEvents(stdin);
+if (stdin.isTTY) stdin.setRawMode(true);
+
+render();
+
+stdin.on("keypress", (str, key) => {
+  if (!key) return;
+  
+  if (key.ctrl && key.name === "c") {
+    process.exit(1); // Exit with error
+  } else if (key.name === "up" || key.name === "down") {
+    index = (index + 1) % options.length;
+    render();
+  } else if (key.name === "return") {
+    if (stdin.isTTY) stdin.setRawMode(false);
+    console.log(options[index]); // Print selection to stdout
+    process.exit(0);
+  }
+});
+')
+
+# Check if user cancelled
+if [ $? -ne 0 ]; then
+  echo "Operation cancelled."
+  exit 1
+fi
+
+SCOPE=$(echo "$SCOPE" | xargs)
+
+echo "Updating versions to $BUMP_TYPE (Scope: $SCOPE)..."
 
 # Iterate and update using a safe node script invocation
 for FILE in $PACKAGE_FILES; do
@@ -75,6 +129,7 @@ for FILE in $PACKAGE_FILES; do
     const fs = require("fs");
     const file = process.argv[1];
     const type = process.argv[2];
+    const scope = process.argv[3];
     
     try {
       const content = fs.readFileSync(file, "utf8");
@@ -82,6 +137,11 @@ for FILE in $PACKAGE_FILES; do
       
       if (!pkg.version) {
         // Silently skip or log if needed
+        process.exit(0);
+      }
+
+      if (scope === "partial" && pkg.name === "create-dayflow") {
+        console.log(`Skipping ${pkg.name} (partial mode)`);
         process.exit(0);
       }
       
@@ -114,7 +174,7 @@ for FILE in $PACKAGE_FILES; do
       console.error(`Error updating ${file}: ${e.message}`);
       process.exit(1);
     }
-  ' "$FILE" "$BUMP_TYPE"
+  ' "$FILE" "$BUMP_TYPE" "$SCOPE"
 done
 
 echo "All packages updated successfully."

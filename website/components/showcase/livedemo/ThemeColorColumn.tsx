@@ -123,8 +123,7 @@ export function ThemeColorColumn({
                     }}
                   >
                     22
-                  </div>
-
+                  </div>{' '}
                   <div className='absolute right-2 bottom-3 left-2 space-y-1'>
                     <div className='flex h-6 items-center gap-2 rounded-r-md bg-blue-50 pr-2 pl-1 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300'>
                       <span className='h-5 w-1 shrink-0 rounded-full bg-blue-500' />

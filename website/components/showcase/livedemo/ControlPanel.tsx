@@ -1,6 +1,7 @@
 'use client';
 
-import { TimeZone, ViewType } from '@dayflow/react';
+import { TimeZone } from '@dayflow/core';
+import { ViewType } from '@dayflow/react';
 import { CircleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 

@@ -5,9 +5,9 @@ import {
   CalendarType,
   EventDetailContentProps,
   createYearView,
-  EventDetailDialogProps,
 } from '@dayflow/core';
 import { createDragPlugin } from '@dayflow/plugin-drag';
+import type { DayFlowCalendarProps } from '@dayflow/react';
 import {
   useCalendarApp,
   DayFlowCalendar,
@@ -17,7 +17,8 @@ import {
   ViewType,
 } from '@dayflow/react';
 import { useTheme } from 'next-themes';
-import React, { useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
+import type { FC } from 'react';
 
 import { getWebsiteCalendars } from '@/utils/palette';
 import { generateMinimalSampleEvents } from '@/utils/sampleData';
@@ -28,8 +29,8 @@ type SwitcherMode = 'buttons' | 'select';
 
 interface DemoCalendarProps {
   switcherMode?: SwitcherMode;
-  customDetailPanelContent?: (args: EventDetailContentProps) => React.ReactNode;
-  customEventDetailDialog?: (args: EventDetailDialogProps) => React.ReactNode;
+  customDetailPanelContent?: DayFlowCalendarProps['eventDetailContent'];
+  customEventDetailDialog?: DayFlowCalendarProps['eventDetailDialog'];
   useEventDetailDialog?: boolean;
   className?: string;
 }
@@ -156,7 +157,7 @@ const useDemoCalendar = ({
   });
 };
 
-const DemoCalendar: React.FC<DemoCalendarProps> = ({
+const DemoCalendar: FC<DemoCalendarProps> = ({
   switcherMode,
   customDetailPanelContent,
   // customEventDetailDialog,
@@ -174,7 +175,7 @@ const DemoCalendar: React.FC<DemoCalendarProps> = ({
   );
 };
 
-export const CustomDetailPanelShowcase: React.FC = () => {
+export const CustomDetailPanelShowcase: FC = () => {
   const detailPanel = useCallback(
     ({
       event,

@@ -89,5 +89,19 @@ export {
   calendarPickerDropdown,
 } from './styles/classNames';
 
+// Year view utilities
+export {
+  buildFixedWeekMonthsData,
+  getFixedWeekTotalColumns,
+  groupDaysIntoRows,
+  analyzeMultiDayEventsForRow,
+} from './components/yearView/utils';
+export { getEventIcon } from './components/monthView/util';
+export type {
+  FixedWeekMonthData,
+  MonthEventSegment,
+  YearMultiDaySegment,
+} from './components/yearView/utils';
+
 // Preact interop (re-export so plugins use the same preact instance as core)
 export { createPortal } from 'preact/compat';

@@ -144,6 +144,11 @@ const DefaultEventDetailPanel = ({
     [app]
   );
 
+  const startOfWeek = useMemo(
+    () => (app?.getViewConfig('week')?.startOfWeek as number) ?? 1,
+    [app]
+  );
+
   // Get visible calendar type options
   const colorOptions: CalendarOption[] = useMemo(() => {
     const registry = app
@@ -445,6 +450,7 @@ const DefaultEventDetailPanel = ({
             format='YYYY-MM-DD'
             showTime={false}
             timeZone={eventTimeZone}
+            startOfWeek={startOfWeek}
             matchTriggerWidth
             disabled={!isEditable || isLoading}
             onChange={handleAllDayRangeChange}
@@ -460,6 +466,7 @@ const DefaultEventDetailPanel = ({
           <RangePicker
             value={[draftEvent.start, draftEvent.end]}
             timeZone={eventTimeZone}
+            startOfWeek={startOfWeek}
             disabled={!isEditable || isLoading}
             onChange={(
               nextRange: [Temporal.ZonedDateTime, Temporal.ZonedDateTime]

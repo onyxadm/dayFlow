@@ -11,7 +11,7 @@ const withMDX = createMDX();
 /** @type {import('next').NextConfig} */
 const config = {
   turbopack: {
-    root: __dirname,
+    root: path.resolve(__dirname, '../'),
     resolveAlias: {
       'fumadocs-ui': path.resolve(websiteNodeModules, 'fumadocs-ui'),
       'fumadocs-core': path.resolve(websiteNodeModules, 'fumadocs-core'),

@@ -18,6 +18,7 @@ export interface RangePickerProps {
   onChange?: (value: ZonedRange, dateString: [string, string]) => void;
   onOk?: (value: ZonedRange, dateString: [string, string]) => void;
   timeZone?: string;
+  startOfWeek?: number;
   disabled?: boolean;
   placement?: 'bottomLeft' | 'bottomRight' | 'topLeft' | 'topRight';
   autoAdjustOverflow?: boolean;

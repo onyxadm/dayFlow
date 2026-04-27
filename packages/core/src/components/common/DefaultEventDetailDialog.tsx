@@ -125,6 +125,11 @@ const DefaultEventDetailDialog = ({
     [app]
   );
 
+  const startOfWeek = useMemo(
+    () => (app?.getViewConfig('week')?.startOfWeek as number) ?? 1,
+    [app]
+  );
+
   const handleAllDayRangeChange = (
     nextRange: [Temporal.ZonedDateTime, Temporal.ZonedDateTime]
   ) => {
@@ -240,6 +245,7 @@ const DefaultEventDetailDialog = ({
                 format='YYYY-MM-DD'
                 showTime={false}
                 timeZone={eventTimeZone}
+                startOfWeek={startOfWeek}
                 matchTriggerWidth
                 disabled={!isEditable || isPending}
                 onChange={handleAllDayRangeChange}
@@ -253,6 +259,7 @@ const DefaultEventDetailDialog = ({
               <RangePicker
                 value={[editedEvent.start, editedEvent.end]}
                 timeZone={eventTimeZone}
+                startOfWeek={startOfWeek}
                 disabled={!isEditable || isPending}
                 onChange={(
                   nextRange: [Temporal.ZonedDateTime, Temporal.ZonedDateTime]

@@ -31,7 +31,8 @@ const RangePicker = ({
   showTime = true,
   onChange,
   onOk,
-  timeZone,
+  timeZone = Temporal.Now.timeZoneId(),
+  startOfWeek = 1,
   disabled = false,
   placement = 'bottomLeft',
   autoAdjustOverflow = true,
@@ -56,8 +57,8 @@ const RangePicker = ({
   );
 
   const weekDayLabels = useMemo(
-    () => getWeekDaysLabels(localeCode, 'narrow'),
-    [localeCode]
+    () => getWeekDaysLabels(localeCode, 'narrow', startOfWeek),
+    [localeCode, startOfWeek]
   );
 
   const effectiveTimeFormat = useMemo(() => {
@@ -593,12 +594,14 @@ const RangePicker = ({
 
   const calendarDays = useMemo(() => {
     const startOfMonth = visibleMonth;
-    const offset = startOfMonth.dayOfWeek % 7;
+    // Temporal dayOfWeek: 1=Mon...7=Sun. Convert startOfWeek (0=Sun,1=Mon) to Temporal convention.
+    const temporalStartDay = startOfWeek === 0 ? 7 : startOfWeek;
+    const offset = (startOfMonth.dayOfWeek - temporalStartDay + 7) % 7;
     const gridStart = startOfMonth.subtract({ days: offset });
     return Array.from({ length: 42 }, (__, index) =>
       gridStart.add({ days: index })
     );
-  }, [visibleMonth]);
+  }, [visibleMonth, startOfWeek]);
 
   const calculateOptimalPlacement = useCallback(
     (basePlacement: typeof placement = placement): typeof placement => {

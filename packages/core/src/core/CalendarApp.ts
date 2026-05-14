@@ -456,30 +456,34 @@ export class CalendarApp implements ICalendarApp {
     }
     if (config.views !== undefined) {
       const newViews = new Map<CalendarViewType, CalendarView>();
-      let viewsChanged = false;
+      let anyHasChanges = false;
+      let renderRequired = false;
 
       config.views.forEach(view => {
         const existingView = this.state.views.get(view.type);
         newViews.set(view.type, view);
 
         const diff = compareViews(existingView, view);
-        viewsChanged = viewsChanged || diff.requiresRender || diff.hasChanges;
+        anyHasChanges = anyHasChanges || diff.hasChanges;
+        renderRequired = renderRequired || diff.requiresRender;
       });
 
-      // Check if any views were removed
+      // Check if any views were removed or swapped
       if (this.state.views.size === newViews.size) {
         for (const type of this.state.views.keys()) {
           if (!newViews.has(type)) {
-            viewsChanged = true;
+            renderRequired = true;
             break;
           }
         }
       } else {
-        viewsChanged = true;
+        renderRequired = true;
       }
 
-      if (viewsChanged) {
+      if (anyHasChanges || renderRequired) {
         this.state.views = newViews;
+      }
+      if (renderRequired) {
         hasChanged = true;
       }
     }
